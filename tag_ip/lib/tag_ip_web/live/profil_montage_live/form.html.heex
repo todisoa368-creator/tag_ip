@@ -1,0 +1,172 @@
+<div class="max-w-3xl mx-auto my-10 p-8 bg-white border border-gray-200 shadow-sm rounded-2xl">
+  <%!-- En-tête avec indicateur d'étape --%>
+  <div class="mb-10">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-2xl font-bold text-gray-900">{@page_title}</h1>
+    </div>
+    
+   <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden mb-8">
+  <div 
+    class="bg-blue-600 h-full transition-all duration-500 ease-out shadow-sm" 
+ 
+  ></div>
+    </div>
+  </div>
+
+  <.form for={@form} phx-change="validate" phx-submit="save" class="space-y-8">
+  <input type="hidden" name={@form[:name].name} value={@form[:name].value} />
+  <input type="hidden" name={@form[:description].name} value={@form[:description].value} />
+  <input type="hidden" name={@form[:object_type].name} value={@form[:object_type].value} />
+  <input type="hidden" name={@form[:reporting_interval].name} value={@form[:reporting_interval].value} />
+  <input type="hidden" name={@form[:voltage_min].name} value={@form[:voltage_min].value} />
+  <input type="hidden" name={@form[:voltage_max].name} value={@form[:voltage_max].value} />
+    <%!-- ÉTAPE 1 : IDENTIFICATION (Name & Description) --%>
+    <div :if={@step == 1} class="animate-in fade-in slide-in-from-right-4 duration-300">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Identification du profil</h2>
+      <div class="grid gap-6">
+        <.input 
+          field={@form[:name]} 
+          label="Nom du profil" 
+          placeholder="ex: Camion 24V Jointech" 
+          required 
+        />
+        <.input 
+          field={@form[:description]} 
+          type="textarea" 
+          label="Description (optionnel)" 
+          placeholder="Détails sur l'installation physique..." 
+        />
+      </div>
+    </div>
+
+    <%!-- ÉTAPE 2 : USAGE & FRÉQUENCE (Object Type & Interval) --%>
+    <div :if={@step == 2} class="animate-in fade-in slide-in-from-right-4 duration-300">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Type d'asset et Fréquence de rapport</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <.input 
+          field={@form[:object_type]} 
+          type="select" 
+          label="Type d'objet"
+          options={[
+            {"Véhicule léger", :light_vehicle},
+            {"Poids lourd / Camion", :truck},
+            {"Moto", :motorcycle},
+            {"Bateau", :boat},
+            {"Asset fixe (Générateur, etc.)", :asset}
+          ]} 
+        />
+        <.input 
+          field={@form[:reporting_interval]} 
+          type="select" 
+          label="Intervalle de rapport"
+          options={[
+            {"1 seconde (Demo/Urgence)", :interval_1s},
+            {"5 secondes", :interval_5s},
+            {"10 secondes", :interval_10s},
+            {"30 secondes (Standard)", :interval_30s},
+            {"1 minute", :interval_1m},
+            {"5 minutes (Économie)", :interval_5m}
+          ]} 
+        />
+      </div>
+    </div>
+
+    <%!-- ÉTAPE 3 : SEUILS ÉLECTRIQUES (Voltages) --%>
+    <div :if={@step == 3} class="animate-in fade-in slide-in-from-right-4 duration-300">
+      <h2 class="text-lg font-semibold text-gray-800 mb-2">Seuils de tension (en millivolts)</h2>
+      <p class="text-sm text-gray-500 mb-6 italic">
+        Règle : La tension minimum doit être strictement inférieure à la tension maximum.
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <.input 
+          field={@form[:voltage_min]} 
+          type="number" 
+          label="Tension Minimum (mV)" 
+          placeholder="ex: 10800"
+        />
+        <.input 
+          field={@form[:voltage_max]} 
+          type="number" 
+          label="Tension Maximum (mV)" 
+          placeholder="ex: 32000"
+        />
+      </div>
+    </div>
+
+    <%!-- ÉTAPE 4 : CAPTEURS & OPTIONS (Buzzer, Fuel, RFID, etc.) --%>
+    <div :if={@step == 4} class="animate-in fade-in slide-in-from-right-4 duration-300">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Équipements et Options</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <.input 
+          field={@form[:fuel_probe_type]} 
+          type="select" 
+          label="Sonde de carburant"
+          options={[
+            {"Aucune", :none},
+            {"Analogique (0-5V)", :analog},
+            {"Impulsions digitales", :digital_pulse},
+            {"CAN Bus", :can_bus},
+            {"RS232", :rs232}
+          ]} 
+        />
+        <.input 
+          field={@form[:driver_id_type]} 
+          type="select" 
+          label="Identification chauffeur"
+          options={[
+            {"Aucune", :none},
+            {"RFID", :rfid},
+            {"NFC", :nfc},
+            {"iButton (Dallas)", :ibutton},
+            {"Code PIN", :pin}
+          ]} 
+        />
+      </div>
+      <div class="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
+        <.input field={@form[:buzzer]} type="checkbox" label="Câblage du Buzzer présent" />
+        <.input field={@form[:geofence_enabled]} type="checkbox" label="Activer les Geofences" />
+      </div>
+    </div>
+
+    <%!-- NAVIGATION DE L'ASSISTANT --%>
+    <div class="flex items-center justify-between pt-8 border-t border-gray-100 mt-10">
+      <div>
+        <button 
+          :if={@step > 1} 
+          type="button" 
+          phx-click="prev-step" 
+          class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          Précédent
+        </button>
+      </div>
+
+      <div class="flex gap-4">
+        <.link 
+        navigate={~p"/profils"} 
+        class="px-6 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+      >
+        Annuler
+      </.link>
+        
+        <button 
+          :if={@step < @total_steps} 
+          type="button" 
+          phx-click="next-step" 
+          class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition-all"
+        >
+          Suivant
+        </button>
+
+        <button 
+          :if={@step == @total_steps} 
+          type="submit" 
+          class="px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-sm transition-all"
+        >
+          Enregistrer le profil
+        </button>
+      </div>
+    </div>
+
+  </.form>
+</div>

@@ -1,0 +1,67 @@
+<div class="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+  <div class="md:grid md:grid-cols-3 md:gap-6">
+    <div class="md:col-span-1">
+      <div class="px-4 sm:px-0">
+        <h3 class="text-lg font-medium leading-6 text-gray-900">Détails de la compatibilité</h3>
+        <p class="mt-1 text-sm text-gray-600">
+          Analyse technique entre le profil de montage et le traceur GPS.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-5 md:col-span-2 md:mt-0">
+      <div class="shadow-sm rounded-xl bg-white p-6 border border-gray-100">
+        <%!-- Score avec couleur dynamique --%>
+        <div class="mb-6">
+          <span class={[
+            "px-4 py-1.5 text-lg font-bold rounded-full",
+            @compatibilite.score_compatibilite >= 70 && "bg-green-100 text-green-800 border border-green-200",
+            @compatibilite.score_compatibilite >= 40 && @compatibilite.score_compatibilite < 70 && "bg-yellow-100 text-yellow-800 border border-yellow-200",
+            @compatibilite.score_compatibilite < 40 && "bg-red-100 text-red-800 border border-red-200"
+          ]}>
+            Score : {@compatibilite.score_compatibilite}%
+          </span>
+        </div>
+
+        <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+          <div class="sm:col-span-2">
+            <dt class="text-sm font-medium text-gray-500 uppercase tracking-wider">Profil de montage</dt>
+            <dd class="mt-1 text-md text-gray-900 font-semibold italic">
+              {@compatibilite.profil_montage.name}
+            </dd>
+          </div>
+
+          <div class="sm:col-span-2">
+            <dt class="text-sm font-medium text-gray-500 uppercase tracking-wider">Modèle de traceur</dt>
+            <dd class="mt-1 text-md text-gray-900 font-semibold italic">
+              {@compatibilite.modele_traceur.name}
+            </dd>
+          </div>
+
+          <div class="sm:col-span-2">
+            <dt class="text-sm font-medium text-gray-500 uppercase tracking-wider">Analyse détaillée</dt>
+            <dd class="mt-1 text-sm text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-100">
+              {@compatibilite.details}
+            </dd>
+          </div>
+
+          <div class="sm:col-span-2">
+            <dt class="text-sm font-medium text-gray-500 uppercase tracking-wider">Date du calcul</dt>
+            <dd class="mt-1 text-sm text-gray-600">
+              {format_datetime(@compatibilite.inserted_at)}
+            </dd>
+          </div>
+        </dl>
+
+        <div class="mt-8 pt-6 border-t border-gray-100">
+          <.link
+            navigate={~p"/compatibilites"}
+            class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium rounded-lg transition-colors"
+          >
+            ← Retour à la liste
+          </.link>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

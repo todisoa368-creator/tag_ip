@@ -1,0 +1,42 @@
+<TagIpWeb.Layouts.app flash={@flash}>
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Modèles de traceurs</h1>
+    <.link
+      navigate={~p"/modeles/new"}
+      class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
+    >
+      Nouveau modèle
+    </.link>
+  </div>
+
+ <div class="mt-8 space-y-4">
+  <%!-- C'est cette ligne qui définit la variable "modele" pour chaque élément --%>
+  <%= for modele <- @modeles do %>
+    <div class="flex items-center justify-between p-4 bg-white border rounded-lg shadow-sm">
+      
+      <div class="flex flex-col">
+        <%!-- Ici, "modele" est maintenant bien défini --%>
+        <span class="font-bold text-gray-800 text-lg"><%= modele.nom %></span>
+        <span class="text-sm text-gray-500"><%= modele.reference %></span>
+      </div>
+
+      <div class="flex gap-2">
+        <.link patch={~p"/modeles/#{modele.id}/edit"} class="btn btn-outline btn-sm">
+          Modifier
+        </.link>
+        <button phx-click="duplicate" phx-value-id={modele.id} class="btn btn-outline btn-success btn-sm">
+          Dupliquer
+        </button>
+      </div>
+
+    </div>
+  <% end %>
+
+    <div :if={Enum.empty?(@modeles)} class="px-6 py-4 text-center text-gray-500">
+      Aucun modèle de traceur trouvé.
+      <.link navigate={~p"/modeles/new"} class="text-blue-600 hover:underline">
+        Créer le premier modèle
+      </.link>
+    </div>
+  </div>
+</TagIpWeb.Layouts.app>

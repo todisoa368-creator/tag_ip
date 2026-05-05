@@ -1,0 +1,94 @@
+
+<div class="max-w-5xl mx-auto py-8">
+  <div class="md:grid md:grid-cols-3 md:gap-8">
+    
+   
+    <div class="md:col-span-1">
+      <div class="px-4 sm:px-0">
+        <h3 class="text-xl font-bold leading-6 text-gray-900">
+          {if @modele, do: "Modifier le modèle", else: "Nouveau modèle"}
+        </h3>
+        <p class="mt-2 text-sm text-gray-600">
+          Définissez les caractéristiques techniques du traceur pour assurer la compatibilité avec les profils de montage.
+        </p>
+      </div>
+    </div>
+
+    
+    <div class="mt-5 md:col-span-2 md:mt-0">
+      <.form
+        for={@form}
+        id="modele-form"
+        phx-submit="save"
+        phx-change="validate"
+        class="space-y-6"
+      >
+        <div class="shadow-md rounded-xl bg-white p-8 border border-gray-100">
+       
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+            
+           
+            <div class="sm:col-span-2">
+              <.input field={@form[:nom]} type="text" label="Nom du modèle" placeholder="Ex: Teltonika FMB920" required />
+            </div>
+
+    
+            <div class="sm:col-span-1">
+              <.input field={@form[:reference]} type="text" label="Référence interne" placeholder="REF-XXXX" required />
+            </div>
+
+            <div class="sm:col-span-1">
+              <.input
+                field={@form[:types_vehicule_compatibles]}
+                type="text"
+                label="Véhicules compatibles"
+                placeholder="Voiture, Camion..."
+              />
+            </div>
+
+          
+            <div class="sm:col-span-1">
+              <.input
+                field={@form[:alimentations_compatibles]}
+                type="text"
+                label="Alimentations (V)"
+                placeholder="12V, 24V"
+              />
+            </div>
+
+         
+            <div class="sm:col-span-1">
+              <.input
+                field={@form[:capteurs_supportes]}
+                type="text"
+                label="Capteurs supportés"
+                placeholder="Fuel, Temp, SOS"
+              />
+            </div>
+
+            <div class="sm:col-span-2">
+              <.input field={@form[:description]} type="textarea" label="Description technique" rows="4" />
+            </div>
+          </div>
+        </div>
+
+  
+        <div class="flex justify-end items-center gap-4">
+          <.link
+            navigate={~p"/modeles"}
+            class="text-sm font-semibold text-gray-600 hover:text-gray-900"
+          >
+            Annuler
+          </.link>
+          <.button
+            type="submit"
+            phx-disable-with="Enregistrement..."
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-sm transition-all"
+          >
+            {if @modele, do: "Mettre à jour le modèle", else: "Créer le modèle"}
+          </.button>
+        </div>
+      </.form>
+    </div>
+  </div>
+</div>
