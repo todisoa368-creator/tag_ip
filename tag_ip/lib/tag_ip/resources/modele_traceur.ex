@@ -23,50 +23,130 @@ defmodule TagIp.Resources.ModeleTraceur do
       public?(true)
     end
 
-    attribute :types_vehicule_compatibles, {:array, :string} do
-      default([])
-      public?(true)
-    end
-
-    attribute :alimentations_compatibles, {:array, :string} do
-      default([])
-      public?(true)
-    end
-
-    attribute :capteurs_supportes, {:array, :string} do
-      default([])
-      public?(true)
-    end
-
     attribute :description, :string do
       constraints(max_length: 500)
+      public?(true)
+    end
+
+    # Compatibilité élargie — Électrique
+    attribute :standby_current, :float do
+      public?(true)
+    end
+
+    attribute :ultra_low_power, :boolean do
+      default(false)
+      public?(true)
+    end
+
+    # Compatibilité élargie — Connectivité et Bus de Données
+    attribute :can_bus, :boolean do
+      default(false)
+      public?(true)
+    end
+
+    attribute :one_wire, :boolean do
+      default(false)
+      public?(true)
+    end
+
+    attribute :rs232, :boolean do
+      default(false)
+      public?(true)
+    end
+
+    attribute :rs485, :boolean do
+      default(false)
+      public?(true)
+    end
+
+    # Compatibilité élargie — Entrées/Sorties (I/O)
+    attribute :nb_digital_inputs, :integer do
+      public?(true)
+    end
+
+    attribute :nb_analog_inputs, :integer do
+      public?(true)
+    end
+
+    attribute :nb_outputs, :integer do
+      public?(true)
+    end
+
+    # Compatibilité élargie — Environnement et Protection Physique
+    attribute :ip_rating, :string do
+      public?(true)
+    end
+
+    attribute :antennes_externes, :boolean do
+      default(false)
+      public?(true)
+    end
+
+    # Compatibilité élargie — Intelligence Embarquée
+    attribute :accelerometer, :boolean do
+      default(false)
+      public?(true)
+    end
+
+    attribute :buffer_memory, :integer do
       public?(true)
     end
 
     timestamps()
   end
 
-  actions do
-    create :create do
-      accept([
-        :nom,
-        :reference,
-        :types_vehicule_compatibles,
-        :alimentations_compatibles,
-        :capteurs_supportes,
-        :description
-      ])
+  relationships do
+    has_many :compatibilites, TagIp.Resources.Compatibilite
+
+    many_to_many :types_vehicule, TagIp.Resources.TypeVehicule do
+      through(TagIp.Resources.ModeleTraceurTypeVehicule)
+      source_attribute_on_join_resource(:modele_traceur_id)
+      destination_attribute_on_join_resource(:type_vehicule_id)
     end
 
-    defaults([:read, :update, :destroy])
+    many_to_many :alimentations, TagIp.Resources.Alimentation do
+      through(TagIp.Resources.ModeleTraceurAlimentation)
+      source_attribute_on_join_resource(:modele_traceur_id)
+      destination_attribute_on_join_resource(:alimentation_id)
+    end
 
+    many_to_many :capteurs, TagIp.Resources.Capteur do
+      through(TagIp.Resources.ModeleTraceurCapteur)
+      source_attribute_on_join_resource(:modele_traceur_id)
+      destination_attribute_on_join_resource(:capteur_id)
+    end
+  end
+
+  actions do
+    defaults([:read, :destroy, :update])
+
+    # C'est cette action qui manquait !
     read :get_by_id do
       argument(:id, :uuid, allow_nil?: false)
       filter(expr(id == ^arg(:id)))
     end
 
-    read :list do
-      pagination(offset?: true, countable: :by_default)
+    create :create do
+      primary?(true)
+
+      accept([
+        :nom,
+        :reference,
+        :description,
+        :nb_digital_inputs,
+        :nb_analog_inputs,
+        :nb_outputs,
+        :ip_rating,
+        :can_bus,
+        :one_wire,
+        :rs232,
+        :rs485,
+        :accelerometer,
+        :buffer_memory,
+        :antennes_externes,
+        :ultra_low_power,
+        :standby_current
+      ])
     end
   end
 
@@ -75,7 +155,7 @@ defmodule TagIp.Resources.ModeleTraceur do
     define(:read)
     define(:update)
     define(:destroy)
-    define(:get_by_id, action: :get_by_id, args: [:id])
-    define(:list, action: :list)
+    # Ici, le nom de l'action (:get_by_id) doit exister dans le bloc actions ci-dessus
+    define(:get_by_id, args: [:id])
   end
 end

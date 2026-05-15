@@ -2,16 +2,42 @@ defmodule TagIpWeb.CompatibiliteLive.Index do
   use TagIpWeb, :live_view
 
   alias TagIp.Resources.Compatibilite
+  alias TagIp.Resources.ProfilMontage
+  alias TagIp.Resources.ModeleTraceur
+
+  @page_size 10
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:compatibilites, list_compatibilites())}
+    modeles = Ash.read!(ModeleTraceur, page: [limit: 50])
+    profils = Ash.read!(ProfilMontage, page: [limit: 50])
+    results = list_compatibilites("", 1)
+
+    {:ok,
+     socket
+     |> assign(:compatibilites, results.results)
+     |> assign(:total_count, results.count)
+     |> assign(:search, "")
+     |> assign(:page, 1)
+     |> assign(:page_size, @page_size)
+     |> assign(:modeles, modeles.results)
+     |> assign(:profils, profils.results)}
   end
 
-  defp list_compatibilites do
-    Compatibilite
-    |> Ash.Query.limit(100)
-    |> Ash.read!(load: [:profil_montage, :modele_traceur])
+  defp list_compatibilites(search, page) do
+    query =
+      Compatibilite
+      |> Ash.Query.sort(inserted_at: :desc)
+      |> Ash.Query.load([:profil_montage, :modele_traceur])
+
+    query =
+      if search != "" do
+        Ash.Query.do_filter(query, details: [contains: search])
+      else
+        query
+      end
+
+    Ash.read!(query, page: [limit: @page_size, offset: (page - 1) * @page_size, count: true])
   end
 
   @impl true
@@ -21,25 +47,94 @@ defmodule TagIpWeb.CompatibiliteLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    compatibilite = Compatibilite.get_by_id!(id)
-    Compatibilite.destroy!(compatibilite)
+  def handle_event("search", %{"search" => search}, socket) do
+    results = list_compatibilites(search, 1)
 
-    {:noreply, socket |> assign(:compatibilites, list_compatibilites())}
+    {:noreply,
+     socket
+     |> assign(:compatibilites, results.results)
+     |> assign(:search, search)
+     |> assign(:page, 1)
+     |> assign(:total_count, results.count)}
   end
-  # Dans votre fichier LiveView
-def handle_event("duplicate_profil", %{"id" => id}, socket) do
-  # 1. On récupère le profil existant
-  profil_source = ProfilMontage.get_by_id!(id)
 
-  # 2. On prépare les attributs pour un nouveau profil (on retire l'ID)
-  attrs =
-    profil_source
-    |> Map.from_struct()
-    |> Map.drop([:id, :inserted_at, :updated_at])
-    |> Map.put(:name, "#{profil_source.name} (Copie)")
+  @impl true
+  def handle_event("paginate", %{"page" => page}, socket) do
+    page = String.to_integer(page)
+    results = list_compatibilites(socket.assigns.search, page)
 
-  # 3. On redirige vers le formulaire de création avec les données pré-remplies
-  {:noreply, push_patch(socket, to: ~p"/profils/new?#{attrs}")}
-end
+    {:noreply,
+     socket
+     |> assign(:compatibilites, results.results)
+     |> assign(:page, page)
+     |> assign(:total_count, results.count)}
+  end
+
+  @impl true
+  def handle_event("delete", %{"id" => id}, socket) do
+    case Compatibilite |> Ash.get(id, load: [:profil_montage, :modele_traceur]) do
+      {:ok, compatibilite} ->
+        profil_nom =
+          if compatibilite.profil_montage, do: compatibilite.profil_montage.name, else: "N/A"
+
+        modele_nom =
+          if compatibilite.modele_traceur, do: compatibilite.modele_traceur.nom, else: "N/A"
+
+        case Ash.destroy(compatibilite) do
+          :ok ->
+            TagIp.Notification.broadcast(
+              {:notification, :info, "Compatibilité #{profil_nom} / #{modele_nom} supprimée."}
+            )
+
+            {:noreply,
+             socket
+             |> put_flash(
+               :info,
+               "Compatibilité #{profil_nom} / #{modele_nom} supprimée avec succès."
+             )
+             |> assign(
+               :compatibilites,
+               list_compatibilites(socket.assigns.search, socket.assigns.page).results
+             )}
+
+          {:error, _reason} ->
+            {:noreply,
+             put_flash(socket, :error, "Erreur lors de la suppression de la compatibilité.")}
+        end
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Compatibilité introuvable.")}
+    end
+  end
+
+  @impl true
+  def handle_event("calculer", %{"profil_id" => profil_id, "modele_id" => modele_id}, socket) do
+    if profil_id == "" or modele_id == "" do
+      {:noreply, put_flash(socket, :error, "Veuillez sélectionner un profil et un modèle.")}
+    else
+      input =
+        Ash.ActionInput.for_action(Compatibilite, :calculer_compatibilite, %{
+          profil_id: profil_id,
+          modele_id: modele_id
+        })
+
+      case Ash.run_action(input) do
+        {:ok, %{score: score}} ->
+          TagIp.Notification.broadcast(
+            {:notification, :info, "Compatibilité recalculée (Score: #{score}%)."}
+          )
+
+          {:noreply,
+           socket
+           |> put_flash(:info, "Compatibilité calculée avec succès (Score: #{score}%)")
+           |> assign(
+             :compatibilites,
+             list_compatibilites(socket.assigns.search, socket.assigns.page).results
+           )}
+
+        {:error, _} ->
+          {:noreply, put_flash(socket, :error, "Erreur lors du calcul de la compatibilité")}
+      end
+    end
+  end
 end

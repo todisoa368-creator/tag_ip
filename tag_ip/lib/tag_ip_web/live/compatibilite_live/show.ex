@@ -1,9 +1,6 @@
 defmodule TagIpWeb.CompatibiliteLive.Show do
   use TagIpWeb, :live_view
 
-  # Importation des composants de layout pour corriger l'erreur de compilation
-  import TagIpWeb.Layouts
-
   alias TagIp.Resources.Compatibilite
 
   @impl true
@@ -24,6 +21,7 @@ defmodule TagIpWeb.CompatibiliteLive.Show do
 
   # Cette fonction est utilisée dans ton template .heex
   defp format_datetime(nil), do: ""
+
   defp format_datetime(datetime) do
     Calendar.strftime(datetime, "%d/%m/%Y à %H:%M")
   end

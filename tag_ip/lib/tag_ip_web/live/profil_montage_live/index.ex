@@ -1,42 +1,97 @@
 defmodule TagIpWeb.ProfilMontageLive.Index do
   use TagIpWeb, :live_view
+
   alias TagIp.Resources.ProfilMontage
+
+  @page_size 10
 
   @impl true
   def mount(_params, _session, socket) do
-    # On lit les profils via Ash
-   profils = Ash.read!(ProfilMontage)
-   {:ok, assign(socket, :profils, profils)}
+    results = list_profils("", 1)
+
+    {:ok,
+     socket
+     |> assign(:profils, results.results)
+     |> assign(:total_count, results.count)
+     |> assign(:search, "")
+     |> assign(:page, 1)
+     |> assign(:page_size, @page_size)
+     |> assign(:page_title, "Profils de montage")}
+  end
+
+  @impl true
+  def handle_params(_params, url, socket) do
+    {:noreply, socket |> assign(:current_path, URI.parse(url).path)}
+  end
+
+  @impl true
+  def handle_event("search", %{"search" => search}, socket) do
+    results = list_profils(search, 1)
+
+    {:noreply,
+     socket
+     |> assign(:profils, results.results)
+     |> assign(:search, search)
+     |> assign(:page, 1)
+     |> assign(:total_count, results.count)}
+  end
+
+  @impl true
+  def handle_event("paginate", %{"page" => page}, socket) do
+    page = String.to_integer(page)
+    results = list_profils(socket.assigns.search, page)
+
+    {:noreply,
+     socket
+     |> assign(:profils, results.results)
+     |> assign(:page, page)
+     |> assign(:total_count, results.count)}
   end
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    # Utilisation correcte d'Ash pour récupérer et supprimer
-    profil = ProfilMontage |> Ash.get!(id)
-    Ash.destroy!(profil)
+    case ProfilMontage |> Ash.get(id) do
+      {:ok, profil} ->
+        nom = profil.name
 
-    {:noreply, assign(socket, :profils, Ash.read!(ProfilMontage))}
+        case Ash.destroy(profil) do
+          :ok ->
+            TagIp.Notification.broadcast({:notification, :info, "Profil « #{nom} » supprimé."})
+
+            {:noreply,
+             socket
+             |> put_flash(:info, "Profil « #{nom} » supprimé avec succès.")
+             |> assign(:profils, list_profils(socket.assigns.search, socket.assigns.page).results)}
+
+          {:error, _reason} ->
+            {:noreply,
+             put_flash(socket, :error, "Erreur lors de la suppression du profil « #{nom} ».")}
+        end
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Profil introuvable.")}
+    end
   end
 
   @impl true
   def handle_event("duplicate", %{"id" => id}, socket) do
-    # Récupération via le module de ressource
-    profil_source = ProfilMontage |> Ash.get!(id)
+    {:noreply,
+     socket
+     |> push_navigate(to: ~p"/profils/new?duplicate_from=#{id}")}
+  end
 
-    params = %{
-      "name" => "#{profil_source.name} (Copie)",
-      "description" => profil_source.description,
-      "object_type" => profil_source.object_type,
-      "reporting_interval" => profil_source.reporting_interval,
-      "voltage_min" => profil_source.voltage_min,
-      "voltage_max" => profil_source.voltage_max,
-      "buzzer" => profil_source.buzzer,
-      "fuel_probe_type" => profil_source.fuel_probe_type,
-      "geofence_enabled" => profil_source.geofence_enabled,
-      "driver_id_type" => profil_source.driver_id_type,
-      "organization_id" => profil_source.organization_id
-    }
+  defp list_profils(search, page) do
+    query =
+      ProfilMontage
+      |> Ash.Query.sort(name: :asc)
 
-    {:noreply, push_patch(socket, to: ~p"/profils/new?#{params}")}
+    query =
+      if search != "" do
+        Ash.Query.do_filter(query, name: [contains: search])
+      else
+        query
+      end
+
+    Ash.read!(query, page: [limit: @page_size, offset: (page - 1) * @page_size, count: true])
   end
 end

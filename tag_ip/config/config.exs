@@ -7,10 +7,24 @@
 # General application configuration
 import Config
 
+config :tag_ip, :scopes,
+  user: [
+    default: true,
+    module: TagIp.Accounts.Scope,
+    assign_key: :current_scope,
+    access_path: [:user, :id],
+    schema_key: :user_id,
+    schema_type: :id,
+    schema_table: :users,
+    test_data_fixture: TagIp.AccountsFixtures,
+    test_setup_helper: :register_and_log_in_user
+  ]
+
 config :tag_ip,
   ecto_repos: [TagIp.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [TagIp.TagIp]
+  # Ajout de TagIp.Resources ici
+  ash_domains: [TagIp.TagIp, TagIp.Resources]
 
 # Configure the endpoint
 config :tag_ip, TagIpWeb.Endpoint,

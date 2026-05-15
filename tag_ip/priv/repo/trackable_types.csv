@@ -1,0 +1,11 @@
+railway-vehicle,railway-vehicle,Matériel mobile roulant exclusivement sur rails,Véhicules ferroviaires
+construction_machine,construction_machine,"Engins utilisés dans le bâtiment et les travaux publics pour creuser, transporter, soulever, niveler ou compacter des matériaux. Ils comprennent notamment les pelles mécaniques, bulldozers, chargeuses, grues, tombereaux et compacteurs.",Engins de chantier
+truck,truck,"Véhicule motorisé destiné au transport de marchandises ou de matériaux lourds. Il est composé d’une cabine pour le conducteur et d’un espace de chargement, qui peut prendre différentes formes (benne, citerne, remorque, etc.)",Camion
+padlock,padlock,"Cadenas électronique connecté, offrant ouverture sans clé, suivi GPS, enregistrement des ouvertures et alertes en temps réel pour une sécurité renforcée.",Cadenas intelligent
+moto,moto,"Véhicule à deux roues motorisé, conçu pour transporter une ou deux personnes",Moto
+forklift,forklift,"Engin motorisé utilisé pour soulever et déplacer des charges, souvent sur des palettes, sur de courtes distances",Chariot élévateur
+person,person,"Personne dont la position est suivie en temps réel grâce à un dispositif GPS porté sur elle, permettant de connaître sa localisation précise et d’assurer sa sécurité ou sa gestion.",Personne
+car,car,Véhicule motorisé à quatre roues conçu pour transporter des passagers sur la route,Voiture
+bus,bus,Véhicule motorisé utilisé pour transporter plusieurs passagers sur de courtes ou longues distances,"Bus, Taxibe"
+asset,asset,Dispositif équipé d’un récepteur GPS permettant de suivre sa position en temps réel.,Objet
+boat,boat,Embarcation capable de flotter et de se déplacer sur l'eau,Bateau

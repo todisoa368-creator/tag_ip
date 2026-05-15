@@ -8,7 +8,7 @@ defmodule TagIp.Repo.Migrations.CreateMountingProfiles do
   use Ecto.Migration
 
   def up do
-  drop_if_exists table(:profils_montage), mode: :cascade
+    drop_if_exists table(:profils_montage), mode: :cascade
 
     create table(:mounting_profiles, primary_key: false) do
       add :id, :uuid, null: false, default: fragment("gen_random_uuid()"), primary_key: true
@@ -36,7 +36,7 @@ defmodule TagIp.Repo.Migrations.CreateMountingProfiles do
         default: fragment("(now() AT TIME ZONE 'utc')")
     end
 
-    #drop constraint(:compatibilites, "compatibilites_profil_montage_id_fkey")
+    # drop constraint(:compatibilites, "compatibilites_profil_montage_id_fkey")
 
     alter table(:compatibilites) do
       modify :score_compatibilite, :bigint, default: nil

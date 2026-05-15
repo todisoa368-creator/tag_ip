@@ -5,29 +5,53 @@ defmodule TagIp.Resources.ProfilMontage do
     authorizers: [Ash.Policy.Authorizer]
 
   attributes do
-    uuid_primary_key :id
+    uuid_primary_key(:id)
 
-    attribute :name, :string, allow_nil?: false, public?: true
-    attribute :description, :string, public?: true
-    attribute :reporting_interval, :string, public?: true
-    attribute :object_type, :string, public?: true
-    attribute :voltage_min, :float, public?: true
-    attribute :voltage_max, :float, public?: true
-    attribute :buzzer, :boolean, default: false, public?: true
-    attribute :fuel_probe_type, :string, public?: true
-    attribute :geofence_enabled, :boolean, default: false, public?: true
-    attribute :driver_id_type, :string, public?: true
-    attribute :organization_id, :uuid, public?: true
+    attribute(:name, :string, allow_nil?: false, public?: true)
+    attribute(:description, :string, public?: true)
+    attribute(:reporting_interval, :string, public?: true)
+    attribute(:object_type, :string, public?: true)
+    attribute(:voltage_min, :float, public?: true)
+    attribute(:voltage_max, :float, public?: true)
+    attribute(:buzzer, :boolean, default: false, public?: true)
+    attribute(:fuel_probe_type, :string, public?: true)
+    attribute(:geofence_enabled, :boolean, default: false, public?: true)
+    attribute(:driver_id_type, :string, public?: true)
+    attribute(:organization_id, :uuid, public?: true)
+
+    # Compatibilité élargie — Électrique
+    attribute(:ultra_low_power_requis, :boolean, default: false, public?: true)
+
+    # Compatibilité élargie — Connectivité et Bus de Données
+    attribute(:can_bus_requis, :boolean, default: false, public?: true)
+    attribute(:one_wire_requis, :boolean, default: false, public?: true)
+    attribute(:rs232_requis, :boolean, default: false, public?: true)
+    attribute(:rs485_requis, :boolean, default: false, public?: true)
+
+    # Compatibilité élargie — Entrées/Sorties (I/O)
+    attribute(:inputs_requis, :integer, public?: true)
+    attribute(:analog_inputs_requis, :integer, public?: true)
+    attribute(:outputs_requis, :integer, public?: true)
+
+    # Compatibilité élargie — Environnement et Protection Physique
+    attribute(:ip_rating, :string, public?: true)
+    attribute(:montage_exterieur, :boolean, default: false, public?: true)
+    attribute(:antenne_deportee, :boolean, default: false, public?: true)
+
+    # Compatibilité élargie — Intelligence Embarquée
+    attribute(:accelerometre_requis, :boolean, default: false, public?: true)
+    attribute(:buffer_requis, :integer, public?: true)
 
     timestamps()
   end
 
   actions do
-    defaults [:read, :destroy, :update]
+    defaults([:read, :destroy, :update])
 
     create :create do
-      primary? true
-      accept [
+      primary?(true)
+
+      accept([
         :name,
         :description,
         :reporting_interval,
@@ -38,20 +62,47 @@ defmodule TagIp.Resources.ProfilMontage do
         :fuel_probe_type,
         :geofence_enabled,
         :driver_id_type,
-        :organization_id
-      ]
+        :organization_id,
+        :inputs_requis,
+        :analog_inputs_requis,
+        :outputs_requis,
+        :ip_rating,
+        :can_bus_requis,
+        :one_wire_requis,
+        :rs232_requis,
+        :rs485_requis,
+        :accelerometre_requis,
+        :buffer_requis,
+        :montage_exterieur,
+        :antenne_deportee,
+        :ultra_low_power_requis
+      ])
     end
+
+    read :get_by_id do
+      argument(:id, :uuid, allow_nil?: false)
+      filter(expr(id == ^arg(:id)))
+      get?(true)
+    end
+  end
+
+  code_interface do
+    define(:create)
+    define(:read)
+    define(:update)
+    define(:destroy)
+    define(:get_by_id, args: [:id])
   end
 
   policies do
     # Remplaçons l'importation par la condition la plus simple possible
     policy always() do
-      authorize_if always()
+      authorize_if(always())
     end
   end
 
   postgres do
-    table "mounting_profiles"
-    repo TagIp.Repo
+    table("mounting_profiles")
+    repo(TagIp.Repo)
   end
 end

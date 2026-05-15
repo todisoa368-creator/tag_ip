@@ -1,42 +1,97 @@
 <TagIpWeb.Layouts.app flash={@flash}>
-  <div class="flex justify-between items-center mb-6">
+  <div class="flex justify-between items-center mb-8">
     <h1 class="text-2xl font-bold text-gray-900">Modèles de traceurs</h1>
     <.link
       navigate={~p"/modeles/new"}
-      class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
+      class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
     >
-      Nouveau modèle
+      + Nouveau modèle
     </.link>
   </div>
 
- <div class="mt-8 space-y-4">
-  <%!-- C'est cette ligne qui définit la variable "modele" pour chaque élément --%>
-  <%= for modele <- @modeles do %>
-    <div class="flex items-center justify-between p-4 bg-white border rounded-lg shadow-sm">
-      
-      <div class="flex flex-col">
-        <%!-- Ici, "modele" est maintenant bien défini --%>
-        <span class="font-bold text-gray-800 text-lg"><%= modele.nom %></span>
-        <span class="text-sm text-gray-500"><%= modele.reference %></span>
-      </div>
+  <.search_input value={@search} placeholder="Rechercher par nom..." />
 
-      <div class="flex gap-2">
-        <.link patch={~p"/modeles/#{modele.id}/edit"} class="btn btn-outline btn-sm">
-          Modifier
-        </.link>
-        <button phx-click="duplicate" phx-value-id={modele.id} class="btn btn-outline btn-success btn-sm">
-          Dupliquer
-        </button>
-      </div>
-
-    </div>
-  <% end %>
-
-    <div :if={Enum.empty?(@modeles)} class="px-6 py-4 text-center text-gray-500">
-      Aucun modèle de traceur trouvé.
-      <.link navigate={~p"/modeles/new"} class="text-blue-600 hover:underline">
-        Créer le premier modèle
+  <%= if Enum.empty?(@modeles) do %>
+    <div class="bg-white border-2 border-dashed border-gray-300 rounded-xl p-14 text-center">
+      <.icon name="hero-cube-transparent" class="size-12 text-gray-300 mx-auto mb-4" />
+      <p class="text-gray-500 text-lg font-medium">Aucun modèle de traceur trouvé.</p>
+      <p class="text-gray-400 text-sm mb-6">Commencez par en ajouter un.</p>
+      <.link
+        navigate={~p"/modeles/new"}
+        class="inline-flex items-center gap-1.5 text-blue-600 font-semibold hover:text-blue-700 transition-colors"
+      >
+        <.icon name="hero-plus-circle" class="size-5" /> Créer votre premier modèle
       </.link>
     </div>
-  </div>
+  <% else %>
+    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <table class="min-w-full divide-y divide-gray-200" id="modeles-table">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Nom
+            </th>
+            <th class="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Référence
+            </th>
+            <th class="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr
+            :for={modele <- @modeles}
+            id={"modele-#{modele.id}"}
+            class="hover:bg-gray-50/80 transition-colors duration-150"
+          >
+            <td class="px-6 py-4 whitespace-nowrap">
+              <.link
+                navigate={~p"/modeles/#{modele}"}
+                class="text-sm font-semibold text-gray-900 hover:text-blue-700 transition-colors"
+              >
+                {modele.nom}
+              </.link>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="text-sm text-gray-500 font-mono">{modele.reference}</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <.link
+                  navigate={~p"/modeles/#{modele}/edit"}
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 transition-all duration-150"
+                >
+                  <.icon name="hero-pencil-square" class="size-3.5" /> Modifier
+                </.link>
+
+                <button
+                  phx-click="duplicate"
+                  phx-value-id={modele.id}
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-teal-200 text-teal-700 hover:bg-teal-50 hover:border-teal-300 transition-all duration-150"
+                >
+                  <.icon name="hero-document-duplicate" class="size-3.5" /> Dupliquer
+                </button>
+
+                <button
+                  phx-click="delete"
+                  phx-value-id={modele.id}
+                  data-confirm="Voulez-vous vraiment supprimer ce modèle ?"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 transition-all duration-150"
+                >
+                  <.icon name="hero-trash" class="size-3.5" /> Supprimer
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <.pagination
+      page={@page}
+      page_size={@page_size}
+      total_count={@total_count}
+    />
+  <% end %>
 </TagIpWeb.Layouts.app>

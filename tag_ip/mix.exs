@@ -40,6 +40,7 @@ defmodule TagIp.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:bcrypt_elixir, "~> 3.0"},
       {:phoenix, "~> 1.8.5"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
@@ -68,7 +69,8 @@ defmodule TagIp.MixProject do
       {:bandit, "~> 1.5"},
       {:ash, "~> 3.0"},
       {:ash_phoenix, "~> 2.0"},
-      {:ash_postgres, "~> 2.0"}
+      {:ash_postgres, "~> 2.0"},
+      {:picosat_elixir, "~> 0.2"}
     ]
   end
 

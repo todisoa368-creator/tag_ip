@@ -8,84 +8,108 @@
       {assigns[:page_title]}
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
-    <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}></script>
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
+    </script>
     <style>
-  
       input, textarea, select {
         background-color: white !important;
-        color: #111827 !important; /* Gris très foncé presque noir */
+        color: #111827 !important;
         border: 1px solid #D1D5DB !important;
       }
       input::placeholder, textarea::placeholder {
-        color: #6B7280 !important; /* Gris clair pour le placeholder */
+        color: #6B7280 !important;
       }
     </style>
   </head>
   <body class="flex flex-col min-h-screen bg-gray-50 text-gray-900">
+    <header class="border-b border-zinc-100 py-4 px-6 bg-white">
+      <div class="flex items-center justify-between w-full">
+        <%!-- Bloc Gauche : Logo (flex-1 basis-0 force la largeur pour équilibrer le centre) --%>
+        <div class="flex flex-1 basis-0 items-center">
+          <a href="/" class="block">
+            <img src={~p"/images/logo.svg"} alt="TAG-IP" class="h-10 w-auto" />
+          </a>
+        </div>
 
-    <% current_path = assigns[:current_path] || "" %>
-
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex items-center gap-10">
-            <.link navigate={~p"/"} class="text-2xl font-black text-blue-600 tracking-tighter">
-              TAG-IP
-            </.link>
-        <nav class="hidden sm:flex sm:space-x-8 h-full">
-            <.link
-              navigate={~p"/"}
-              class={[
-                "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-all duration-200",
-                current_path == "/" && "border-blue-600 text-blue-600",
-                current_path != "/" && "border-transparent text-gray-500 hover:text-blue-600 hover:border-blue-600"
-              ]}
-            >
-              Dashboard
-            </.link>
-            <.link
-              navigate={~p"/profils"}
-              class={[
-                "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-all duration-200",
-                String.starts_with?(current_path, "/profils") && "border-blue-600 text-blue-600",
-                !String.starts_with?(current_path, "/profils") && "border-transparent text-gray-500 hover:text-blue-600 hover:border-blue-600"
-              ]}
-            >
-              Profils de montage
-            </.link>
-
-         <.link
-              navigate={~p"/modeles"}
-              class={[
-                "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-all duration-200",
-                String.starts_with?(current_path, "/modeles") && "border-blue-600 text-blue-600",
-                !String.starts_with?(current_path, "/modeles") && "border-transparent text-gray-500 hover:text-blue-600 hover:border-blue-600"
-              ]}
-            
-            > 
-          Modeles de traceurs 
-            </.link>
-
-
-            <.link
-              navigate={~p"/compatibilites"}
-              class={[
-                "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-all duration-200",
-                String.starts_with?(current_path, "/compatibilites") && "border-blue-600 text-blue-600",
-                !String.starts_with?(current_path, "/compatibilites") && "border-transparent text-gray-500 hover:text-blue-600 hover:border-blue-600"
-              ]}
-            >
-              Compatibilités
-            </.link>
+        <%= if assigns[:current_scope] && @current_scope.user do %>
+          <%!-- Bloc Centre : Menu Navigation --%>
+          <nav class="flex flex-grow justify-center">
+            <div class="flex gap-8 text-sm font-semibold text-zinc-600">
+              <.link
+                href={~p"/"}
+                class={[
+                  "hover:text-blue-600 transition pb-1 border-b-2",
+                  active_nav?(assigns, :dashboard) && "text-blue-600 border-blue-600",
+                  !active_nav?(assigns, :dashboard) && "border-transparent"
+                ]}
+              >
+                Dashboard
+              </.link>
+              <.link
+                href={~p"/profils"}
+                class={[
+                  "hover:text-blue-600 transition pb-1 border-b-2",
+                  active_nav?(assigns, :profils) && "text-blue-600 border-blue-600",
+                  !active_nav?(assigns, :profils) && "border-transparent"
+                ]}
+              >
+                Profils de montage
+              </.link>
+              <.link
+                href={~p"/modeles"}
+                class={[
+                  "hover:text-blue-600 transition pb-1 border-b-2",
+                  active_nav?(assigns, :modeles) && "text-blue-600 border-blue-600",
+                  !active_nav?(assigns, :modeles) && "border-transparent"
+                ]}
+              >
+                Modèles de traceurs
+              </.link>
+              <.link
+                href={~p"/compatibilites"}
+                class={[
+                  "hover:text-blue-600 transition pb-1 border-b-2",
+                  active_nav?(assigns, :compatibilites) && "text-blue-600 border-blue-600",
+                  !active_nav?(assigns, :compatibilites) && "border-transparent"
+                ]}
+              >
+                Compatibilités
+              </.link>
+            </div>
           </nav>
-          </div>
+        <% end %>
+
+        <%!-- Bloc Droite : Admin & Déconnexion (flex-1 basis-0 pour équilibrer avec le logo) --%>
+        <div class="flex flex-1 basis-0 items-center justify-end gap-6">
+          <%= if assigns[:current_scope] && @current_scope.user do %>
+            <span class="text-sm font-medium text-zinc-500">{@current_scope.user.email}</span>
+            <.link
+              href={~p"/users/log-out"}
+              method="delete"
+              class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 hover:text-rose-600 transition"
+            >
+              Déconnexion
+            </.link>
+          <% else %>
+            <.link
+              href={~p"/users/log-in"}
+              class="text-sm font-semibold leading-6 text-zinc-900 hover:text-blue-600"
+            >
+              Log in
+            </.link>
+            <.link
+              href={~p"/users/register"}
+              class="rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700 transition"
+            >
+              Register
+            </.link>
+          <% end %>
         </div>
       </div>
     </header>
 
     <main class="flex-grow">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <.flash_group flash={assigns[:flash] || %{}} />
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         {@inner_content}
       </div>
     </main>

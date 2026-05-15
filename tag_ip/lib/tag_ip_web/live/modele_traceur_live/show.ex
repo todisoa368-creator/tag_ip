@@ -11,7 +11,7 @@ defmodule TagIpWeb.ModeleTraceurLive.Show do
   @impl true
   def handle_params(%{"id" => id}, _url, socket) do
     modele = ModeleTraceur.get_by_id!(id)
-    compatibilites = list_compatibilites()
+    compatibilites = list_compatibilites(id)
 
     {:noreply,
      socket
@@ -20,10 +20,14 @@ defmodule TagIpWeb.ModeleTraceurLive.Show do
      |> assign(:compatibilites, compatibilites)}
   end
 
-  defp list_compatibilites do
+  defp list_compatibilites(modele_id) do
     TagIp.Resources.Compatibilite
-    |> Ash.read!(load: [:profil_montage])
+    |> Ash.Query.new()
+    |> Ash.Query.limit(100)
+    |> Ash.read!(load: [:profil_montage], filter: [modele_traceur_id: modele_id])
   end
+
+  defp format_datetime(nil), do: ""
 
   defp format_datetime(datetime) do
     Calendar.strftime(datetime, "%d/%m/%Y %H:%M")

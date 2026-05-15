@@ -1,17 +1,25 @@
 defmodule TagIpWeb.ModeleTraceurLive.Index do
   use TagIpWeb, :live_view
-   alias TagIp.Resources.ModeleTraceur
-   alias TagIp.Resources.ProfilMontage
+
+  on_mount {TagIpWeb.UserAuth, :mount_current_user}
+
+  alias TagIp.Resources.ModeleTraceur
+
+  @page_size 10
+
   @impl true
   def mount(_params, _session, socket) do
-  # Récupération des données via Ash
-  modeles = Ash.read!(TagIp.Resources.ModeleTraceur)
+    results = list_modeles("", 1)
 
-  {:ok,
-   socket
-   |> assign(:modeles, modeles) # Indispensable pour le template
-   |> assign(:page_title, "Modèles de traceurs")}
-end
+    {:ok,
+     socket
+     |> assign(:modeles, results.results)
+     |> assign(:total_count, results.count)
+     |> assign(:search, "")
+     |> assign(:page, 1)
+     |> assign(:page_size, @page_size)
+     |> assign(:page_title, "Modèles de traceurs")}
+  end
 
   @impl true
   def handle_params(_params, url, socket) do
@@ -22,30 +30,125 @@ end
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    modele = Ash.get!(ModeleTraceur, id)
-    Ash.destroy!(modele)
-    {:noreply, assign(socket, :modeles, Ash.read!(ModeleTraceur))}
+  def handle_event("search", %{"search" => search}, socket) do
+    results = list_modeles(search, 1)
+
+    {:noreply,
+     socket
+     |> assign(:modeles, results.results)
+     |> assign(:search, search)
+     |> assign(:page, 1)
+     |> assign(:total_count, results.count)}
   end
 
   @impl true
-  def handle_event("duplicate", %{"id" => id}, socket) do
-  # On récupère le profil à dupliquer
-profil = TagIp.Resources.get!(TagIp.Resources.ProfilMontage, id)
+  def handle_event("paginate", %{"page" => page}, socket) do
+    page = String.to_integer(page)
+    results = list_modeles(socket.assigns.search, page)
 
-  # On prépare les paramètres pour le nouveau formulaire
-  params = %{
-    name: "#{profil.name} (Copie)",
-    description: profil.description,
-    object_type: profil.object_type,
-    voltage_min: profil.voltage_min,
-    voltage_max: profil.voltage_max
-    # Ajoute les autres champs si nécessaire
-  }
+    {:noreply,
+     socket
+     |> assign(:modeles, results.results)
+     |> assign(:page, page)
+     |> assign(:total_count, results.count)}
+  end
 
-  {:noreply,
-   socket
-   |> push_navigate(to: ~p"/profils/new?#{params}")}
-   # ^^^ C'EST ICI : push_navigate au lieu de push_patch
-end
+  @impl true
+  def handle_event("delete", %{"id" => id} = _params, socket) do
+    case ModeleTraceur.get_by_id(id) do
+      {:ok, [modele]} ->
+        nom = modele.nom
+
+        case ModeleTraceur.destroy(modele) do
+          :ok ->
+            TagIp.Notification.broadcast({:notification, :info, "Modèle « #{nom} » supprimé."})
+
+            {:noreply,
+             socket
+             |> put_flash(:info, "Modèle « #{nom} » supprimé avec succès.")
+             |> assign(:modeles, list_modeles(socket.assigns.search, socket.assigns.page).results)}
+
+          _ ->
+            {:noreply,
+             put_flash(socket, :error, "Erreur lors de la suppression du modèle « #{nom} ».")}
+        end
+
+      {:ok, []} ->
+        {:noreply, put_flash(socket, :error, "Modèle introuvable.")}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Erreur lors de la récupération du modèle.")}
+    end
+  end
+
+  @impl true
+  def handle_event("duplicate", %{"id" => id} = _params, socket) do
+    case ModeleTraceur.get_by_id(id) do
+      {:ok, [modele_source]} ->
+        modele_source = Ash.load!(modele_source, [:types_vehicule, :alimentations, :capteurs])
+
+        attrs = %{
+          nom: "#{modele_source.nom} (copie)",
+          reference: "#{modele_source.reference}-COPY",
+          description: modele_source.description
+        }
+
+        case ModeleTraceur.create(attrs) do
+          {:ok, modele} ->
+            Enum.each(
+              modele_source.types_vehicule,
+              &TagIp.Resources.ModeleTraceurTypeVehicule.create(%{
+                modele_traceur_id: modele.id,
+                type_vehicule_id: &1.id
+              })
+            )
+
+            Enum.each(
+              modele_source.alimentations,
+              &TagIp.Resources.ModeleTraceurAlimentation.create(%{
+                modele_traceur_id: modele.id,
+                alimentation_id: &1.id
+              })
+            )
+
+            Enum.each(
+              modele_source.capteurs,
+              &TagIp.Resources.ModeleTraceurCapteur.create(%{
+                modele_traceur_id: modele.id,
+                capteur_id: &1.id
+              })
+            )
+
+            TagIp.Notification.broadcast(
+              {:notification, :info, "Modèle « #{modele.nom} » dupliqué."}
+            )
+
+            {:noreply,
+             socket
+             |> put_flash(:info, "Modèle dupliqué")
+             |> assign(:modeles, list_modeles(socket.assigns.search, socket.assigns.page).results)}
+
+          {:error, _} ->
+            {:noreply, put_flash(socket, :error, "Erreur lors de la duplication")}
+        end
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Source introuvable")}
+    end
+  end
+
+  defp list_modeles(search, page) do
+    query =
+      ModeleTraceur
+      |> Ash.Query.sort(nom: :asc)
+
+    query =
+      if search != "" do
+        Ash.Query.do_filter(query, nom: [contains: search])
+      else
+        query
+      end
+
+    Ash.read!(query, page: [limit: @page_size, offset: (page - 1) * @page_size, count: true])
+  end
 end
