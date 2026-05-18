@@ -34,7 +34,9 @@
         <tbody class="divide-y divide-gray-200">
           <tr :for={profil <- @profils} id={"profil-#{profil.id}"} class="hover:bg-gray-50">
             <td class="px-6 py-4 text-sm font-medium text-gray-900">{profil.name}</td>
-            <td class="px-6 py-4 text-sm text-gray-500 italic">{profil.object_type}</td>
+            <td class="px-6 py-4 text-sm text-gray-500 italic">
+              {Map.get(@type_labels, profil.object_type, profil.object_type)}
+            </td>
             <td class="px-6 py-4 text-right text-sm font-medium">
               <div class="flex items-center justify-end gap-2">
                 <.link
@@ -51,9 +53,8 @@
                   Dupliquer
                 </button>
                 <button
-                  phx-click="delete"
+                  phx-click="confirm_delete"
                   phx-value-id={profil.id}
-                  phx-confirm="Confirmer la suppression ?"
                   class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-300 text-red-700 hover:bg-red-50 transition-colors"
                 >
                   Supprimer
@@ -71,4 +72,9 @@
       total_count={@total_count}
     />
   <% end %>
+
+  <.confirm_modal show={@pending_delete_id != nil}>
+    Êtes-vous sûr de vouloir supprimer <strong>{@pending_delete_label}</strong>
+    ? Cette action est irréversible.
+  </.confirm_modal>
 </TagIpWeb.Layouts.app>

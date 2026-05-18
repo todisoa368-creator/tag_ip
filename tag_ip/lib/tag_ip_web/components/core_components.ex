@@ -304,6 +304,63 @@ defmodule TagIpWeb.CoreComponents do
     """
   end
 
+  # --- CONFIRM MODAL ---
+  attr :id, :string, default: "confirm-modal"
+  attr :show, :boolean, default: false
+  attr :title, :string, default: "Confirmer la suppression"
+
+  attr :message, :string,
+    default: "Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible."
+
+  attr :confirm_label, :string, default: "Supprimer"
+  attr :cancel_label, :string, default: "Annuler"
+  attr :on_confirm, :string, default: "delete"
+  attr :on_cancel, :string, default: "cancel_delete"
+  slot :inner_block
+
+  def confirm_modal(assigns) do
+    ~H"""
+    <div
+      id={@id}
+      class={[
+        "fixed inset-0 z-50 flex items-center justify-center transition-all duration-200",
+        not @show && "hidden"
+      ]}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" phx-click={@on_cancel}></div>
+      <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 transform transition-all">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+            <.icon name="hero-exclamation-triangle" class="size-5 text-red-600" />
+          </div>
+          <h3 class="text-lg font-bold text-gray-900">{@title}</h3>
+        </div>
+        <p class="text-sm text-gray-600 mb-6">
+          {render_slot(@inner_block) || @message}
+        </p>
+        <div class="flex justify-end gap-3">
+          <button
+            phx-click={@on_cancel}
+            type="button"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+          >
+            {@cancel_label}
+          </button>
+          <button
+            phx-click={@on_confirm}
+            type="button"
+            class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors"
+          >
+            {@confirm_label}
+          </button>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   def translate_error({msg, opts}) do
     if count = opts[:count] do
       Gettext.dngettext(TagIpWeb.Gettext, "errors", msg, msg, count, opts)

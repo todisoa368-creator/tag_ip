@@ -6,6 +6,7 @@ config :tag_ip, TagIp.Repo,
   password: "postgres",
   hostname: "localhost",
   database: "tag_ip_dev",
+  parameters: [client_encoding: "UTF8"],
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10

@@ -13,6 +13,7 @@ config :tag_ip, TagIp.Repo,
   password: "postgres",
   hostname: "localhost",
   database: "tag_ip_test#{System.get_env("MIX_TEST_PARTITION")}",
+  parameters: [client_encoding: "UTF8"],
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
 

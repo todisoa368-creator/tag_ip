@@ -106,9 +106,8 @@
                   {compat.score_compatibilite}%
                 </span>
                 <button
-                  phx-click="delete"
+                  phx-click="confirm_delete"
                   phx-value-id={compat.id}
-                  phx-confirm="Supprimer ?"
                   class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-300 text-red-700 hover:bg-red-50 transition-colors"
                 >
                   Supprimer
@@ -126,4 +125,9 @@
       </div>
     </div>
   </div>
+
+  <.confirm_modal show={@pending_delete_id != nil}>
+    Êtes-vous sûr de vouloir supprimer la compatibilité <strong>{@pending_delete_label}</strong>
+    ? Cette action est irréversible.
+  </.confirm_modal>
 </TagIpWeb.Layouts.app>

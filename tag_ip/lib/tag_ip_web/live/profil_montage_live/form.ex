@@ -189,6 +189,9 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   defp source_params(profil, name) do
     %{
       "name" => name,
+      "description" => profil.description,
+      "reporting_interval" => profil.reporting_interval,
+      "driver_id_type" => profil.driver_id_type,
       "object_type" => profil.object_type,
       "voltage_min" => profil.voltage_min,
       "voltage_max" => profil.voltage_max,

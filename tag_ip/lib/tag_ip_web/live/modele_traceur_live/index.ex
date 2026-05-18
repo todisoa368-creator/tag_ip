@@ -18,7 +18,9 @@ defmodule TagIpWeb.ModeleTraceurLive.Index do
      |> assign(:search, "")
      |> assign(:page, 1)
      |> assign(:page_size, @page_size)
-     |> assign(:page_title, "Modèles de traceurs")}
+     |> assign(:page_title, "Modèles de traceurs")
+     |> assign(:pending_delete_id, nil)
+     |> assign(:pending_delete_label, nil)}
   end
 
   @impl true
@@ -54,7 +56,34 @@ defmodule TagIpWeb.ModeleTraceurLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id} = _params, socket) do
+  def handle_event("confirm_delete", %{"id" => id}, socket) do
+    case ModeleTraceur.get_by_id(id) do
+      {:ok, [modele]} ->
+        {:noreply,
+         socket
+         |> assign(:pending_delete_id, id)
+         |> assign(:pending_delete_label, modele.nom)}
+
+      {:ok, []} ->
+        {:noreply, put_flash(socket, :error, "Modèle introuvable.")}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Erreur lors de la récupération du modèle.")}
+    end
+  end
+
+  @impl true
+  def handle_event("cancel_delete", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:pending_delete_id, nil)
+     |> assign(:pending_delete_label, nil)}
+  end
+
+  @impl true
+  def handle_event("delete", _params, socket) do
+    id = socket.assigns.pending_delete_id
+
     case ModeleTraceur.get_by_id(id) do
       {:ok, [modele]} ->
         nom = modele.nom
@@ -66,18 +95,31 @@ defmodule TagIpWeb.ModeleTraceurLive.Index do
             {:noreply,
              socket
              |> put_flash(:info, "Modèle « #{nom} » supprimé avec succès.")
+             |> assign(:pending_delete_id, nil)
+             |> assign(:pending_delete_label, nil)
              |> assign(:modeles, list_modeles(socket.assigns.search, socket.assigns.page).results)}
 
           _ ->
             {:noreply,
-             put_flash(socket, :error, "Erreur lors de la suppression du modèle « #{nom} ».")}
+             socket
+             |> put_flash(:error, "Erreur lors de la suppression du modèle « #{nom} ».")
+             |> assign(:pending_delete_id, nil)
+             |> assign(:pending_delete_label, nil)}
         end
 
       {:ok, []} ->
-        {:noreply, put_flash(socket, :error, "Modèle introuvable.")}
+        {:noreply,
+         socket
+         |> put_flash(:error, "Modèle introuvable.")
+         |> assign(:pending_delete_id, nil)
+         |> assign(:pending_delete_label, nil)}
 
       {:error, _reason} ->
-        {:noreply, put_flash(socket, :error, "Erreur lors de la récupération du modèle.")}
+        {:noreply,
+         socket
+         |> put_flash(:error, "Erreur lors de la récupération du modèle.")
+         |> assign(:pending_delete_id, nil)
+         |> assign(:pending_delete_label, nil)}
     end
   end
 

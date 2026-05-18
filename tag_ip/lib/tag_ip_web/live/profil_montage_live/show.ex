@@ -4,7 +4,10 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    trackable_types = Ash.read!(TagIp.Resources.TrackableType)
+    type_labels = Enum.into(trackable_types, %{}, fn t -> {t.slug, t.label} end)
+
+    {:ok, socket |> assign(:type_labels, type_labels)}
   end
 
   @impl true

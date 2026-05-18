@@ -8,6 +8,8 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     results = list_profils("", 1)
+    trackable_types = Ash.read!(TagIp.Resources.TrackableType)
+    type_labels = Enum.into(trackable_types, %{}, fn t -> {t.slug, t.label} end)
 
     {:ok,
      socket
@@ -16,7 +18,10 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
      |> assign(:search, "")
      |> assign(:page, 1)
      |> assign(:page_size, @page_size)
-     |> assign(:page_title, "Profils de montage")}
+     |> assign(:page_title, "Profils de montage")
+     |> assign(:type_labels, type_labels)
+     |> assign(:pending_delete_id, nil)
+     |> assign(:pending_delete_label, nil)}
   end
 
   @impl true
@@ -49,7 +54,31 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
+  def handle_event("confirm_delete", %{"id" => id}, socket) do
+    case ProfilMontage |> Ash.get(id) do
+      {:ok, profil} ->
+        {:noreply,
+         socket
+         |> assign(:pending_delete_id, id)
+         |> assign(:pending_delete_label, profil.name)}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Profil introuvable.")}
+    end
+  end
+
+  @impl true
+  def handle_event("cancel_delete", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:pending_delete_id, nil)
+     |> assign(:pending_delete_label, nil)}
+  end
+
+  @impl true
+  def handle_event("delete", _params, socket) do
+    id = socket.assigns.pending_delete_id
+
     case ProfilMontage |> Ash.get(id) do
       {:ok, profil} ->
         nom = profil.name
@@ -61,15 +90,26 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
             {:noreply,
              socket
              |> put_flash(:info, "Profil « #{nom} » supprimé avec succès.")
+             |> assign(:pending_delete_id, nil)
+             |> assign(:pending_delete_label, nil)
              |> assign(:profils, list_profils(socket.assigns.search, socket.assigns.page).results)}
 
-          {:error, _reason} ->
+          {:error, reason} ->
+            msg = "Erreur lors de la suppression du profil « #{nom} » : #{inspect(reason)}"
+
             {:noreply,
-             put_flash(socket, :error, "Erreur lors de la suppression du profil « #{nom} ».")}
+             socket
+             |> put_flash(:error, msg)
+             |> assign(:pending_delete_id, nil)
+             |> assign(:pending_delete_label, nil)}
         end
 
       {:error, _reason} ->
-        {:noreply, put_flash(socket, :error, "Profil introuvable.")}
+        {:noreply,
+         socket
+         |> put_flash(:error, "Profil introuvable.")
+         |> assign(:pending_delete_id, nil)
+         |> assign(:pending_delete_label, nil)}
     end
   end
 

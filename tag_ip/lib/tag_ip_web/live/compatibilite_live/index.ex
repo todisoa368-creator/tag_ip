@@ -21,7 +21,9 @@ defmodule TagIpWeb.CompatibiliteLive.Index do
      |> assign(:page, 1)
      |> assign(:page_size, @page_size)
      |> assign(:modeles, modeles.results)
-     |> assign(:profils, profils.results)}
+     |> assign(:profils, profils.results)
+     |> assign(:pending_delete_id, nil)
+     |> assign(:pending_delete_label, nil)}
   end
 
   defp list_compatibilites(search, page) do
@@ -71,7 +73,37 @@ defmodule TagIpWeb.CompatibiliteLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
+  def handle_event("confirm_delete", %{"id" => id}, socket) do
+    case Compatibilite |> Ash.get(id, load: [:profil_montage, :modele_traceur]) do
+      {:ok, compatibilite} ->
+        profil_nom =
+          if compatibilite.profil_montage, do: compatibilite.profil_montage.name, else: "N/A"
+
+        modele_nom =
+          if compatibilite.modele_traceur, do: compatibilite.modele_traceur.nom, else: "N/A"
+
+        {:noreply,
+         socket
+         |> assign(:pending_delete_id, id)
+         |> assign(:pending_delete_label, "#{profil_nom} / #{modele_nom}")}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Compatibilité introuvable.")}
+    end
+  end
+
+  @impl true
+  def handle_event("cancel_delete", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:pending_delete_id, nil)
+     |> assign(:pending_delete_label, nil)}
+  end
+
+  @impl true
+  def handle_event("delete", _params, socket) do
+    id = socket.assigns.pending_delete_id
+
     case Compatibilite |> Ash.get(id, load: [:profil_montage, :modele_traceur]) do
       {:ok, compatibilite} ->
         profil_nom =
@@ -92,6 +124,8 @@ defmodule TagIpWeb.CompatibiliteLive.Index do
                :info,
                "Compatibilité #{profil_nom} / #{modele_nom} supprimée avec succès."
              )
+             |> assign(:pending_delete_id, nil)
+             |> assign(:pending_delete_label, nil)
              |> assign(
                :compatibilites,
                list_compatibilites(socket.assigns.search, socket.assigns.page).results
@@ -99,11 +133,18 @@ defmodule TagIpWeb.CompatibiliteLive.Index do
 
           {:error, _reason} ->
             {:noreply,
-             put_flash(socket, :error, "Erreur lors de la suppression de la compatibilité.")}
+             socket
+             |> put_flash(:error, "Erreur lors de la suppression de la compatibilité.")
+             |> assign(:pending_delete_id, nil)
+             |> assign(:pending_delete_label, nil)}
         end
 
       {:error, _reason} ->
-        {:noreply, put_flash(socket, :error, "Compatibilité introuvable.")}
+        {:noreply,
+         socket
+         |> put_flash(:error, "Compatibilité introuvable.")
+         |> assign(:pending_delete_id, nil)
+         |> assign(:pending_delete_label, nil)}
     end
   end
 

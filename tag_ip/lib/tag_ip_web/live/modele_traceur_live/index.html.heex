@@ -74,9 +74,8 @@
                 </button>
 
                 <button
-                  phx-click="delete"
+                  phx-click="confirm_delete"
                   phx-value-id={modele.id}
-                  data-confirm="Voulez-vous vraiment supprimer ce modèle ?"
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 transition-all duration-150"
                 >
                   <.icon name="hero-trash" class="size-3.5" /> Supprimer
@@ -94,4 +93,9 @@
       total_count={@total_count}
     />
   <% end %>
+
+  <.confirm_modal show={@pending_delete_id != nil}>
+    Êtes-vous sûr de vouloir supprimer <strong>{@pending_delete_label}</strong>
+    ? Cette action est irréversible.
+  </.confirm_modal>
 </TagIpWeb.Layouts.app>

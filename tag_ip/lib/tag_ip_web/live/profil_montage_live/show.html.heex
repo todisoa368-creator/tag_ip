@@ -27,7 +27,9 @@
 
             <div class="sm:col-span-1">
               <dt class="text-sm font-medium text-gray-500">Type d'objet</dt>
-              <dd class="mt-1 text-sm text-gray-900">{@profil.object_type || "Non défini"}</dd>
+              <dd class="mt-1 text-sm text-gray-900">
+                {Map.get(@type_labels, @profil.object_type, @profil.object_type) || "Non défini"}
+              </dd>
             </div>
 
             <div class="sm:col-span-1">
