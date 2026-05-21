@@ -254,29 +254,6 @@
               </div>
             </div>
 
-            <div class="border-t border-blue-200 pt-6 mt-4">
-              <p class="text-sm font-medium text-gray-700 mb-4">Entrées / Sorties requises</p>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <.input
-                  field={@form[:inputs_requis]}
-                  type="number"
-                  label="Entrées numériques"
-                  placeholder="0"
-                />
-                <.input
-                  field={@form[:analog_inputs_requis]}
-                  type="number"
-                  label="Entrées analogiques"
-                  placeholder="0"
-                />
-                <.input
-                  field={@form[:outputs_requis]}
-                  type="number"
-                  label="Sorties"
-                  placeholder="0"
-                />
-              </div>
-            </div>
           </div>
         </div>
 
@@ -593,7 +570,7 @@
 
           <div class="flex items-center gap-4">
             <.link
-              navigate={~p"/profils"}
+              navigate={~p"/dashboard"}
               class="text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors"
             >
               Annuler

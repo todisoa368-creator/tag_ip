@@ -1,3 +1,15 @@
+import Config
+
+config :tag_ip, :scopes,
+  user: [
+    default: true,
+    module: TagIp.Accounts.Scope,
+    assign_key: :current_scope,
+    access_path: [:user, :id],
+    schema_key: :user_id,
+    schema_type: :id
+  ]
+
 # This file is responsible for configuring your application
 # and its dependencies with the aid of the Config module.
 #
@@ -77,4 +89,4 @@ config :phoenix, :json_library, Jason
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
-import_config "#{config_env()}.exs"
+import_config "#{Mix.env()}.exs"

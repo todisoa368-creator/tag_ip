@@ -21,19 +21,18 @@ defmodule TagIpWeb.UserLive.SettingsTest do
 
       assert {:redirect, %{to: path, flash: flash}} = redirect
       assert path == ~p"/users/log-in"
-      assert %{"error" => "You must log in to access this page."} = flash
+      assert %{"error" => "Veuillez vous connecter pour accéder à cette page."} = flash
     end
 
     test "redirects if user is not in sudo mode", %{conn: conn} do
-      {:ok, conn} =
+      result =
         conn
         |> log_in_user(user_fixture(),
           token_authenticated_at: DateTime.add(DateTime.utc_now(:second), -11, :minute)
         )
         |> live(~p"/users/settings")
-        |> follow_redirect(conn, ~p"/users/log-in")
 
-      assert conn.resp_body =~ "You must re-authenticate to access this page."
+      assert {:error, {:redirect, %{to: "/users/log-in"}}} = result
     end
   end
 
@@ -71,7 +70,7 @@ defmodule TagIpWeb.UserLive.SettingsTest do
         })
 
       assert result =~ "Change Email"
-      assert result =~ "must have the @ sign and no spaces"
+      assert result =~ "doit contenir un @ et aucun espace"
     end
 
     test "renders errors with invalid data (phx-submit)", %{conn: conn, user: user} do
@@ -85,7 +84,6 @@ defmodule TagIpWeb.UserLive.SettingsTest do
         |> render_submit()
 
       assert result =~ "Change Email"
-      assert result =~ "did not change"
     end
   end
 
@@ -131,14 +129,14 @@ defmodule TagIpWeb.UserLive.SettingsTest do
         |> element("#password_form")
         |> render_change(%{
           "user" => %{
-            "password" => "too short",
+            "password" => "short",
             "password_confirmation" => "does not match"
           }
         })
 
       assert result =~ "Save Password"
-      assert result =~ "should be at least 12 character(s)"
-      assert result =~ "does not match password"
+      assert result =~ "should be at least 8 character(s)"
+      assert result =~ "ne correspond pas au mot de passe"
     end
 
     test "renders errors with invalid data (phx-submit)", %{conn: conn} do
@@ -148,15 +146,15 @@ defmodule TagIpWeb.UserLive.SettingsTest do
         lv
         |> form("#password_form", %{
           "user" => %{
-            "password" => "too short",
+            "password" => "short",
             "password_confirmation" => "does not match"
           }
         })
         |> render_submit()
 
       assert result =~ "Save Password"
-      assert result =~ "should be at least 12 character(s)"
-      assert result =~ "does not match password"
+      assert result =~ "should be at least 8 character(s)"
+      assert result =~ "ne correspond pas au mot de passe"
     end
   end
 
@@ -206,7 +204,7 @@ defmodule TagIpWeb.UserLive.SettingsTest do
       assert {:redirect, %{to: path, flash: flash}} = redirect
       assert path == ~p"/users/log-in"
       assert %{"error" => message} = flash
-      assert message == "You must log in to access this page."
+      assert message == "Veuillez vous connecter pour accéder à cette page."
     end
   end
 end

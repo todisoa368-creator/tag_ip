@@ -11,5 +11,10 @@ defmodule TagIp.TagIp do
     resource(TagIp.Resources.ModeleTraceurTypeVehicule)
     resource(TagIp.Resources.ModeleTraceurAlimentation)
     resource(TagIp.Resources.ModeleTraceurCapteur)
+    resource(TagIp.Resources.PortType)
+    resource(TagIp.Resources.Feature)
+    resource(TagIp.Resources.ModelFeature)
+    resource(TagIp.Resources.ModelPort)
+    resource(TagIp.Resources.Peripheral)
   end
 end

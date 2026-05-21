@@ -1,7 +1,7 @@
 defmodule TagIpWeb.ModeleTraceurLive.Index do
   use TagIpWeb, :live_view
 
-  on_mount {TagIpWeb.UserAuth, :mount_current_user}
+  on_mount {TagIpWeb.UserAuth, :mount_current_scope}
 
   alias TagIp.Resources.ModeleTraceur
 

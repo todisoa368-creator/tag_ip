@@ -43,10 +43,12 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   @impl true
   def handle_params(params, url, socket) do
     path = URI.parse(url).path
+    return_to = params["return_to"]
 
     {:noreply,
      socket
      |> assign(:current_path, path)
+     |> assign(:return_to, return_to)
      |> apply_action(socket.assigns.live_action, params)}
   end
 
@@ -87,7 +89,7 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
 
   @impl true
   def handle_event("save", %{"profil_montage" => params}, socket) do
-    case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
+    case AshPhoenix.Form.submit(socket.assigns.form.source, params: params) do
       {:ok, profil} ->
         for compat <- socket.assigns.compatibilities, compat.compatible do
           Compatibilite
@@ -109,10 +111,12 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
 
         TagIp.Notification.broadcast({:notification, :info, message})
 
+        return_to = socket.assigns.return_to || ~p"/profils"
+
         {:noreply,
          socket
          |> put_flash(:info, message)
-         |> push_navigate(to: ~p"/profils")}
+         |> push_navigate(to: return_to)}
 
       {:error, form} ->
         {:noreply, assign(socket, form: to_form(form))}

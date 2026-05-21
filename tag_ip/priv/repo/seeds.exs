@@ -38,6 +38,13 @@ end
 alias TagIp.Resources.ProfilMontage
 alias TagIp.Resources.ModeleTraceur
 alias TagIp.Resources.TrackableType
+alias TagIp.Resources.PortType
+alias TagIp.Resources.Feature
+alias TagIp.Resources.ModelFeature
+alias TagIp.Resources.ModelPort
+alias TagIp.Resources.Peripheral
+alias TagIp.Resources.Alimentation
+alias TagIp.Resources.ModeleTraceurAlimentation
 alias TagIp.Accounts.User
 alias TagIp.Repo
 
@@ -63,8 +70,22 @@ case Repo.get_by(User, email: admin_email) do
 
     IO.puts("Admin créé avec succès.")
 
-  _ ->
+  user ->
     IO.puts("L'admin existe déjà.")
+
+    if is_nil(user.hashed_password) do
+      IO.puts("Mise à jour du mot de passe admin.")
+
+      user
+      |> User.password_changeset(%{password: admin_password})
+      |> Repo.update!()
+    end
+
+    if is_nil(user.confirmed_at) do
+      user
+      |> Ecto.Changeset.change(%{confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)})
+      |> Repo.update!()
+    end
 end
 
 # 2. Profils de montage
@@ -584,5 +605,438 @@ if File.exists?(types_path) do
     end
   end)
 end
+
+# =========================================================
+# 5. Port Types (Data Initialization & Reference Guide)
+# =========================================================
+IO.puts("Insertion des types de ports...")
+
+port_types = [
+  %{
+    slug: "digital_input",
+    label: "Digital Input (DIN)",
+    description: "Entrée numérique (On/Off, contact clé, bouton SOS)"
+  },
+  %{
+    slug: "analog_input",
+    label: "Analog Input (AIN)",
+    description: "Entrée analogique (Mesure de tension variable, jauge)"
+  },
+  %{
+    slug: "digital_output",
+    label: "Digital Output (DOUT)",
+    description: "Sortie numérique (Commande de relais, buzzer, sirène)"
+  },
+  %{
+    slug: "one_wire",
+    label: "1-Wire",
+    description: "Bus unifilaire pour puces Dallas/Maxim (Température, iButton)"
+  },
+  %{
+    slug: "rs232",
+    label: "RS232",
+    description: "Port série standard pour communication point à point"
+  },
+  %{slug: "rs485", label: "RS485", description: "Bus série industriel pour chaînage de capteurs"},
+  %{
+    slug: "can_bus",
+    label: "CAN-Bus",
+    description: "Bus réseau véhicule (J1939, J1708, FMS, OBD)"
+  },
+  %{
+    slug: "tachograph",
+    label: "Tachograph (K-Line)",
+    description: "Interface spécifique pour chronotachygraphe"
+  },
+  %{
+    slug: "bluetooth_ble",
+    label: "Bluetooth BLE",
+    description: "Connectivité sans fil courte portée pour capteurs autonomes"
+  }
+]
+
+port_type_ids =
+  Enum.map(port_types, fn attrs ->
+    {:ok, pt} = PortType.create(attrs, action: :create)
+    {pt.slug, pt.id}
+  end)
+  |> Map.new()
+
+# =========================================================
+# 6. Features (Data Initialization & Reference Guide)
+# =========================================================
+IO.puts("Insertion des fonctionnalités...")
+
+features = [
+  %{
+    slug: "real_time_tracking",
+    label: "Real-time Tracking",
+    description: "Suivi de position en temps réel par intervalle"
+  },
+  %{
+    slug: "eco_driving",
+    label: "Eco-driving",
+    description: "Analyse du comportement de conduite (freinage, accélération)"
+  },
+  %{
+    slug: "crash_detection",
+    label: "Crash Detection",
+    description: "Détection d'accident via accéléromètre interne"
+  },
+  %{
+    slug: "geofencing",
+    label: "Geofencing",
+    description: "Gestion de zones géographiques embarquées"
+  },
+  %{
+    slug: "fuel_monitoring",
+    label: "Fuel Monitoring",
+    description: "Suivi précis de la consommation et des vols de carburant"
+  },
+  %{
+    slug: "driver_id",
+    label: "Driver ID",
+    description: "Identification du conducteur (iButton, RFID, BLE)"
+  },
+  %{
+    slug: "cold_chain",
+    label: "Cold Chain Monitoring",
+    description: "Suivi de température et humidité (Chaîne du froid)"
+  },
+  %{
+    slug: "tacho_download",
+    label: "Tacho Download",
+    description: "Téléchargement à distance des données légales du chronotachygraphe"
+  },
+  %{
+    slug: "engine_immobilization",
+    label: "Engine Immobilization",
+    description: "Coupure moteur à distance via relais"
+  }
+]
+
+feature_ids =
+  Enum.map(features, fn attrs ->
+    {:ok, feat} = Feature.create(attrs, action: :create)
+    {feat.slug, feat.id}
+  end)
+  |> Map.new()
+
+# =========================================================
+# 7. Nouveaux modèles de traceurs (données du chef de projet)
+# =========================================================
+IO.puts("Insertion des modèles du guide de référence...")
+
+# Helper for alimentations
+new_alims = Alimentation.read!()
+alim_by_slug = Map.new(new_alims, &{&1.slug, &1.id})
+
+new_tracker_models = [
+  %{
+    nom: "FMC120 (FMx120)",
+    brand: "Teltonika",
+    reference: "TLT-FMC120",
+    description: "Traceur GPS 4G avec accéléromètre, Bluetooth BLE, 1-Wire.",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 2,
+    can_bus: false,
+    one_wire: true,
+    rs232: false,
+    rs485: false,
+    accelerometer: true,
+    buffer_memory: 128,
+    ip_rating: "IP54",
+    feature_slugs:
+      ~w(real_time_tracking eco_driving crash_detection geofencing fuel_monitoring driver_id cold_chain engine_immobilization),
+    alimentation_slugs: []
+  },
+  %{
+    nom: "FMC130 (FMx130)",
+    brand: "Teltonika",
+    reference: "TLT-FMC130",
+    description: "Traceur GPS 4G avec entrées négatives, Bluetooth BLE, 1-Wire et accéléromètre.",
+    nb_digital_inputs: 3,
+    nb_analog_inputs: 1,
+    nb_outputs: 3,
+    can_bus: false,
+    one_wire: true,
+    rs232: false,
+    rs485: false,
+    accelerometer: true,
+    buffer_memory: 256,
+    ip_rating: "IP54",
+    feature_slugs:
+      ~w(real_time_tracking eco_driving crash_detection geofencing fuel_monitoring driver_id cold_chain engine_immobilization),
+    alimentation_slugs: []
+  },
+  %{
+    nom: "FMC640 (FMx640)",
+    brand: "Teltonika",
+    reference: "TLT-FMC640",
+    description: "Traceur GPS 4G robuste avec CAN, RS232, RS485, K-Line.",
+    nb_digital_inputs: 4,
+    nb_analog_inputs: 4,
+    nb_outputs: 4,
+    can_bus: true,
+    one_wire: true,
+    rs232: true,
+    rs485: true,
+    accelerometer: true,
+    buffer_memory: 512,
+    ip_rating: "IP65",
+    feature_slugs:
+      ~w(real_time_tracking eco_driving crash_detection geofencing fuel_monitoring driver_id cold_chain tacho_download engine_immobilization),
+    alimentation_slugs: []
+  },
+  %{
+    nom: "CAREU U1",
+    brand: "Systech",
+    reference: "SYS-CAREU-U1",
+    description: "Traceur GPS avec interpréteur OBDII/CAN, RS232 multi-port, RS485.",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 0,
+    nb_outputs: 1,
+    can_bus: true,
+    one_wire: true,
+    rs232: true,
+    rs485: true,
+    accelerometer: false,
+    buffer_memory: 256,
+    ip_rating: "IP54",
+    feature_slugs:
+      ~w(real_time_tracking geofencing fuel_monitoring driver_id cold_chain engine_immobilization),
+    alimentation_slugs: []
+  },
+  %{
+    nom: "CAREU A1",
+    brand: "Systech",
+    reference: "SYS-CAREU-A1",
+    description:
+      "Traceur GPS économique avec entrée analogique jauge carburant et coupure moteur.",
+    nb_digital_inputs: 1,
+    nb_analog_inputs: 1,
+    nb_outputs: 1,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 64,
+    ip_rating: "IP54",
+    feature_slugs: ~w(real_time_tracking geofencing fuel_monitoring engine_immobilization),
+    alimentation_slugs: []
+  },
+  %{
+    nom: "VT200",
+    brand: "Wondeproud",
+    reference: "WON-VT200",
+    description: "Traceur GPS basique avec entrée SOS et sortie coupure moteur.",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 1,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 64,
+    ip_rating: "IP54",
+    feature_slugs: ~w(real_time_tracking geofencing engine_immobilization),
+    alimentation_slugs: []
+  }
+]
+
+new_model_ids =
+  Enum.map(new_tracker_models, fn attrs ->
+    feature_slugs = attrs[:feature_slugs]
+    alim_slugs = attrs[:alimentation_slugs]
+    attrs = Map.drop(attrs, [:feature_slugs, :alimentation_slugs])
+
+    case ModeleTraceur.create(attrs, action: :create) do
+      {:ok, modele} ->
+        # Link features
+        Enum.each(feature_slugs, fn slug ->
+          if fid = feature_ids[slug] do
+            ModelFeature.create(%{
+              modele_traceur_id: modele.id,
+              feature_id: fid
+            })
+          end
+        end)
+
+        # Link alimentations
+        Enum.each(alim_slugs, fn slug ->
+          if aid = alim_by_slug[slug] do
+            ModeleTraceurAlimentation.create(%{
+              modele_traceur_id: modele.id,
+              alimentation_id: aid
+            })
+          end
+        end)
+
+        modele
+
+      {:error, _} ->
+        nil
+    end
+  end)
+  |> Enum.reject(&is_nil/1)
+
+IO.puts("Modèles de référence insérés: #{length(new_model_ids)}")
+
+# =========================================================
+# 8. Model Ports (Cartographie Physique des Broches)
+# =========================================================
+IO.puts("Insertion des ports physiques...")
+
+# Lookup models by reference
+all_modeles = ModeleTraceur.read!()
+model_by_ref = Map.new(all_modeles, &{&1.reference, &1.id})
+
+pin_defs = [
+  # Teltonika FMC120
+  {model_by_ref["TLT-FMC120"], port_type_ids["digital_input"], "DIN1 (Ignition)"},
+  {model_by_ref["TLT-FMC120"], port_type_ids["digital_input"], "DIN2"},
+  {model_by_ref["TLT-FMC120"], port_type_ids["analog_input"], "AIN1"},
+  {model_by_ref["TLT-FMC120"], port_type_ids["digital_output"], "DOUT1 (Immobilizer)"},
+  {model_by_ref["TLT-FMC120"], port_type_ids["digital_output"], "DOUT2"},
+  {model_by_ref["TLT-FMC120"], port_type_ids["one_wire"], "1-Wire Data"},
+  {model_by_ref["TLT-FMC120"], port_type_ids["bluetooth_ble"], "Bluetooth BLE Channel"},
+
+  # Teltonika FMC130
+  {model_by_ref["TLT-FMC130"], port_type_ids["digital_input"], "DIN1 (Ignition)"},
+  {model_by_ref["TLT-FMC130"], port_type_ids["digital_input"], "DIN2 (Negative Input support)"},
+  {model_by_ref["TLT-FMC130"], port_type_ids["digital_input"], "DIN3 (Configurable AIN2)"},
+  {model_by_ref["TLT-FMC130"], port_type_ids["analog_input"], "AIN1"},
+  {model_by_ref["TLT-FMC130"], port_type_ids["digital_output"], "DOUT1"},
+  {model_by_ref["TLT-FMC130"], port_type_ids["digital_output"], "DOUT2"},
+  {model_by_ref["TLT-FMC130"], port_type_ids["digital_output"], "DOUT3"},
+  {model_by_ref["TLT-FMC130"], port_type_ids["one_wire"], "1-Wire Data"},
+  {model_by_ref["TLT-FMC130"], port_type_ids["bluetooth_ble"], "Bluetooth BLE Channel"},
+
+  # Teltonika FMC640
+  {model_by_ref["TLT-FMC640"], port_type_ids["digital_input"], "DIN1"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["digital_input"], "DIN2"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["digital_input"], "DIN3"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["digital_input"], "DIN4"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["analog_input"], "AIN1"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["analog_input"], "AIN2"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["analog_input"], "AIN3"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["analog_input"], "AIN4"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["digital_output"], "DOUT1"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["digital_output"], "DOUT2"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["digital_output"], "DOUT3"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["digital_output"], "DOUT4"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["one_wire"], "1-Wire Data"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["rs232"], "RS232 Port"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["rs485"], "RS485 Port"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["can_bus"], "CAN1 High/Low (FMS/J1939)"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["can_bus"], "CAN2 High/Low (J1708)"},
+  {model_by_ref["TLT-FMC640"], port_type_ids["tachograph"], "K-Line (Tachograph)"},
+
+  # Systech CAREU U1
+  {model_by_ref["SYS-CAREU-U1"], port_type_ids["digital_input"], "DIN1 (Ignition)"},
+  {model_by_ref["SYS-CAREU-U1"], port_type_ids["digital_input"], "DIN2 (Panic Button)"},
+  {model_by_ref["SYS-CAREU-U1"], port_type_ids["digital_output"], "DOUT1 (Relay Control)"},
+  {model_by_ref["SYS-CAREU-U1"], port_type_ids["one_wire"], "1-Wire Interface"},
+  {model_by_ref["SYS-CAREU-U1"], port_type_ids["rs232"], "RS232 Main"},
+  {model_by_ref["SYS-CAREU-U1"], port_type_ids["rs232"], "RS232 Extension 1"},
+  {model_by_ref["SYS-CAREU-U1"], port_type_ids["rs232"], "RS232 Extension 2"},
+  {model_by_ref["SYS-CAREU-U1"], port_type_ids["rs485"], "RS485 Bus"},
+  {model_by_ref["SYS-CAREU-U1"], port_type_ids["can_bus"], "Internal OBDII/CAN Interpreter"},
+
+  # Systech CAREU A1
+  {model_by_ref["SYS-CAREU-A1"], port_type_ids["digital_input"], "DIN1 (Ignition)"},
+  {model_by_ref["SYS-CAREU-A1"], port_type_ids["analog_input"], "AIN1 (Fuel Gauge)"},
+  {model_by_ref["SYS-CAREU-A1"], port_type_ids["digital_output"], "DOUT1 (Immobilizer)"},
+
+  # Wondeproud VT200
+  {model_by_ref["WON-VT200"], port_type_ids["digital_input"], "DIN1 (Ignition)"},
+  {model_by_ref["WON-VT200"], port_type_ids["digital_input"], "DIN2 (SOS)"},
+  {model_by_ref["WON-VT200"], port_type_ids["analog_input"], "AIN1"},
+  {model_by_ref["WON-VT200"], port_type_ids["digital_output"], "DOUT1 (Cut-Off)"}
+]
+
+Enum.each(pin_defs, fn {modele_id, port_type_id, pin_label} ->
+  if modele_id do
+    ModelPort.create(%{
+      modele_traceur_id: modele_id,
+      port_type_id: port_type_id,
+      pin_label: pin_label
+    })
+  end
+end)
+
+IO.puts("Ports physiques insérés: #{length(pin_defs)}")
+
+# =========================================================
+# 9. Peripherals (Exemples de périphériques catalogués)
+# =========================================================
+IO.puts("Insertion des périphériques...")
+
+peripherals = [
+  %{
+    port_type_id: port_type_ids["one_wire"],
+    name: "DS18B20 Temperature Probe",
+    description: "Sonde de température 1-Wire"
+  },
+  %{
+    port_type_id: port_type_ids["one_wire"],
+    name: "iButton Driver ID Reader",
+    description: "Lecteur d'identification conducteur iButton"
+  },
+  %{
+    port_type_id: port_type_ids["rs232"],
+    name: "Omnicomm Fuel Level Sensor LLS",
+    description: "Jauge de niveau carburant RS232"
+  },
+  %{
+    port_type_id: port_type_ids["rs232"],
+    name: "Garmin FMI Navigation Display",
+    description: "Affichage navigation FMI"
+  },
+  %{
+    port_type_id: port_type_ids["rs232"],
+    name: "ADAS Fatigue Camera",
+    description: "Caméra anti-fatigue ADAS"
+  },
+  %{
+    port_type_id: port_type_ids["rs485"],
+    name: "Industrial RFID Reader",
+    description: "Lecteur RFID industriel RS485"
+  },
+  %{
+    port_type_id: port_type_ids["bluetooth_ble"],
+    name: "Teltonika EYE Sensor (Temp/Hum)",
+    description: "Capteur température/humidité BLE"
+  },
+  %{
+    port_type_id: port_type_ids["bluetooth_ble"],
+    name: "Wireless Escort Fuel Sensor",
+    description: "Capteur carburant sans fil BLE"
+  },
+  %{
+    port_type_id: port_type_ids["digital_output"],
+    name: "12V Automotive Relay",
+    description: "Relais 12V pour sortie numérique"
+  },
+  %{
+    port_type_id: port_type_ids["digital_output"],
+    name: "Driver Alarm Buzzer",
+    description: "Buzzer d'alerte conducteur"
+  },
+  %{
+    port_type_id: port_type_ids["digital_input"],
+    name: "Waterproof SOS Emergency Button",
+    description: "Bouton d'urgence SOS étanche"
+  }
+]
+
+Enum.each(peripherals, fn attrs ->
+  Peripheral.create(attrs)
+end)
+
+IO.puts("Périphériques insérés: #{length(peripherals)}")
 
 IO.puts("--- Terminé ! ---")

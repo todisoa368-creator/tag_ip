@@ -1,0 +1,39 @@
+Compiling 1 file (.ex)
+     warning: variable "conn" is unused (there is a variable with the same name in the context, use the pin operator (^) to match on it or prefix this variable with underscore if it is not meant to be used)
+     │
+ 128 │               conn = put_resp_cookie(conn, @remember_me_cookie, new_token, @remember_me_options)
+     │               ~
+     │
+     └─ lib/tag_ip_web/user_auth.ex:128:15: TagIpWeb.UserAuth.fetch_current_scope_for_user/2
+
+     warning: variable "user_token" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 124 │       {user, user_token} ->
+     │              ~
+     │
+     └─ lib/tag_ip/accounts.ex:124:14: TagIp.Accounts.login_user_by_magic_link/1
+
+Running ExUnit with seed: 805701, max_cases: 8
+
+    warning: unused import Ecto.Query
+    │
+  4 │   import Ecto.Query
+    │   ~
+    │
+    └─ test/tag_ip_web/user_auth_test.exs:4:3
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test fetch_current_scope_for_user/2 reissues a new token after a few days and refreshes cookie (TagIpWeb.UserAuthTest)
+     [1m[30mtest/tag_ip_web/user_auth_test.exs:188[0m
+     [31mAssertion with != failed, both sides are exactly equal[0m
+     [36mcode: [0massert new_token != token
+     [36mleft: [0m<<251, 9, 155, 228, 176, 235, 190, 39, 54, 178, 220, 48, 127, 59, 67,
+             91, 2, 159, 81, 85, 29, 250, 49, 7, 129, 221, 44, 189,
+             193, 196, 99, 206>>
+     [36mstacktrace:[0m
+       test/tag_ip_web/user_auth_test.exs:208: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 1.0 seconds (1.0s async, 0.00s sync)
+[31m27 tests, 1 failure[0m

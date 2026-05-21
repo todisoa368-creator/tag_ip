@@ -58,7 +58,7 @@ defmodule TagIp.AccountsTest do
     test "validates email when given" do
       {:error, changeset} = Accounts.register_user(%{email: "not valid"})
 
-      assert %{email: ["must have the @ sign and no spaces"]} = errors_on(changeset)
+      assert %{email: ["doit contenir un @ et aucun espace"]} = errors_on(changeset)
     end
 
     test "validates maximum values for email for security" do
@@ -77,11 +77,11 @@ defmodule TagIp.AccountsTest do
       assert "has already been taken" in errors_on(changeset).email
     end
 
-    test "registers users without password" do
+    test "registers users with password" do
       email = unique_user_email()
       {:ok, user} = Accounts.register_user(valid_user_attributes(email: email))
       assert user.email == email
-      assert is_nil(user.hashed_password)
+      assert user.hashed_password != nil
       assert is_nil(user.confirmed_at)
       assert is_nil(user.password)
     end
@@ -92,7 +92,8 @@ defmodule TagIp.AccountsTest do
       now = DateTime.utc_now()
 
       assert Accounts.sudo_mode?(%User{authenticated_at: DateTime.utc_now()})
-      assert Accounts.sudo_mode?(%User{authenticated_at: DateTime.add(now, -19, :minute)})
+      assert Accounts.sudo_mode?(%User{authenticated_at: DateTime.add(now, -5, :minute)})
+      refute Accounts.sudo_mode?(%User{authenticated_at: DateTime.add(now, -11, :minute)})
       refute Accounts.sudo_mode?(%User{authenticated_at: DateTime.add(now, -21, :minute)})
 
       # minute override
@@ -214,10 +215,7 @@ defmodule TagIp.AccountsTest do
           password_confirmation: "another"
         })
 
-      assert %{
-               password: ["should be at least 12 character(s)"],
-               password_confirmation: ["does not match password"]
-             } = errors_on(changeset)
+      assert errors_on(changeset).password_confirmation == ["ne correspond pas au mot de passe"]
     end
 
     test "validates maximum values for password for security", %{user: user} do
@@ -227,6 +225,12 @@ defmodule TagIp.AccountsTest do
         Accounts.update_user_password(user, %{password: too_long})
 
       assert "should be at most 72 character(s)" in errors_on(changeset).password
+    end
+
+    test "validates maximum values for email for security" do
+      too_long = String.duplicate("db", 100)
+      {:error, changeset} = Accounts.register_user(%{email: too_long})
+      assert "should be at most 160 character(s)" in errors_on(changeset).email
     end
 
     test "updates the password", %{user: user} do
@@ -315,8 +319,8 @@ defmodule TagIp.AccountsTest do
     end
 
     test "returns user by token", %{user: user, token: token} do
-      assert session_user = Accounts.get_user_by_magic_link_token(token)
-      assert session_user.id == user.id
+      assert {result_user, _user_token} = Accounts.get_user_by_magic_link_token(token)
+      assert result_user.id == user.id
     end
 
     test "does not return user for invalid token" do
@@ -344,8 +348,11 @@ defmodule TagIp.AccountsTest do
     test "returns user and (deleted) token for confirmed user" do
       user = user_fixture()
       assert user.confirmed_at
-      {encoded_token, _hashed_token} = generate_user_magic_link_token(user)
-      assert {:ok, {^user, []}} = Accounts.login_user_by_magic_link(encoded_token)
+      {encoded_token, hashed_token} = generate_user_magic_link_token(user)
+
+      assert {:ok, {^user, [%{token: ^hashed_token}]}} =
+               Accounts.login_user_by_magic_link(encoded_token)
+
       # one time use only
       assert {:error, :not_found} = Accounts.login_user_by_magic_link(encoded_token)
     end

@@ -301,7 +301,7 @@ defmodule TagIpWeb.UserAuthTest do
     test "redirects when authentication is too old", %{conn: conn, user: user} do
       user_token = Accounts.generate_user_session_token(user)
 
-      Ecto.Query.from(t in Accounts.UserToken, where: t.token == ^user_token)
+      from(t in Accounts.UserToken, where: t.token == ^user_token)
       |> TagIp.Repo.update_all(
         set: [authenticated_at: DateTime.utc_now() |> DateTime.add(-11, :minute)]
       )

@@ -1,0 +1,49 @@
+Compiling 1 file (.ex)
+     warning: variable "conn" is unused (there is a variable with the same name in the context, use the pin operator (^) to match on it or prefix this variable with underscore if it is not meant to be used)
+     │
+ 132 │               conn = put_resp_cookie(conn, @remember_me_cookie, new_token, @remember_me_options)
+     │               ~
+     │
+     └─ lib/tag_ip_web/user_auth.ex:132:15: TagIpWeb.UserAuth.fetch_current_scope_for_user/2
+
+     warning: variable "user_token" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 124 │       {user, user_token} ->
+     │              ~
+     │
+     └─ lib/tag_ip/accounts.ex:124:14: TagIp.Accounts.login_user_by_magic_link/1
+
+Running ExUnit with seed: 707240, max_cases: 8
+Excluding tags: [:test]
+Including tags: [location: {"test/tag_ip_web/user_auth_test.exs", 188}]
+
+    warning: unused import Ecto.Query
+    │
+  4 │   import Ecto.Query
+    │   ~
+    │
+    └─ test/tag_ip_web/user_auth_test.exs:4:3
+
+DEBUG token_inserted_at: {:token_inserted_at, ~U[2026-05-10 11:56:58Z]}
+DEBUG age_seconds: {:age_seconds, 864000}
+DEBUG user_token before reissue: {:user_token,
+ <<68, 34, 110, 82, 33, 12, 166, 240, 234, 217, 190, 136, 197, 231, 87, 213, 36,
+   36, 182, 75, 198, 218, 21, 69, 188, 216, 54, 131, 184, 23, 34, 130>>}
+DEBUG new_token generated: {:new_token,
+ <<12, 150, 249, 204, 193, 226, 210, 238, 11, 213, 187, 24, 126, 21, 58, 179,
+   114, 135, 133, 176, 87, 29, 232, 114, 152, 60, 8, 206, 43, 134, 145, 216>>}
+
+
+  1) test fetch_current_scope_for_user/2 reissues a new token after a few days and refreshes cookie (TagIpWeb.UserAuthTest)
+     [1m[30mtest/tag_ip_web/user_auth_test.exs:188[0m
+     [31mAssertion with != failed, both sides are exactly equal[0m
+     [36mcode: [0massert new_token != token
+     [36mleft: [0m<<68, 34, 110, 82, 33, 12, 166, 240, 234, 217, 190, 136, 197, 231,
+             87, 213, 36, 36, 182, 75, 198, 218, 21, 69, 188, 216,
+             54, 131, 184, 23, 34, 130>>
+     [36mstacktrace:[0m
+       test/tag_ip_web/user_auth_test.exs:208: (test)
+
+
+Finished in 0.8 seconds (0.8s async, 0.00s sync)
+[31m27 tests, 1 failure, 26 excluded[0m

@@ -1,6 +1,12 @@
 <TagIpWeb.Layouts.app flash={@flash}>
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-900">Profils de Montage</h1>
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Profils de Montage</h1>
+      <p class="text-sm text-gray-500 mt-1">
+        Affichez vos profils créés et gérez-les depuis cette liste.
+      </p>
+    </div>
+
     <.link
       navigate={~p"/profils/new"}
       class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md transition-all duration-200"
@@ -39,6 +45,12 @@
             </td>
             <td class="px-6 py-4 text-right text-sm font-medium">
               <div class="flex items-center justify-end gap-2">
+                <.link
+                  navigate={~p"/profils/#{profil.id}"}
+                  class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Afficher
+                </.link>
                 <.link
                   navigate={~p"/profils/#{profil.id}/edit"}
                   class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg border border-indigo-300 text-indigo-700 hover:bg-indigo-50 transition-colors"

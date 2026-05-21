@@ -122,9 +122,9 @@ defmodule TagIpWeb.UserLive.Login do
 
   @impl true
   def mount(_params, _session, socket) do
-    # On met l'email par défaut directement ici
     default_email = "admin@tag-ip.com"
-    form = to_form(%{"email" => default_email}, as: "user")
+    default_password = "password1234"
+    form = to_form(%{"email" => default_email, "password" => default_password}, as: "user")
 
     {:ok, assign(socket, form: form, trigger_submit: false)}
   end

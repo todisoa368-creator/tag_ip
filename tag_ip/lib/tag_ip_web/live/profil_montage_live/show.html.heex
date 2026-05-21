@@ -6,209 +6,217 @@
     </.header>
   </div>
 
-  <div class="max-w-3xl mx-auto">
-    <div class="md:grid md:grid-cols-3 md:gap-6">
-      <div class="md:col-span-1">
-        <div class="px-4 sm:px-0">
-          <h3 class="text-lg font-medium leading-6 text-gray-900">Détails du profil</h3>
-          <p class="mt-1 text-sm text-gray-600">
-            Informations détaillées sur le profil de montage.
-          </p>
-        </div>
-      </div>
-
-      <div class="mt-5 md:col-span-2 md:mt-0">
-        <div class="shadow-sm rounded-xl bg-white p-6 border border-gray-100">
-          <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Nom</dt>
-              <dd class="mt-1 text-sm text-gray-900">{@profil.name}</dd>
+  <div class="max-w-7xl mx-auto space-y-8">
+    <div class="grid gap-6 lg:grid-cols-[1.15fr_1.85fr]">
+      <section class="overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-xl ring-1 ring-slate-200/10">
+        <div class="p-8 sm:p-10">
+          <div class="flex items-start justify-between gap-6">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                Profil
+              </p>
+              <h1 class="mt-3 text-3xl font-semibold tracking-tight text-white">
+                {@profil.name}
+              </h1>
+              <p class="mt-4 text-sm leading-6 text-slate-300">
+                Ce profil décrit les exigences matérielles et les options de configuration pour un montage TAG-Monitor adapté.
+              </p>
             </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Type d'objet</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                {Map.get(@type_labels, @profil.object_type, @profil.object_type) || "Non défini"}
-              </dd>
+            <div class="hidden sm:block rounded-3xl bg-slate-900/80 px-4 py-3 text-sm font-medium text-slate-200">
+              {Map.get(@type_labels, @profil.object_type, @profil.object_type) || "Non défini"}
             </div>
+          </div>
 
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Intervalle de rapport</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                {@profil.reporting_interval || "Non défini"}
-              </dd>
+          <div class="mt-8 grid gap-4 sm:grid-cols-2">
+            <div class="rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-400">Compatibilités</dt>
+              <dd class="mt-2 text-lg font-semibold text-white">{Enum.count(@compatibilites)}</dd>
             </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Tension min/max (mV)</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                {@profil.voltage_min} / {@profil.voltage_max}
-              </dd>
+            <div class="rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-400">Créé le</dt>
+              <dd class="mt-2 text-base font-medium text-slate-200">{@inserted_at_formatted}</dd>
             </div>
+          </div>
 
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Sonde carburant</dt>
-              <dd class="mt-1 text-sm text-gray-900">{@profil.fuel_probe_type || "Aucune"}</dd>
-            </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">ID Chauffeur</dt>
-              <dd class="mt-1 text-sm text-gray-900">{@profil.driver_id_type || "Aucun"}</dd>
-            </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Buzzer</dt>
-              <dd class="mt-1 text-sm text-gray-900">
+          <div class="mt-8 grid gap-4 sm:grid-cols-2">
+            <div class="rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
+              <p class="text-sm text-slate-400">Buzzer</p>
+              <p class="mt-3 text-lg font-semibold text-white">
                 {if @profil.buzzer, do: "Oui", else: "Non"}
-              </dd>
+              </p>
             </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Geofencing</dt>
-              <dd class="mt-1 text-sm text-gray-900">
+            <div class="rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
+              <p class="text-sm text-slate-400">Geofencing</p>
+              <p class="mt-3 text-lg font-semibold text-white">
                 {if @profil.geofence_enabled, do: "Oui", else: "Non"}
-              </dd>
+              </p>
             </div>
+          </div>
+        </div>
 
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">CAN-Bus requis</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                {if @profil.can_bus_requis, do: "Oui", else: "Non"}
-              </dd>
-            </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">1-Wire requis</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                {if @profil.one_wire_requis, do: "Oui", else: "Non"}
-              </dd>
-            </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">RS232 / RS485 requis</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                RS232: {if @profil.rs232_requis, do: "Oui", else: "Non"} — RS485: {if @profil.rs485_requis,
-                  do: "Oui",
-                  else: "Non"}
-              </dd>
-            </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Entrées / Sorties requises</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                Num: {@profil.inputs_requis || 0} / Ana: {@profil.analog_inputs_requis || 0} / Out: {@profil.outputs_requis ||
-                  0}
-              </dd>
-            </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Indice IP requis</dt>
-              <dd class="mt-1 text-sm text-gray-900">{@profil.ip_rating || "Non spécifié"}</dd>
-            </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Montage extérieur</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                {if @profil.montage_exterieur, do: "Oui", else: "Non"}
-              </dd>
-            </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Antennes déportées</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                {if @profil.antenne_deportee, do: "Oui", else: "Non"}
-              </dd>
-            </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Accéléromètre requis</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                {if @profil.accelerometre_requis, do: "Oui", else: "Non"}
-              </dd>
-            </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Buffer mémoire requis</dt>
-              <dd class="mt-1 text-sm text-gray-900">{@profil.buffer_requis || 0} MB</dd>
-            </div>
-
-            <div class="sm:col-span-1">
-              <dt class="text-sm font-medium text-gray-500">Ultra-Low Power requis</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                {if @profil.ultra_low_power_requis, do: "Oui", else: "Non"}
-              </dd>
-            </div>
-
-            <div class="sm:col-span-2">
-              <dt class="text-sm font-medium text-gray-500">Description</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                {@profil.description || "Aucune description"}
-              </dd>
-            </div>
-
-            <div class="sm:col-span-2">
-              <dt class="text-sm font-medium text-gray-500">Créé le</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                {@inserted_at_formatted}
-              </dd>
-            </div>
-          </dl>
-
-          <div class="mt-8 pt-6 border-t border-gray-100 flex space-x-3">
+        <div class="border-t border-white/10 bg-slate-900/80 px-8 py-6">
+          <div class="grid gap-3 sm:grid-cols-2">
             <.link
-              navigate={~p"/profils/#{@profil.id}/edit"}
-              class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              navigate={"/profils/#{@profil.id}/edit?return_to=/profils/#{@profil.id}"}
+              class="inline-flex items-center justify-center gap-2 rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
             >
               Modifier
             </.link>
             <.link
+              navigate={~p"/profils/new?duplicate_from=#{@profil.id}"}
+              class="inline-flex items-center justify-center gap-2 rounded-3xl border border-teal-300 bg-teal-50 px-5 py-3 text-sm font-semibold text-teal-700 transition hover:bg-teal-100"
+            >
+              Dupliquer
+            </.link>
+            <button
+              type="button"
+              phx-click="confirm_delete"
+              phx-value-id={@profil.id}
+              class="inline-flex items-center justify-center gap-2 rounded-3xl border border-red-300 bg-red-50 px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+            >
+              Supprimer
+            </button>
+            <.link
               navigate={~p"/profils"}
-              class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+              class="inline-flex items-center justify-center gap-2 rounded-3xl border border-slate-700 bg-slate-950 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-slate-900"
             >
               Retour
             </.link>
           </div>
         </div>
+      </section>
 
-        <div class="mt-6 shadow-sm rounded-xl bg-white p-6 border border-gray-100">
-          <h4 class="text-lg font-semibold text-gray-900 mb-4">Compatibilités calculées</h4>
+      <div class="space-y-6">
+        <section class="overflow-hidden rounded-[2rem] bg-white p-8 shadow-sm ring-1 ring-slate-200/60">
+          <div class="flex items-center justify-between gap-6">
+            <div>
+              <h2 class="text-xl font-semibold text-slate-900">Fiche technique</h2>
+              <p class="mt-1 text-sm text-slate-500">
+                Toutes les informations essentielles du profil.
+              </p>
+            </div>
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700">
+              Détails
+            </span>
+          </div>
 
-          <ul class="divide-y divide-gray-100">
-            <li
-              :for={compat <- @compatibilites}
-              id={"compat-#{compat.id}"}
-              class="py-4 first:pt-0 last:pb-0"
+          <dl class="mt-8 grid gap-5 sm:grid-cols-2">
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">
+                Intervalle de rapport
+              </dt>
+              <dd class="mt-2 text-sm font-semibold text-slate-900">
+                {@profil.reporting_interval || "Non défini"}
+              </dd>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Tension min/max</dt>
+              <dd class="mt-2 text-sm font-semibold text-slate-900">
+                {@profil.voltage_min} / {@profil.voltage_max} mV
+              </dd>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Sonde carburant</dt>
+              <dd class="mt-2 text-sm font-semibold text-slate-900">
+                {@profil.fuel_probe_type || "Aucune"}
+              </dd>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">ID Chauffeur</dt>
+              <dd class="mt-2 text-sm font-semibold text-slate-900">
+                {@profil.driver_id_type || "Aucun"}
+              </dd>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Indice IP</dt>
+              <dd class="mt-2 text-sm font-semibold text-slate-900">
+                {@profil.ip_rating || "Non spécifié"}
+              </dd>
+            </div>
+          </dl>
+
+          <div class="mt-8 grid gap-4 sm:grid-cols-2">
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">RS232</dt>
+              <dd class="mt-2 text-sm font-semibold text-slate-900">
+                {if @profil.rs232_requis, do: "Oui", else: "Non"}
+              </dd>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">RS485</dt>
+              <dd class="mt-2 text-sm font-semibold text-slate-900">
+                {if @profil.rs485_requis, do: "Oui", else: "Non"}
+              </dd>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Montage extérieur</dt>
+              <dd class="mt-2 text-sm font-semibold text-slate-900">
+                {if @profil.montage_exterieur, do: "Oui", else: "Non"}
+              </dd>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Ultra-Low Power</dt>
+              <dd class="mt-2 text-sm font-semibold text-slate-900">
+                {if @profil.ultra_low_power_requis, do: "Oui", else: "Non"}
+              </dd>
+            </div>
+          </div>
+        </section>
+
+        <section class="overflow-hidden rounded-[2rem] bg-white p-8 shadow-sm ring-1 ring-slate-200/60">
+          <div class="flex items-center justify-between gap-6">
+            <div>
+              <h2 class="text-xl font-semibold text-slate-900">Compatibilités calculées</h2>
+              <p class="mt-1 text-sm text-slate-500">
+                Résultats triés par score de compatibilité.
+              </p>
+            </div>
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700">
+              {Enum.count(@compatibilites)} résultats
+            </span>
+          </div>
+
+          <div class="mt-6 space-y-4">
+            <div
+              :if={Enum.empty?(@compatibilites)}
+              class="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500"
             >
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-900">
-                    Modèle:
-                    <span class="font-semibold">
+              Aucune compatibilité calculée pour ce profil. Utilisez la page d'index pour calculer la compatibilité.
+            </div>
+
+            <ul class="space-y-4">
+              <li
+                :for={compat <- @compatibilites}
+                id={"compat-#{compat.id}"}
+                class="rounded-3xl border border-slate-200 p-5 shadow-sm"
+              >
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p class="text-sm text-slate-500">Modèle compatible</p>
+                    <p class="mt-1 text-base font-semibold text-slate-900">
                       {compat.modele_traceur.nom || compat.modele_traceur_id}
-                    </span>
-                  </p>
-                  <p class="text-sm text-gray-500 mt-0.5">{compat.details}</p>
-                </div>
-                <div class="ml-4 shrink-0">
+                    </p>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">{compat.details}</p>
+                  </div>
                   <span class={[
-                    "inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full",
-                    compat.score_compatibilite >= 70 && "bg-green-100 text-green-800",
+                    "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
+                    compat.score_compatibilite >= 70 && "bg-emerald-100 text-emerald-800",
                     compat.score_compatibilite >= 40 && compat.score_compatibilite < 70 &&
-                      "bg-yellow-100 text-yellow-800",
-                    compat.score_compatibilite < 40 && "bg-red-100 text-red-800"
+                      "bg-amber-100 text-amber-800",
+                    compat.score_compatibilite < 40 && "bg-rose-100 text-rose-800"
                   ]}>
                     {compat.score_compatibilite}%
                   </span>
                 </div>
-              </div>
-            </li>
-          </ul>
-
-          <div :if={Enum.empty?(@compatibilites)} class="text-center py-8 text-gray-400 italic">
-            Aucune compatibilité calculée pour ce profil. Utilisez la page d'index pour calculer la compatibilité.
+              </li>
+            </ul>
           </div>
-        </div>
+        </section>
       </div>
+      <.confirm_modal show={@pending_delete_id != nil}>
+        Êtes-vous sûr de vouloir supprimer <strong>{@pending_delete_label}</strong> ?
+        Cette action est irréversible.
+      </.confirm_modal>
     </div>
   </div>
 </TagIpWeb.Layouts.app>

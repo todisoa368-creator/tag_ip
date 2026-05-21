@@ -7,61 +7,151 @@ defmodule TagIpWeb.UserAuth do
   alias TagIp.Accounts
   alias TagIp.Accounts.Scope
 
-  # Paramètres des cookies
-  @max_cookie_age_in_days 14
+  @max_age 60 * 60 * 24 * 14
   @remember_me_cookie "_tag_ip_web_user_remember_me"
-  @remember_me_options [
-    sign: true,
-    max_age: @max_cookie_age_in_days * 24 * 60 * 60,
-    same_site: "Lax"
-  ]
+  @remember_me_OPTIONS [sign: true, max_age: @max_age, same_site: "Lax"]
+  @remember_me_options @remember_me_OPTIONS
 
-  @session_reissue_age_in_days 7
+  # =========================================================
+  # LOGIN
+  # =========================================================
 
-  @doc """
-  Connecte l'utilisateur.
-  """
   def log_in_user(conn, user, params \\ %{}) do
+    token = Accounts.generate_user_session_token(user)
     user_return_to = get_session(conn, :user_return_to)
 
+    # preserve previous remember_me flag if present in session or provided in params
+    remember_me = Map.get(params, "remember_me") == "true" || get_session(conn, :user_remember_me)
+
+    # If we're re-authenticating and the current scope already
+    # belongs to the same user, preserve the session (don't clear it).
+    conn =
+      case conn.assigns[:current_scope] do
+        %Scope{user: %_{id: id}} when id == user.id -> conn
+        _ -> renew_session(conn)
+      end
+
+    conn = put_token_in_session(conn, token)
+
+    conn =
+      if remember_me,
+        do: maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}),
+        else: conn
+
+    conn = if remember_me, do: put_session(conn, :user_remember_me, true), else: conn
+
     conn
-    |> create_or_extend_session(user, params)
     |> redirect(to: user_return_to || signed_in_path(conn))
   end
 
-  @doc """
-  Déconnecte l'utilisateur.
-  """
-  def log_out_user(conn) do
+  # =========================================================
+  # REDIRECTION APRÈS LOGIN
+  # =========================================================
+
+  def signed_in_path(_conn) do
+    ~p"/dashboard"
+  end
+
+  # =========================================================
+  # REMEMBER ME
+  # =========================================================
+
+  defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do
+    conn = put_resp_cookie(conn, @remember_me_cookie, token, @remember_me_options)
+    conn |> put_session(:user_remember_me, true)
+  end
+
+  defp maybe_write_remember_me_cookie(conn, _token, _params), do: conn
+
+  # =========================================================
+  # LOGOUT
+  # =========================================================
+
+  def logout_user(conn) do
     user_token = get_session(conn, :user_token)
-    user_token && Accounts.delete_user_session_token(user_token)
+
+    if user_token do
+      Accounts.delete_user_session_token(user_token)
+    end
 
     if live_socket_id = get_session(conn, :live_socket_id) do
       TagIpWeb.Endpoint.broadcast(live_socket_id, "disconnect", %{})
     end
 
     conn
-    |> renew_session(nil)
-    |> delete_resp_cookie(@remember_me_cookie, @remember_me_options)
+    |> renew_session()
+    |> delete_resp_cookie(@remember_me_cookie)
     |> redirect(to: ~p"/users/log-in")
   end
 
-  @doc """
-  Récupère l'utilisateur actuel via la session ou le cookie.
-  """
+  def log_out_user(conn), do: logout_user(conn)
+
+  # =========================================================
+  # FETCH CURRENT USER
+  # =========================================================
+
   def fetch_current_user(conn, _opts) do
-    with {token, conn} <- ensure_user_token(conn),
-         {user, token_inserted_at} <- Accounts.get_user_by_session_token(token) do
-      conn
-      |> assign(:current_scope, Scope.for_user(user))
-      |> maybe_reissue_user_session_token(user, token_inserted_at)
-    else
-      _ -> assign(conn, :current_scope, Scope.for_user(nil))
-    end
+    {user_token, conn} = ensure_user_token(conn)
+
+    user =
+      if user_token do
+        Accounts.get_user_by_session_token(user_token)
+      end
+
+    assign(conn, :current_user, user)
   end
 
-  def fetch_current_scope_for_user(conn, opts) do
-    fetch_current_user(conn, opts)
+  # Fetches the "scope" used throughout the app (wraps the user)
+  def fetch_current_scope_for_user(conn, _opts) do
+    conn = fetch_cookies(conn, signed: [@remember_me_cookie])
+    {user_token, conn} = ensure_user_token(conn)
+
+    if user_token do
+      case Accounts.get_user_by_session_token(user_token) do
+        {user, token_inserted_at} ->
+          scope = Scope.for_user(user)
+
+          # store token in session and mark remember_me when cookie present
+          conn = put_token_in_session(conn, user_token)
+
+          conn =
+            if conn.cookies[@remember_me_cookie] || get_session(conn, :user_remember_me) do
+              put_session(conn, :user_remember_me, true)
+            else
+              conn
+            end
+
+          # if remember_me is enabled and the token is older than 7 days, reissue
+          conn =
+            if get_session(conn, :user_remember_me) do
+              age_seconds = DateTime.diff(DateTime.utc_now(), token_inserted_at, :second)
+
+              if age_seconds > 7 * 24 * 60 * 60 do
+                new_token = Accounts.generate_user_session_token(user)
+
+                conn
+                |> put_token_in_session(new_token)
+                |> put_resp_cookie(@remember_me_cookie, new_token, @remember_me_options)
+              else
+                conn
+              end
+            else
+              conn
+            end
+
+          assign(conn, :current_scope, scope)
+
+        user when not is_nil(user) ->
+          conn = put_token_in_session(conn, user_token)
+          scope = Scope.for_user(user)
+          assign(conn, :current_scope, scope)
+
+        _ ->
+          assign(conn, :current_scope, nil)
+      end
+    else
+      assign(conn, :current_scope, nil)
+    end
   end
 
   defp ensure_user_token(conn) do
@@ -71,155 +161,82 @@ defmodule TagIpWeb.UserAuth do
       conn = fetch_cookies(conn, signed: [@remember_me_cookie])
 
       if token = conn.cookies[@remember_me_cookie] do
-        {token, conn |> put_token_in_session(token) |> put_session(:user_remember_me, true)}
+        {token, put_session(conn, :user_token, token)}
       else
-        nil
+        {nil, conn}
       end
     end
   end
 
-  defp maybe_reissue_user_session_token(conn, user, token_inserted_at) do
-    token_age = DateTime.diff(DateTime.utc_now(:second), token_inserted_at, :day)
-
-    if token_age >= @session_reissue_age_in_days do
-      create_or_extend_session(conn, user, %{})
-    else
-      conn
-    end
-  end
-
-  defp create_or_extend_session(conn, user, params) do
-    token = Accounts.generate_user_session_token(user)
-    remember_me = get_session(conn, :user_remember_me)
-
-    conn
-    |> renew_session(user)
-    |> put_token_in_session(token)
-    |> maybe_write_remember_me_cookie(token, params, remember_me)
-  end
-
-  defp renew_session(conn, user) do
-    current_user = conn.assigns[:current_scope] && conn.assigns.current_scope.user
-
-    if current_user && user && current_user.id == user.id do
-      conn
-    else
-      delete_csrf_token()
-
-      conn
-      |> configure_session(renew: true)
-      |> clear_session()
-    end
-  end
-
-  defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}, _),
-    do: write_remember_me_cookie(conn, token)
-
-  defp maybe_write_remember_me_cookie(conn, token, _params, true),
-    do: write_remember_me_cookie(conn, token)
-
-  defp maybe_write_remember_me_cookie(conn, _token, _params, _), do: conn
-
-  defp write_remember_me_cookie(conn, token) do
-    conn
-    |> put_session(:user_remember_me, true)
-    |> put_resp_cookie(@remember_me_cookie, token, @remember_me_options)
-  end
-
-  defp put_token_in_session(conn, token) do
-    conn
-    |> put_session(:user_token, token)
-    |> put_session(:live_socket_id, user_session_topic(token))
-  end
-
-  def disconnect_sessions(tokens) do
-    Enum.each(tokens, fn %{token: token} ->
-      TagIpWeb.Endpoint.broadcast(user_session_topic(token), "disconnect", %{})
-    end)
-  end
-
-  defp user_session_topic(token), do: "users_sessions:#{Base.url_encode64(token)}"
-
-  # --- CALLBACKS LIVEVIEW (on_mount) ---
-
-  def on_mount(:mount_current_user, params, session, socket) do
-    on_mount(:mount_current_scope, params, session, socket)
-  end
+  # =========================================================
+  # LIVEVIEW AUTH
+  # =========================================================
 
   def on_mount(:mount_current_scope, _params, session, socket) do
-    {:cont,
-     Phoenix.Component.assign_new(socket, :current_scope, fn ->
-       if token = session["user_token"] do
-         case Accounts.get_user_by_session_token(token) do
-           {user, _token_inserted_at} -> Scope.for_user(user)
-           _ -> nil
-         end
-       end
-     end)}
+    {:cont, mount_current_scope(socket, session)}
   end
 
-  def on_mount(:redirect_if_user_is_authenticated, _params, _session, socket) do
-    if socket.assigns[:current_scope] && socket.assigns.current_scope.user do
-      {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/dashboard")}
-    else
+  def on_mount(:require_authenticated, _params, session, socket) do
+    socket = mount_current_scope(socket, session)
+
+    if socket.assigns.current_scope && socket.assigns.current_scope.user do
       {:cont, socket}
+    else
+      {:halt,
+       socket
+       |> Phoenix.LiveView.put_flash(:error, "Veuillez vous connecter pour accéder à cette page.")
+       |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")}
     end
   end
 
-  def on_mount(:ensure_authenticated, _params, session, socket) do
-    if socket.assigns[:current_scope] && socket.assigns.current_scope.user do
-      {:cont, socket}
+  def on_mount(:redirect_if_user_is_authenticated, _params, session, socket) do
+    socket = mount_current_scope(socket, session)
+
+    if socket.assigns.current_scope && socket.assigns.current_scope.user do
+      {:halt, Phoenix.LiveView.redirect(socket, to: signed_in_path(socket))}
     else
-      if token = session["user_token"] do
-        case Accounts.get_user_by_session_token(token) do
-          {user, _token_inserted_at} ->
-            {:cont, Phoenix.Component.assign(socket, :current_scope, Scope.for_user(user))}
-
-          _ ->
-            {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/users/log-in")}
-        end
-      else
-        {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/users/log-in")}
-      end
+      {:cont, socket}
     end
-  end
-
-  def on_mount(:require_authenticated, params, session, socket) do
-    on_mount(:ensure_authenticated, params, session, socket)
   end
 
   def on_mount(:require_sudo_mode, _params, session, socket) do
-    if token = session["user_token"] do
-      case Accounts.get_user_by_session_token(token) do
-        {user, _token_inserted_at} ->
-          if Accounts.sudo_mode?(user) do
-            {:cont, socket}
-          else
-            {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/users/log-in")}
-          end
+    socket = mount_current_scope(socket, session)
 
-        _ ->
-          {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/users/log-in")}
-      end
+    if socket.assigns.current_scope && socket.assigns.current_scope.user &&
+         Accounts.sudo_mode?(socket.assigns.current_scope.user) do
+      {:cont, socket}
     else
-      {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/users/log-in")}
+      {:halt,
+       socket
+       |> Phoenix.LiveView.put_flash(:error, "Action non autorisée. Veuillez vous reconnecter.")
+       |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")}
     end
   end
 
-  # --- HELPERS DE REDIRECTION ---
-
-  @doc "Définit où aller après la connexion (Page d'accueil Dashboard)."
-  def signed_in_path(%Plug.Conn{assigns: %{current_scope: %Scope{user: %Accounts.User{}}}}) do
-    ~p"/dashboard"
+  defp mount_current_scope(socket, session) do
+    Phoenix.Component.assign_new(socket, :current_scope, fn ->
+      if user_token = session["user_token"] do
+        Accounts.get_scope_by_token(user_token)
+      end
+    end)
   end
 
-  def signed_in_path(_), do: ~p"/dashboard"
+  # =========================================================
+  # PROTECTION ROUTES
+  # =========================================================
 
-  @doc """
-  Plug pour les routes nécessitant une connexion.
-  """
+  def redirect_if_user_is_authenticated(conn, _opts) do
+    if conn.assigns[:current_scope] && conn.assigns.current_scope.user do
+      conn
+      |> redirect(to: signed_in_path(conn))
+      |> halt()
+    else
+      conn
+    end
+  end
+
   def require_authenticated_user(conn, _opts) do
-    if conn.assigns.current_scope && conn.assigns.current_scope.user do
+    if conn.assigns[:current_scope] && conn.assigns.current_scope.user do
       conn
     else
       conn
@@ -235,4 +252,36 @@ defmodule TagIpWeb.UserAuth do
   end
 
   defp maybe_store_return_to(conn), do: conn
+
+  # =========================================================
+  # SESSION HELPERS
+  # =========================================================
+
+  defp renew_session(conn) do
+    conn
+    |> configure_session(renew: true)
+    |> clear_session()
+  end
+
+  defp put_token_in_session(conn, token) do
+    conn
+    |> put_session(:user_token, token)
+    |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
+  end
+
+  # =========================================================
+  # DISCONNECT SESSIONS
+  # =========================================================
+
+  def disconnect_sessions(tokens) do
+    Enum.each(tokens, fn t ->
+      token = if is_map(t), do: Map.get(t, :token) || Map.get(t, "token"), else: t
+
+      TagIpWeb.Endpoint.broadcast(
+        "users_sessions:#{Base.url_encode64(token)}",
+        "disconnect",
+        %{}
+      )
+    end)
+  end
 end

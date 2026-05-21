@@ -14,28 +14,32 @@ defmodule TagIp.AccountsFixtures do
 
   def valid_user_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
-      email: unique_user_email()
+      email: unique_user_email(),
+      password: valid_user_password()
     })
   end
 
   def unconfirmed_user_fixture(attrs \\ %{}) do
+    email = attrs[:email] || unique_user_email()
+
+    %TagIp.Accounts.User{}
+    |> Ecto.Changeset.cast(%{email: email}, [:email])
+    |> Ecto.Changeset.validate_required([:email])
+    |> Ecto.Changeset.validate_format(:email, ~r/^[^@,;\s]+@[^@,;\s]+$/,
+      message: "doit contenir un @ et aucun espace"
+    )
+    |> Ecto.Changeset.unique_constraint(:email)
+    |> TagIp.Repo.insert!()
+  end
+
+  def user_fixture(attrs \\ %{}) do
     {:ok, user} =
       attrs
       |> valid_user_attributes()
       |> Accounts.register_user()
 
-    user
-  end
-
-  def user_fixture(attrs \\ %{}) do
-    user = unconfirmed_user_fixture(attrs)
-
-    {token, _raw_token} = generate_user_magic_link_token(user)
-
-    {:ok, {user, _expired_tokens}} =
-      Accounts.login_user_by_magic_link(token)
-
-    user
+    now = DateTime.utc_now(:second)
+    user |> Ecto.Changeset.change(confirmed_at: now) |> TagIp.Repo.update!()
   end
 
   def user_scope_fixture do

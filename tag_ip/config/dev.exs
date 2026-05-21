@@ -2,8 +2,8 @@ import Config
 
 # Configure your database
 config :tag_ip, TagIp.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: "fitahiana",
+  password: "azerty",
   hostname: "localhost",
   database: "tag_ip_dev",
   parameters: [client_encoding: "UTF8"],

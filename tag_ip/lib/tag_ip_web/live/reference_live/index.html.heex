@@ -1,0 +1,145 @@
+<TagIpWeb.Layouts.app flash={@flash}>
+
+  <div class="max-w-6xl mx-auto space-y-12">
+
+    <!-- HEADER -->
+    <header class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight text-slate-900">
+          Référentiels
+        </h1>
+        <p class="mt-2 text-sm text-slate-500 max-w-2xl leading-relaxed">
+          Catalogue des données de référence utilisées par les modèles et profils de montage.
+        </p>
+      </div>
+
+      <.link
+        navigate={~p"/dashboard"}
+        class="inline-flex items-center rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition"
+      >
+        ← Retour au dashboard
+      </.link>
+    </header>
+
+    <!-- STATS CARDS -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+
+      <div class="group bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition">
+        <p class="text-xs uppercase tracking-widest text-slate-400">Ports</p>
+        <p class="mt-3 text-3xl font-semibold text-slate-900">{length(@port_types)}</p>
+      </div>
+
+      <div class="group bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition">
+        <p class="text-xs uppercase tracking-widest text-slate-400">Fonctions</p>
+        <p class="mt-3 text-3xl font-semibold text-slate-900">{length(@features)}</p>
+      </div>
+
+      <div class="group bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition">
+        <p class="text-xs uppercase tracking-widest text-slate-400">Périphériques</p>
+        <p class="mt-3 text-3xl font-semibold text-slate-900">{length(@peripherals)}</p>
+      </div>
+
+      <div class="group bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition">
+        <p class="text-xs uppercase tracking-widest text-slate-400">Types</p>
+        <p class="mt-3 text-3xl font-semibold text-slate-900">{length(@trackable_types)}</p>
+      </div>
+
+    </section>
+
+    <!-- MAIN + SIDEBAR -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <!-- MAIN CONTENT -->
+      <div class="lg:col-span-2 space-y-8">
+
+        <!-- PORTS -->
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-slate-900">Types de ports</h2>
+          </div>
+
+          <p class="mt-1 text-sm text-slate-500">
+            Interfaces matérielles disponibles pour les traceurs.
+          </p>
+
+          <div class="mt-6 grid sm:grid-cols-2 gap-4">
+            <div :for={p <- @port_types}
+                 class="p-5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-sm transition">
+              <p class="font-semibold text-slate-900">{p.label}</p>
+              <p class="mt-1 text-sm text-slate-500">{p.description}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- FEATURES -->
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
+          <h2 class="text-lg font-semibold text-slate-900">Fonctionnalités</h2>
+          <div class="mt-6 grid sm:grid-cols-2 gap-4">
+            <div :for={f <- @features}
+                 class="p-5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-sm transition">
+              <p class="font-semibold text-slate-900">{f.label}</p>
+              <p class="mt-1 text-sm text-slate-500">{f.description}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- PERIPHERALS -->
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
+          <h2 class="text-lg font-semibold text-slate-900">Périphériques</h2>
+
+          <div class="mt-6 grid sm:grid-cols-2 gap-4">
+            <div :for={p <- @peripherals}
+                 class="p-5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-sm transition">
+
+              <div class="flex items-center justify-between">
+                <p class="font-semibold text-slate-900">{p.name}</p>
+
+                <span class="text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 font-medium">
+                  {p.port_type.label}
+                </span>
+              </div>
+
+              <p class="mt-2 text-sm text-slate-500">{p.description}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TRACKABLE -->
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
+          <h2 class="text-lg font-semibold text-slate-900">Types traçables</h2>
+
+          <div class="mt-6 grid sm:grid-cols-2 gap-4">
+            <div :for={t <- @trackable_types}
+                 class="p-5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-sm transition">
+              <p class="font-semibold text-slate-900">{t.label}</p>
+              <p class="mt-1 text-sm text-slate-500">{t.description}</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SIDEBAR PRO -->
+      <aside class="space-y-6 lg:sticky lg:top-6 h-fit">
+
+        <div class="rounded-3xl bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 shadow-md">
+          <h3 class="text-lg font-semibold">Vue globale</h3>
+          <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+            Ces référentiels assurent la cohérence et la compatibilité des modèles.
+          </p>
+        </div>
+
+        <div class="rounded-3xl bg-white border border-slate-100 shadow-sm p-6 space-y-3 text-sm text-slate-600">
+          <p><span class="font-semibold text-slate-900">Ports :</span> interfaces matérielles</p>
+          <p><span class="font-semibold text-slate-900">Fonctions :</span> capacités système</p>
+          <p><span class="font-semibold text-slate-900">Périphériques :</span> composants compatibles</p>
+          <p><span class="font-semibold text-slate-900">Types :</span> classification métier</p>
+        </div>
+
+      </aside>
+
+    </section>
+
+  </div>
+
+</TagIpWeb.Layouts.app>

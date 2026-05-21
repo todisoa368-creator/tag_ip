@@ -75,6 +75,16 @@
               >
                 Compatibilités
               </.link>
+              <.link
+                href={~p"/referentiels"}
+                class={[
+                  "hover:text-blue-600 transition pb-1 border-b-2",
+                  active_nav?(assigns, :referentiels) && "text-blue-600 border-blue-600",
+                  !active_nav?(assigns, :referentiels) && "border-transparent"
+                ]}
+              >
+                Référentiels
+              </.link>
             </div>
           </nav>
         <% end %>

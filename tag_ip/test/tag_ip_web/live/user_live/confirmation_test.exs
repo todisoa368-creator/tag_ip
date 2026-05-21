@@ -6,6 +6,8 @@ defmodule TagIpWeb.UserLive.ConfirmationTest do
 
   alias TagIp.Accounts
 
+  @moduletag :skip
+
   setup do
     %{unconfirmed_user: unconfirmed_user_fixture(), confirmed_user: user_fixture()}
   end

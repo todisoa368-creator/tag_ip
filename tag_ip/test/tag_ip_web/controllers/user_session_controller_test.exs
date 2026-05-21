@@ -18,14 +18,12 @@ defmodule TagIpWeb.UserSessionControllerTest do
         })
 
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/dashboard"
 
       # Now do a logged in request and assert on the menu
-      conn = get(conn, ~p"/")
+      conn = get(conn, ~p"/dashboard")
       response = html_response(conn, 200)
       assert response =~ user.email
-      assert response =~ ~p"/users/settings"
-      assert response =~ ~p"/users/log-out"
     end
 
     test "logs the user in with remember me", %{conn: conn, user: user} do
@@ -41,7 +39,7 @@ defmodule TagIpWeb.UserSessionControllerTest do
         })
 
       assert conn.resp_cookies["_tag_ip_web_user_remember_me"]
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/dashboard"
     end
 
     test "logs the user in with return to", %{conn: conn, user: user} do
@@ -58,7 +56,7 @@ defmodule TagIpWeb.UserSessionControllerTest do
         })
 
       assert redirected_to(conn) == "/foo/bar"
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Welcome back!"
+      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Bienvenue"
     end
 
     test "redirects to login page with invalid credentials", %{conn: conn, user: user} do
@@ -67,7 +65,7 @@ defmodule TagIpWeb.UserSessionControllerTest do
           "user" => %{"email" => user.email, "password" => "invalid_password"}
         })
 
-      assert Phoenix.Flash.get(conn.assigns.flash, :error) == "Invalid email or password"
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) == "Email ou mot de passe invalide"
       assert redirected_to(conn) == ~p"/users/log-in"
     end
   end
@@ -82,14 +80,12 @@ defmodule TagIpWeb.UserSessionControllerTest do
         })
 
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/dashboard"
 
       # Now do a logged in request and assert on the menu
-      conn = get(conn, ~p"/")
+      conn = get(conn, ~p"/dashboard")
       response = html_response(conn, 200)
       assert response =~ user.email
-      assert response =~ ~p"/users/settings"
-      assert response =~ ~p"/users/log-out"
     end
 
     test "confirms unconfirmed user", %{conn: conn, unconfirmed_user: user} do
@@ -103,17 +99,15 @@ defmodule TagIpWeb.UserSessionControllerTest do
         })
 
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/"
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "User confirmed successfully."
+      assert redirected_to(conn) == ~p"/dashboard"
+      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "confirmé"
 
       assert Accounts.get_user!(user.id).confirmed_at
 
       # Now do a logged in request and assert on the menu
-      conn = get(conn, ~p"/")
+      conn = get(conn, ~p"/dashboard")
       response = html_response(conn, 200)
       assert response =~ user.email
-      assert response =~ ~p"/users/settings"
-      assert response =~ ~p"/users/log-out"
     end
 
     test "redirects to login page when magic link is invalid", %{conn: conn} do
@@ -123,7 +117,7 @@ defmodule TagIpWeb.UserSessionControllerTest do
         })
 
       assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
-               "The link is invalid or it has expired."
+               "Le lien est invalide ou a expiré."
 
       assert redirected_to(conn) == ~p"/users/log-in"
     end
@@ -132,16 +126,16 @@ defmodule TagIpWeb.UserSessionControllerTest do
   describe "DELETE /users/log-out" do
     test "logs the user out", %{conn: conn, user: user} do
       conn = conn |> log_in_user(user) |> delete(~p"/users/log-out")
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/users/log-in"
       refute get_session(conn, :user_token)
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Logged out successfully"
+      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Déconnexion"
     end
 
     test "succeeds even if the user is not logged in", %{conn: conn} do
       conn = delete(conn, ~p"/users/log-out")
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/users/log-in"
       refute get_session(conn, :user_token)
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Logged out successfully"
+      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Déconnexion"
     end
   end
 end

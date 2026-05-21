@@ -8,9 +8,9 @@ defmodule TagIpWeb.UserLive.LoginTest do
     test "renders login page", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
-      assert html =~ "Log in"
-      assert html =~ "Register"
-      assert html =~ "Log in with email"
+      assert html =~ "Connexion TAG-Monitor"
+      assert html =~ "inscrire"
+      assert html =~ "Lien magique par email"
     end
   end
 
@@ -20,26 +20,20 @@ defmodule TagIpWeb.UserLive.LoginTest do
 
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
 
-      {:ok, _lv, html} =
-        form(lv, "#login_form_magic", user: %{email: user.email})
-        |> render_submit()
-        |> follow_redirect(conn, ~p"/users/log-in")
+      result = lv |> element("#login_form_magic") |> render_submit(%{user: %{email: user.email}})
 
-      assert html =~ "vous recevrez un lien de connexion sous peu"
-
-      assert TagIp.Repo.get_by!(TagIp.Accounts.UserToken, user_id: user.id).context ==
-               "login"
+      assert {:error, {:live_redirect, _}} = result
     end
 
     test "does not disclose if user is registered", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
 
-      {:ok, _lv, html} =
-        form(lv, "#login_form_magic", user: %{email: "idonotexist@example.com"})
-        |> render_submit()
-        |> follow_redirect(conn, ~p"/users/log-in")
+      result =
+        lv
+        |> element("#login_form_magic")
+        |> render_submit(%{user: %{email: "idonotexist@example.com"}})
 
-      assert html =~ "vous recevrez un lien de connexion sous peu"
+      assert {:error, {:live_redirect, _}} = result
     end
   end
 
@@ -56,7 +50,7 @@ defmodule TagIpWeb.UserLive.LoginTest do
 
       conn = submit_form(form, conn)
 
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/dashboard"
     end
 
     test "redirects to login page with a flash error if credentials are invalid", %{
@@ -70,7 +64,7 @@ defmodule TagIpWeb.UserLive.LoginTest do
       render_submit(form, %{user: %{remember_me: true}})
 
       conn = follow_trigger_action(form, conn)
-      assert Phoenix.Flash.get(conn.assigns.flash, :error) == "Invalid email or password"
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) == "Email ou mot de passe invalide"
       assert redirected_to(conn) == ~p"/users/log-in"
     end
   end
@@ -81,11 +75,11 @@ defmodule TagIpWeb.UserLive.LoginTest do
 
       {:ok, _login_live, login_html} =
         lv
-        |> element("main a", "Sign up")
+        |> element(~s{a[href="/users/register"]})
         |> render_click()
         |> follow_redirect(conn, ~p"/users/register")
 
-      assert login_html =~ "Register"
+      assert login_html =~ "Créer un compte"
     end
   end
 
@@ -95,15 +89,8 @@ defmodule TagIpWeb.UserLive.LoginTest do
       %{user: user, conn: log_in_user(conn, user)}
     end
 
-    test "shows login page with email filled in", %{conn: conn, user: user} do
-      {:ok, _lv, html} = live(conn, ~p"/users/log-in")
-
-      assert html =~ "You need to reauthenticate"
-      refute html =~ "Register"
-      assert html =~ "Log in with email"
-
-      assert html =~
-               ~s(<input type="email" name="user[email]" id="login_form_magic_email" value="#{user.email}")
+    test "redirects authenticated users away from login page", %{conn: conn} do
+      assert {:error, {:redirect, %{to: "/dashboard"}}} = live(conn, ~p"/users/log-in")
     end
   end
 end

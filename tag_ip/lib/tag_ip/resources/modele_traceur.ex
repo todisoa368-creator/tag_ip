@@ -17,6 +17,10 @@ defmodule TagIp.Resources.ModeleTraceur do
       public?(true)
     end
 
+    attribute :brand, :string do
+      public?(true)
+    end
+
     attribute :reference, :string do
       allow_nil?(false)
       constraints(max_length: 50)
@@ -115,6 +119,16 @@ defmodule TagIp.Resources.ModeleTraceur do
       source_attribute_on_join_resource(:modele_traceur_id)
       destination_attribute_on_join_resource(:capteur_id)
     end
+
+    has_many :model_features, TagIp.Resources.ModelFeature
+
+    many_to_many :features, TagIp.Resources.Feature do
+      through(TagIp.Resources.ModelFeature)
+      source_attribute_on_join_resource(:modele_traceur_id)
+      destination_attribute_on_join_resource(:feature_id)
+    end
+
+    has_many :model_ports, TagIp.Resources.ModelPort
   end
 
   actions do
@@ -131,6 +145,7 @@ defmodule TagIp.Resources.ModeleTraceur do
 
       accept([
         :nom,
+        :brand,
         :reference,
         :description,
         :nb_digital_inputs,
