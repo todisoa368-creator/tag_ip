@@ -1,0 +1,62 @@
+erDiagram
+    %% ==========================================
+    %% DATABASE SCHEMA FOR GPS TRACKER CONFIGURATION
+    %% ==========================================
+
+    %% tracker_models: Stores the core hardware devices/GPS trackers.
+    tracker_models {
+        int id PK "Unique identifier for the tracker model (Auto-increment)"
+        string name "Model commercial name (e.g., FMB120, CAREU U1, VT200)"
+        string brand "Manufacturer name (e.g., Teltonika, Systech, Wondeproud)"
+        string voltage_range "Supported operating voltage (e.g., 10-30V DC, 9-36V DC)"
+    }
+
+    %% features: Master catalog of all available system capabilities.
+    features {
+        int id PK "Unique identifier for the feature"
+        string name "Name of the capability (e.g., Bluetooth BLE, Eco-driving, Crash detection)"
+    }
+
+    %% model_features: Many-to-Many junction table linking trackers to their embedded features.
+    model_features {
+        int tracker_id FK "Reference to tracker_models.id"
+        int feature_id FK "Reference to features.id"
+    }
+
+    %% port_types: Master catalog of available physical/logical connection protocols.
+    port_types {
+        int id PK "Unique identifier for the port technology type"
+        string name "Protocol/interface name (e.g., Digital Input, 1-Wire, RS232, CAN-Bus)"
+    }
+
+    %% model_ports: The specific physical pins/ports available on each tracker model hardware.
+    model_ports {
+        int id PK "Unique identifier for the specific pin/port assignment"
+        int tracker_id FK "Reference to tracker_models.id"
+        int port_type_id FK "Reference to port_types.id"
+        string pin_label "Physical label or wire name (e.g., DIN1, AIN2, RS232_TX, CAN_H)"
+    }
+
+    %% peripherals: Catalog of external accessories that can be wired/connected to trackers.
+    peripherals {
+        int id PK "Unique identifier for the peripheral item"
+        int port_type_id FK "Reference to port_types.id (Dictates hardware compatibility)"
+        string name "Commercial name of the accessory (e.g., DS18B20 Temp Sensor, RFID Reader)"
+    }
+
+    %% ==========================================
+    %% RELATIONSHIPS AND CARDINALITIES
+    %% ==========================================
+
+    %% A tracker model can have many features assigned to it, and a feature can belong to many trackers.
+    tracker_models ||--o{ model_features : "has"
+    features ||--o{ model_features : "is_assigned_to"
+
+    %% A tracker model possesses multiple physical pinouts/ports.
+    tracker_models ||--o{ model_ports : "exposes"
+
+    %% Each port configuration must classify under exactly one technology protocol.
+    port_types ||--o{ model_ports : "classifies"
+
+    %% A peripheral requires exactly one type of port to function, enabling automatic compatibility filtering.
+    port_types ||--o{ peripherals : "enables"

@@ -1,8 +1,6 @@
 defmodule TagIpWeb.ReferenceLive.Index do
   use TagIpWeb, :live_view
 
-  on_mount {TagIpWeb.UserAuth, :mount_current_scope}
-
   alias Ash.Query
   alias TagIp.Resources.{Feature, Peripheral, PortType, TrackableType}
 
@@ -10,6 +8,7 @@ defmodule TagIpWeb.ReferenceLive.Index do
   def mount(_params, _session, socket) do
     port_types = PortType.read!() |> Enum.sort_by(& &1.label)
     features = Feature.read!() |> Enum.sort_by(& &1.label)
+
     peripherals =
       Peripheral
       |> Ash.Query.new()

@@ -1,4 +1,4 @@
-<TagIpWeb.Layouts.app flash={@flash}>
+<TagIpWeb.Layouts.app flash={@flash} current_scope={@current_scope}>
   <div class="mb-8">
     <.header>
       {@page_title}
@@ -288,7 +288,7 @@
                   <div>
                     <p class="text-sm text-slate-500">Profil compatible</p>
                     <p class="mt-1 text-base font-semibold text-slate-900">
-                      {compat.profil_montage.nom || compat.profil_montage_id}
+                      {compat.profil_montage.name || compat.profil_montage_id}
                     </p>
                     <p class="mt-2 text-sm leading-6 text-slate-600">{compat.details}</p>
                   </div>

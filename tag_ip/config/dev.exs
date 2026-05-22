@@ -3,14 +3,11 @@ import Config
 # Configure your database
 config :tag_ip, TagIp.Repo,
   username: "fitahiana",
-  password: "azerty",
+  password: "1234",
   hostname: "localhost",
   database: "tag_ip_dev",
-  parameters: [client_encoding: "UTF8"],
-  stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
-
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #

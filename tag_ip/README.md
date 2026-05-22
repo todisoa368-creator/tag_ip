@@ -1,10 +1,427 @@
-# TAG-Monitor (TagIp)
+<!--
+  ============================================================
+  PAGE DE COUVERTURE
+  ============================================================
+-->
+<div align="center">
+
+# TagIp
 
 **Système d'aide à la décision pour la sélection de traceurs GPS**
 
 ---
 
-## PARTIE I – ANALYSE ET SPÉCIFICATIONS
+**MÉMOIRE DE FIN D'ÉTUDES EN VUE D'OBTENTION DU DIPLÔME DE TECHNICIEN SUPÉRIEUR**
+
+*Mention : Technologie Informatique*
+
+---
+
+**Présenté par :** [Nom du présentateur]
+
+**Membres du jury :**
+- **Président du jury :** [Nom du président]
+- **Examinateur :** [Nom de l'examinateur]
+- **Encadreur pédagogique :** [Nom de l'encadreur]
+
+**Année universitaire : 2025-2026**
+
+**Promotion : [Nom de la promotion]**
+
+---
+
+**UNIVERSITÉ [Nom de l'Université]**
+
+[Adresse de l'Université]
+
+---
+
+</div>
+
+## AVANT-PROPOS
+
+Ce mémoire rentre dans le cadre de l'obtention du Diplôme de Technicien Supérieur (DTS) en Technologie Informatique à l'Université [Nom]. Ce projet a été réalisé au sein de TAG-IP Solutions, une entreprise spécialisée dans l'installation et l'intégration de systèmes de géolocalisation pour véhicules et actifs professionnels. Il a été choisi en raison de l'importance croissante des outils numériques interactifs pour la visualisation des données et l'aide à la décision, en particulier dans le domaine de la sélection de traceurs GPS, où la diversité technique des modèles disponibles rend la comparaison objective difficile.
+
+La mission consistait à analyser le processus existant de sélection de traceurs GPS, à identifier les dysfonctionnements et les lacunes, puis à concevoir et développer une application web d'aide à la décision intégrant un moteur de scoring multicritères. Le projet s'inscrit dans un contexte réel, au service d'une entreprise d'installation, ce qui en renforce la portée pratique.
+
+Les motivations ayant conduit à l'étude de ce sujet résident dans l'envie de confronter les connaissances techniques à un cas concret, d'apporter une réelle plus-value à un outil métier déjà existant, et de se former aux exigences professionnelles en matière de qualité logicielle, de rigueur et de responsabilité.
+
+L'objectif principal du travail présenté est d'assurer une meilleure fiabilité, performance et objectivité du processus de sélection de traceurs GPS. Pour y parvenir, une démarche structurée a été adoptée, comprenant une analyse approfondie du système existant, une phase de conception technique, suivie d'un développement par modules et de tests fonctionnels.
+
+Au cours du projet, plusieurs difficultés ont été rencontrées, telles que la modélisation des critères de compatibilité, la gestion des dépendances entre technologies (Phoenix, Ash Framework, PostgreSQL, LiveView), et l'adaptation aux besoins précis du métier tout en respectant des délais restreints. Ces obstacles ont cependant représenté une source d'apprentissage précieuse, tant sur le plan technique que personnel.
+
+Ce mémoire témoigne ainsi de l'aboutissement d'un projet académique, professionnel et humain. Il marque la fin d'un cycle d'apprentissage et le début d'un engagement dans le monde professionnel de l'informatique.
+
+---
+
+## REMERCIEMENTS
+
+Avant toute chose, nous rendons grâce à Dieu Tout-Puissant, source de vie et de force, pour nous avoir accompagnés tout au long de cette formation et durant la réalisation de ce mémoire.
+
+Nous exprimons notre profonde gratitude à [Fondateur], Fondateur de l'Association [Nom], dont l'engagement et la vision ont permis à de nombreux jeunes de bénéficier d'une éducation supérieure de qualité.
+
+Nos sincères remerciements s'adressent à [Coordonnateur], coordonnateur de l'Université, et à [Directeur], Directeur de l'Université, pour leur disponibilité, leur accompagnement et leur engagement constant envers les étudiants.
+
+Nous remercions également [Responsable], Responsable de l'organisme d'accueil TAG-IP Solutions, pour nous avoir accueillis au sein de son équipe et permis de réaliser ce projet dans un cadre professionnel enrichissant.
+
+Nos vifs remerciements vont à notre encadreur professionnel, ainsi qu'à notre encadreur pédagogique, pour leurs conseils, leur rigueur et leur soutien précieux tout au long de ce travail.
+
+Nous tenons aussi à remercier l'ensemble du personnel administratif de l'Université pour leur bienveillance, ainsi que les formateurs et formatrices pour la qualité de leurs enseignements et leur générosité dans le partage de leurs connaissances.
+
+Enfin, nous adressons toute notre reconnaissance à nos parents, familles et amis pour leur soutien moral, matériel et spirituel, qui a été d'un grand réconfort et d'une aide précieuse dans la réalisation de ce mémoire.
+
+---
+
+## LISTE DES ABRÉVIATIONS
+
+| Abréviation | Signification |
+|-------------|---------------|
+| API | Application Programming Interface |
+| Ash | Ash Framework (Elixir) |
+| BLE | Bluetooth Low Energy |
+| CAN | Controller Area Network |
+| CRUD | Create, Read, Update, Delete |
+| CSS | Cascading Style Sheets |
+| DTS | Diplôme de Technicien Supérieur |
+| Ecto | Elixir database wrapper |
+| GPS | Global Positioning System |
+| HTML | HyperText Markup Language |
+| HTTP | HyperText Transfer Protocol |
+| IoT | Internet of Things |
+| IP | Indice de Protection |
+| JSON | JavaScript Object Notation |
+| M2M | Machine-to-Machine |
+| MCD | Modèle Conceptuel de Données |
+| MCT | Modèle Conceptuel de Traitement |
+| MLD | Modèle Logique de Données |
+| MVC | Modèle-Vue-Contrôleur |
+| MV | Millivolt |
+| ORM | Object-Relational Mapping |
+| PHP | Hypertext Preprocessor |
+| SaaS | Software as a Service |
+| SGBD | Système de Gestion de Base de Données |
+| SQL | Structured Query Language |
+| SSH | Secure Shell |
+| SWOT | Strengths, Weaknesses, Opportunities, Threats |
+| UI | User Interface |
+| URI | Uniform Resource Identifier |
+| URL | Uniform Resource Locator |
+| VM | Virtual Machine |
+| VPN | Virtual Private Network |
+
+---
+
+## SOMMAIRE
+
+**INTRODUCTION GÉNÉRALE**
+
+**PREMIÈRE PARTIE : CONTEXTE ET ANALYSE**
+- Chapitre 1 : Cadre et contexte du projet
+- Chapitre 2 : Analyse des besoins et positionnement
+
+**DEUXIÈME PARTIE : CONCEPTION TECHNIQUE**
+- Chapitre 3 : Modélisation des données
+- Chapitre 4 : Architecture et choix techniques
+
+**TROISIÈME PARTIE : RÉALISATION ET ÉVALUATION**
+- Chapitre 5 : Réalisation technique
+- Chapitre 6 : Évaluation et discussion
+
+**CONCLUSION GÉNÉRALE**
+
+---
+
+## INTRODUCTION GÉNÉRALE
+
+Dans le secteur de la télématique et de la gestion de flottes, la précision technique constitue le garant fondamental de la qualité de service. Cependant, au sein de la société Tag‑IP, l'identification des traceurs GPS compatibles avec des équipements variés (véhicules légers, poids lourds, engins de chantier) repose encore sur une expertise humaine manuelle et des supports d'information dispersés, augmentant ainsi les risques d'erreurs opérationnelles et les délais de déploiement. C'est précisément dans ce contexte de modernisation des processus internes qu'est né ce projet de fin d'études intitulé « Conception et réalisation d'un module automatisé de gestion des profils de montage et de compatibilité des traceurs GPS sous Elixir et Ash Framework ».
+
+Ce travail soulève la problématique centrale de l'automatisation d'un diagnostic de compatibilité entre des contraintes physiques hétérogènes et un catalogue matériel dense, tout en garantissant une maintenance simplifiée des règles métier. Pour répondre à cet enjeu, nous formulons l'hypothèse selon laquelle l'implémentation d'une architecture déclarative basée sur le Ash Framework, couplée à la réactivité en temps réel de Phoenix LiveView, permet de réduire drastiquement les erreurs de configuration matérielle en transformant les contraintes physiques en calculs logiques automatisés et transparents pour l'utilisateur final.
+
+L'objectif général de ce mémoire est donc de déployer une application web capable de centraliser et de pérenniser l'expertise technique de l'entreprise. Ce but se décline en objectifs spécifiques : la modélisation rigoureuse des ressources de données via l'écosystème Ash, le développement d'un moteur de calcul de compatibilité dynamique et la conception d'une interface utilisateur intuitive permettant une visualisation instantanée des résultats. La méthodologie adoptée pour mener à bien cette mission, de nature itérative et agile, s'est appuyée sur une phase d'observation directe des processus de montage, des entretiens avec les experts techniques de Tag‑IP et une modélisation structurée selon la méthode Merise pour le schéma de données.
+
+Enfin, ce mémoire se structure en trois parties essentielles : la première est consacrée à l'analyse du cadre institutionnel de l'USVPA, de l'organisme d'accueil et des besoins fonctionnels ; la deuxième détaille la conception technique, incluant la modélisation logique et les choix architecturaux ; et la troisième partie présente la réalisation logicielle effective, l'implémentation des fonctionnalités avancées ainsi que l'évaluation finale des performances du système.
+
+---
+
+## PREMIÈRE PARTIE : CONTEXTE ET ANALYSE
+
+---
+
+## Chapitre 1 : Cadre et contexte du projet
+
+### 1.1 Présentation de l'environnement
+
+#### 1.1.1 L'Université Saint Vincent de Paul Akamasoa (USVPA)
+
+L'Université Saint Vincent de Paul Akamasoa (USVPA) est un établissement privé d'enseignement supérieur situé à Antananarivo, Madagascar. Fondée sous l'égide de l'Association AKAMASOA (reconnue d'utilité publique par le décret n°94-118), l'université représente l'aboutissement du cycle éducatif initié par l'organisation depuis 1989. L'institution a pour mission de fournir une formation académique et professionnelle de haut niveau, visant à favoriser l'insertion directe des étudiants dans le tissu économique national par l'excellence technique.
+
+##### 1.1.1.1 Missions et cadre organisationnel
+
+L'USVPA repose sur un modèle d'autonomisation par le savoir, répondant aux besoins du marché de l'emploi malgache dans des secteurs clés tels que l'éducation, la santé, le management et les technologies de l'information. L'organisation administrative est pilotée par une direction académique qui assure la conformité des programmes avec les normes du Ministère de l'Enseignement Supérieur et de la Recherche Scientifique (MESUPRES).
+
+Le campus de Manantenasoa offre un environnement d'apprentissage moderne comprenant des salles de cours équipées et des infrastructures numériques adaptées. Selon le portail officiel de l'organisation [1], l'encadrement pédagogique est assuré par un corps professoral mixte, composé d'universitaires et de professionnels du secteur privé, garantissant un équilibre entre théorie et pratique.
+
+##### 1.1.1.2 Offres de formation et pôles d'excellence
+
+L'établissement est structuré en plusieurs pôles délivrant des diplômes de Technicien Supérieur (DTS) et des Licences professionnelles :
+
+- **Pôle Pédagogique et Littéraire** : dédié à la formation des enseignants et des spécialistes en langues (Français et Anglais) pour renforcer la communication internationale.
+- **Pôle des Sciences Paramédicales** : Former le personnel soignant (infirmiers, sages-femmes) pour répondre aux besoins sanitaires urbains et ruraux.
+- **Pôle des Sciences Technologiques et de Gestion** : Regroupe les formations en gestion et management pour l'administration des entreprises locales.
+
+##### 1.1.1.3 L'École Supérieure de Technologie en Informatique d'Akamasoa (ESTIA)
+
+Créée en 2017, l'ESTIA constitue le pôle technologique de l'université. Elle forme des experts capables de concevoir et maintenir des solutions informatiques complexes. C'est dans ce cadre que s'est déroulé mon cursus de DTS Informatique, articulé autour de trois piliers fondamentaux :
+
+1. **Développement Logiciel** : Maîtrise des langages modernes, de l'algorithme et des frameworks web.
+2. **Systèmes et Réseaux** : Administration de serveurs et mise en œuvre de protocoles de sécurité.
+3. **Ingénierie des Données** : Modélisation relationnelle et gestion de flux via des SGBD tels que PostgreSQL.
+
+##### 1.1.1.4 Méthodologie pédagogique et lien avec le stage
+
+La pédagogie de l'ESTIA privilégie l'apprentissage par projet, confrontant l'étudiant à des défis techniques réels. Durant mes deux années d'études, j'ai acquis les compétences en conception d'interfaces (UI/UX) et en logique back-end nécessaires à mon projet actuel.
+
+Le stage obligatoire de fin de cycle au sein de la société Tag‑IP constitue le prolongement pratique de cette formation. Il me permet d'intégrer une équipe professionnelle et de manipuler des technologies de pointe comme le framework Ash et le langage Elixir. L'adéquation entre l'enseignement reçu à l'ESTIA et les missions en entreprise confirme la pertinence de ce parcours pour le développement de mon autonomie technique.
+
+**Figure 1 : logo de l'Association Akamasoa**
+
+Référence : [1] Association AKAMASOA, Éducation et Enseignement Supérieur à l'USVPA, disponible sur : https://www.perepedro-akamasoa.net (Consulté en avril 2026).
+
+#### 1.1.2 Organisme d'accueil : La société TAG-IP
+
+La société TAG-IP, ou Technologie d'Avant-Garde Internet Protocole, a été créée en 2008 en partenariat avec l'opérateur Telma. Elle s'est imposée comme le leader des solutions de tracking et de géolocalisation à Madagascar. Son expertise permet aux organisations de localiser en temps réel et en tout lieu leur flotte de véhicules (voitures, camions, motos et bateaux), offrant ainsi une visibilité totale sur les actifs mobiles.
+
+##### 1.1.2.1 Fiche d'Identification
+
+Pour présenter formellement la structure d'accueil, voici les informations administratives et juridiques de l'entreprise :
+
+- **Raison sociale** : Technologie d'Avant Garde – Internet Protocole
+- **Forme juridique** : Société Anonyme (SA)
+- **Siège social** : Immeuble Assist - 5e étage ; 101 Antananarivo
+- **Activité principale** : Géolocalisation (tracking) des véhicules
+- **Directeur Général** : M. Marc Rivera
+- **Directeur Technique** : M. Gilles Chapoton
+
+##### 1.1.2.2 Historique et évolution
+
+Le développement de TAG-IP témoigne d'une croissance technologique constante et d'une expansion géographique réussie :
+
+- **2009** : Création de la première application de géolocalisation au sein de la société 2MI pour ses services internes.
+- **2010** : Création officielle de la société TAG-IP et installation à l'Immeuble Assist. À la fin de cette année, 800 véhicules étaient déjà géolocalisés.
+- **2011 – 2013** : Phase de progression soutenue avec une moyenne de 50 à 100 nouvelles installations par mois.
+- **2013** : Début de l'expansion internationale hors de Madagascar (Niger, La Réunion, Seychelles).
+- **Depuis 2014** : Le nombre de véhicules connectés n'a cessé de croître. Si l'entreprise comptait 7 000 unités en 2018, elle dépasse aujourd'hui la barre des 10 000 véhicules suivis.
+
+##### 1.1.2.3 Missions et innovations technologiques
+
+TAG-IP donne aux sociétés la possibilité de suivre les déplacements de leurs équipes et de leurs chauffeurs afin de contrôler, assister et réaliser des économies sur les frais opérationnels. En gérant mieux les trajets, les clients optimisent leurs dépenses en carburant et la maintenance.
+
+Aujourd'hui, la société propose des moyens technologiques avancés pour répondre aux nouveaux enjeux de sécurité : reconnaissance du conducteur, contrôle du démarrage, avertisseurs sonores de survitesse et boutons de panique.
+
+##### 1.1.2.4 Structure organisationnelle
+
+L'entreprise est structurée autour de trois directions principales :
+
+**A. Direction Ressources Humaines, Exploitation et Service Clientèle**
+
+Cette direction constitue le socle opérationnel et administratif de la société. Elle assure la gestion des flux, qu'ils soient humains, financiers ou techniques. Elle se subdivise en plusieurs pôles stratégiques :
+
+- **Pôle Administratif et Financier** : Ce service est garant de la pérennité économique de l'entreprise. Il assure la comptabilité générale, la gestion budgétaire et le suivi des indicateurs de performance. Le service de recouvrement y joue un rôle clé en gérant les relations financières avec les clients, assurant ainsi la fluidité de la trésorerie.
+- **Gestion des Ressources Humaines** : Responsable du capital humain, ce service s'occupe du recrutement, de la formation et de l'administration du personnel, veillant à l'alignement des compétences avec les ambitions de l'entreprise.
+- **Pôle Exploitation** : C'est le bras armé de TAG-IP sur le terrain. Il coordonne les équipes de techniciens chargés de l'installation physique des boîtiers de géolocalisation sur les véhicules. Il assure également une mission de relation clientèle de proximité.
+- **Service TAGOS** : Véritable support après-vente spécialisé, le service TAGOS intervient pour l'assistance technique et la maintenance des solutions technologiques une fois livrées, garantissant ainsi la continuité de service pour les utilisateurs.
+
+**B. Direction Marketing et Commercial**
+
+La Direction Marketing et Commerciale agit comme l'interface vitale entre TAG-IP et son environnement socio-économique. Sa mission est double : promouvoir l'image de marque et assurer la croissance du portefeuille client.
+
+- **Interface et Relations Publiques** : Elle gère les interactions avec toutes les parties prenantes (clients, fournisseurs, partenaires comme Telma).
+- **Pôle Création et Design** : Grâce à un Designer tout support, l'entreprise soigne son identité visuelle et l'ergonomie de ses interfaces, un aspect essentiel pour une société technologique.
+- **Formation et Expertise Produits** : L'entreprise se distingue par son accompagnement client. Des formateurs spécialisés interviennent pour la prise en main des produits phares comme Track (gestion de flotte) et Forms (numérisation des processus métier), permettant aux clients d'exploiter tout le potentiel des outils fournis.
+
+**C. Direction des Systèmes d'Information (DSI)**
+
+Cœur technologique de TAG-IP, la DSI est le moteur de l'innovation et le garant de l'intégrité des services numériques. C'est au sein de cette direction que s'élaborent les solutions de demain.
+
+- **Ingénierie Logicielle** : Elle regroupe une équipe de développeurs (dont j'ai fait partie) travaillant sur des langages modernes pour maintenir et faire évoluer les plateformes de tracking.
+- **Infrastructure et Sécurité** : Les administrateurs systèmes et réseaux veillent à la disponibilité 24h/24 des serveurs et à la sécurité maximale des données de géolocalisation, une priorité absolue pour la confiance des clients.
+- **Expertise SIG (Système d'Information Géographique)** : Des techniciens spécialisés traitent les données cartographiques pour offrir une précision optimale lors des suivis de flotte.
+- **Gouvernance de projet** : L'organisation est structurée autour d'une Maîtrise d'Ouvrage (MOA), qui définit les besoins métiers et fonctionnels, et d'une Maîtrise d'Œuvre (MOE), qui assure la réalisation technique et le respect des délais.
+
+**Figure 2: logo de l'entreprise TAG-IP**
+
+### 1.2 Environnement technique
+
+Cette section détaille l'écosystème technologique préexistant à mon arrivée au sein de la société TAG-IP. Il est impératif de distinguer l'infrastructure matérielle, qui assure la continuité du service de géolocalisation, des outils logiciels utilisés par les équipes pour l'exploitation quotidienne des données.
+
+#### 1.2.1 Infrastructure matérielle et réseau
+
+L'architecture matérielle de la société TAG-IP est dimensionnée pour répondre à une contrainte métier non négociable : la disponibilité de service 24h/24 et 7j/7. Dans le secteur critique de la sécurité et de la logistique à Madagascar, un arrêt de l'infrastructure, même de quelques minutes, engendrerait une perte immédiate de la traçabilité des 10 000 véhicules actuellement suivis par la plateforme. Pour garantir cette continuité, l'entreprise a déployé une infrastructure robuste répartie entre ses bureaux d'Ivandry et son centre de données.
+
+**A. Architecture Réseau et Connectivité**
+
+L'épine dorsale de l'entreprise repose sur un partenariat stratégique avec l'opérateur national Telma. Cette connectivité est spécifiquement conçue pour absorber des flux de données constants et asynchrones provenant des balises GPS.
+
+- **Liaisons spécialisées (LS)** : Contrairement à une connexion internet standard, TAG-IP utilise des liaisons dédiées à haut débit et à très faible latence. Ce choix technique garantit que les trames GPRS/3G envoyées par les boîtiers installés sur le territoire malgache parviennent aux serveurs de traitement sans goulot d'étranglement, minimisant ainsi le « lag » de positionnement sur les cartes clients.
+- **Segmentation par VLAN** (Virtual Local Area Network) : Afin d'optimiser le trafic et de renforcer la sécurité interne, le réseau est segmenté en plusieurs couches virtuelles :
+  - VLAN Flux GPS : Un canal strictement dédié à la réception des données de terrain.
+  - VLAN Administratif : Dédié à la gestion bureautique de l'entreprise.
+  - VLAN Développement : Un environnement isolé permettant aux stagiaires et développeurs de tester des solutions sans impacter la production.
+- **Sécurité périmétrique** : Un Firewall matériel de niveau professionnel est positionné à l'entrée du réseau. Il assure :
+  - Le filtrage granulaire des paquets entrant et sortant.
+  - La détection et la prévention d'intrusions (IDS/IPS).
+  - La gestion des tunnels VPN chiffrés pour les accès distants sécurisés.
+
+**Figure 2 : Cycle de traitement et de circulation des flux de données**
+
+**B. Parc Serveur et Stockage des données**
+
+La gestion des données massives (Big Data) générées par les balises nécessite une infrastructure de calcul et de stockage située dans la salle serveur sécurisée de l'Immeuble Assist.
+
+- **Cluster de Production** : TAG-IP n'exploite pas un serveur unique, mais des serveurs physiques configurés en Cluster. Cette architecture permet une Haute Disponibilité (High Availability) : si un nœud tombe en panne, la charge de travail est basculée sur un autre serveur sans interruption de service.
+- **Système de Stockage RAID** : La sécurité des données historiques est assurée par une configuration RAID. Ce système permet de répliquer les informations sur plusieurs disques en temps réel.
+- **Redondance Énergétique** : Étant donné les défis énergétiques à Madagascar, l'infrastructure est protégée par une triple sécurité :
+  - Des onduleurs de forte capacité pour réguler la tension.
+  - Un parc de batteries pour assurer la transition.
+  - Un groupe électrogène à démarrage automatique.
+
+**C. Environnement des Postes de travail (DSI)**
+
+Les postes utilisés par l'équipe technique à Ivandry sont sélectionnés pour leur fiabilité et leur compatibilité avec les outils de développement modernes.
+
+- **Matériel de développement** : Le parc est principalement composé de Mac mini. Ce choix est motivé par la stabilité de macOS (système certifié Unix) qui permet une transition fluide vers les serveurs de production sous Linux. Ces machines offrent la puissance nécessaire pour faire tourner des environnements virtualisés (Docker) essentiels aux tests applicatifs.
+- **Supervision en temps réel** : La salle technique est équipée de moniteurs de grande taille dédiés au monitoring. Ces écrans affichent des tableaux de bord analysant en permanence :
+  - La charge CPU et RAM du cluster.
+  - L'état de la bande passante Telma.
+  - Le taux de réception des trames de géolocalisation.
+
+#### 1.2.2 Outils et systèmes existants
+
+Cette sous-section analyse la couche logicielle et les solutions applicatives qui animent l'infrastructure matérielle de TAG-IP. Avant l'introduction des nouvelles technologies liées à mon projet, l'entreprise s'appuyait sur un écosystème robuste, principalement orienté vers la stabilité du traitement de données massives.
+
+**A. Systèmes d'Exploitation et Environnement Serveur**
+
+La fiabilité du service de géolocalisation repose sur une standardisation rigoureuse des systèmes d'exploitation, segmentée selon l'usage :
+
+- **Serveurs de Production (Debian GNU/Linux)** : L'intégralité des services critiques hébergés à l'Immeuble Assist fonctionne sous Debian. Ce choix est dicté par la réputation de cette distribution en termes de sécurité et de stabilité. Elle permet une gestion optimisée des daemons (processus d'arrière-plan) qui restent à l'écoute permanente des ports UDP et TCP. Ces ports sont les points d'entrée des trames GPS envoyées par les balises GPS. La légèreté de Debian permet de maximiser les ressources CPU pour le calcul de position plutôt que pour la gestion du système lui-même.
+- **Postes de Développement (macOS)** : Au sein des bureaux d'Ivandry, l'équipe technique utilise macOS. Basé sur un noyau Darwin (Unix), ce système permet aux développeurs de travailler dans un environnement proche de celui des serveurs. L'utilisation du terminal Unix facilite l'administration à distance via SSH et garantit que les scripts de déploiement fonctionnent de manière identique entre le poste local et le serveur de production.
+
+**B. La plateforme logicielle « Track » et ses limites opérationnelles**
+
+Le cœur métier de TAG-IP est porté par la plateforme propriétaire Track. C'est un ensemble complexe de logiciels conçus pour traduire des signaux électroniques en informations géographiques exploitables par les clients.
+
+- **Architecture applicative modulaire** : La plateforme est décomposée en plusieurs modules spécialisés, notamment tau, v-rho et taw. Chaque module possède une responsabilité précise : l'un s'occupe de la réception brute, l'autre du décodage des protocoles constructeurs (souvent propriétaires), et le dernier de l'interface de visualisation pour l'utilisateur final.
+- **La problématique du « Hard-Coding »** : Malgré sa robustesse, le système souffre d'une rigidité architecturale. Avant mon intervention, la gestion des événements (alertes de survitesse, franchissement de zone, détection de choc) est codée en dur dans le noyau de la plateforme.
+  - **Conséquence technique** : Toute modification d'un seuil ou l'ajout d'une règle métier spécifique pour un nouveau client nécessite une modification directe du code source, suivie d'une phase de compilation et d'un redéploiement complet.
+  - **Impact métier** : Cette dépendance au cycle de développement ralentit considérablement la réactivité de l'entreprise face aux demandes urgentes.
+
+**C. Gestion de la persistance des données (PostgreSQL et PostGIS)**
+
+L'intégralité de l'intelligence de TAG-IP repose sur sa base de données. PostgreSQL a été choisi comme pilier central pour sa capacité à gérer des volumes de données transactionnelles très importants.
+
+- **Historisation massive** : Avec 10 000 véhicules émettant des positions toutes les quelques secondes, la base contient plusieurs millions d'enregistrements. Le défi est de maintenir des performances de lecture fluides pour l'affichage de l'historique des trajets sur plusieurs mois.
+- **Traitement Géospatial** : L'exploitation des données ne se limite pas à des chiffres. Grâce à l'extension PostGIS, PostgreSQL est capable de traiter des objets géographiques. Les fonctions SQL standards sont utilisées pour calculer des distances, définir des polygones de sécurité (Geofencing) et déterminer si un véhicule se trouve à l'intérieur ou à l'extérieur d'une zone définie. Cela permet de transformer des coordonnées de latitude et longitude en adresses postales ou points d'intérêt.
+
+**D. Méthodologie de Travail et DevOps**
+
+Pour maintenir ce système complexe, la DSI de TAG-IP applique des méthodes de travail modernes qui assurent la cohésion de l'équipe :
+
+- **Gestion de version avec Git** : L'utilisation de Git permet de centraliser le code source et de gérer l'historique des modifications. C'est un outil indispensable pour la collaboration entre les développeurs, permettant de travailler sur des branches différentes sans risquer d'altérer la version stable de la plateforme Track.
+- **Conteneurisation via Docker** : Pour résoudre le problème classique des différences d'environnement (« ça marche sur ma machine, mais pas sur le serveur »), TAG-IP utilise Docker. Les services sont isolés dans des conteneurs, ce qui facilite grandement le passage du développement à Ivandry vers la production à l'Immeuble Assist.
+- **Limites de la supervision actuelle** : Jusqu'à présent, le monitoring se concentre sur la santé « physique » du système (taux d'occupation de la RAM, charge CPU, état du trafic réseau). Cependant, il n'existe pas de dashboard applicatif métier capable de dire, en un coup d'œil, si les flux de données eux-mêmes sont cohérents ou si un module de décodage est en train de faillir. C'est précisément à ce manque de visibilité temps réel que mon projet de supervision vient répondre.
+
+### 1.3 Contexte et problématique
+
+#### 1.3.1 Situation initiale : Le processus actuel de gestion
+
+Cette section dresse l'état des lieux opérationnel de TAG-IP avant l'automatisation. La gestion de la compatibilité et du montage repose sur un socle empirique et manuel, limitant la réactivité de l'entreprise.
+
+**A. La chaîne de décision et le flux d'information**
+
+Le processus métier s'articule autour de trois phases où l'expertise humaine est l'unique garant de la viabilité technique :
+
+1. **Collecte des besoins et audit véhicule** : Les exigences clients (ex: sondes 1-Wire pour le froid) et les contraintes véhicules (tension 12V/24V) sont notées sur fiches papier ou e-mails. L'absence de vérification dans un référentiel numérique propage les erreurs de saisie initiales (confusion de modèles) jusqu'à l'installation finale.
+2. **Diagnostic manuel et recherche d'expertise** : Sans outil automatisé, le responsable technique effectue un « matching » mental entre le besoin et le stock (Teltonika FMB920, Meitrack T333). L'information est éparpillée entre fichiers Excel et PDF constructeurs, rendant le choix dépendant de la disponibilité immédiate d'un expert senior.
+3. **Préparation et configuration en atelier** : Les techniciens configurant manuellement les balises (IP serveurs, ports UDP/TCP) via SMS ou outils constructeurs. Cette répétition est source d'erreurs de frappe (typos). Une inversion de chiffre rend la balise invisible sur la plateforme, imposant un retour en atelier coûteux après la pose.
+
+**B. Analyse du flux de gestion des événements (Avant projet)**
+
+Le cœur technologique actuel repose sur un traitement linéaire où chaque règle métier est figée dans le code source.
+
+**Figure 3 : Schéma du flux actuel de gestion des événements**
+
+Légende : Ce flux illustre la rigidité du système. Le module de décodage est une « boîte noire ». Toute nouvelle alerte métier nécessite une modification du code, une compilation et un redéploiement par la DSI, créant un goulot d'étranglement.
+
+**C. L'expertise humaine : un pilier central vulnérable**
+
+La connaissance technique est « propriétaire » : elle appartient aux individus plutôt qu'à l'organisation, ce qui génère des risques stratégiques :
+
+- **Transmission orale** : Les techniciens juniors dépendent des seniors pour les branchements critiques, comme le repiquage sur le bus CAN. Le départ d'un expert entraîne une perte immédiate de la mémoire technique de l'entreprise.
+- **Délais de terrain** : Les équipes intervenant dans tout Madagascar (Toamasina, Mahajanga), un installateur bloqué face à un faisceau inconnu doit solliciter Ivandry par téléphone. Ce mode d'assistance vocale augmente les délais et les risques de courts-circuits.
+- **Sécurité matérielle** : Aucun garde-fou logiciel n'empêche l'installation d'un boîtier 12V sur un camion 24V. Sans contrôle automatique de tension, la destruction du matériel est immédiate lors de la mise sous tension.
+
+**D. Fragmentation documentaire et productivité**
+
+Les plans de pose sont stockés sur un serveur de fichiers sans indexation. La recherche manuelle d'un schéma (ex: Mitsubishi Fuso + Sonde) est chronophage. Cette gestion fragmentée, couplée aux réunions de coordination nécessaires, réduit la productivité du service technique de près de 20% selon mes observations de stage.
+
+#### 1.3.2 Problèmes identifiés et analyse des risques
+
+L'analyse de la situation initiale chez TAG-IP révèle des points de blocage structurels. Ces problèmes ne sont pas seulement technologiques ; ils impactent la rentabilité et la qualité de service globale. Le diagramme ci-dessous synthétise ces facteurs de risques.
+
+**A. Synthèse visuelle des causes racines**
+
+Pour mieux visualiser l'origine des dysfonctionnements, j'ai élaboré un diagramme de causes à effets. Il démontre que les échecs proviennent majoritairement d'un manque de processus automatisés et d'une trop forte dépendance humaine.
+
+**Figure 4: schéma des causes d'échecs de pose chez TAG-IP**
+
+Légende : Cette analyse met en évidence quatre axes critiques : le matériel, la méthode, la main-d'œuvre et le milieu.
+
+**B. Analyse détaillée des points de friction**
+
+1. **Incompatibilité matérielle et risques de sinistres électriques**
+
+L'hétérogénéité du parc automobile à Madagascar (véhicules d'occasion et neufs) constitue le premier défi technique.
+
+- **Danger des tensions d'entrée** : Un boîtier comme le Teltonika FMB920, optimisé pour les véhicules légers, peut être détruit s'il est installé sur un engin Caterpillar dont la tension monte à 30V via l'alternateur. Sans outil de contrôle, cette erreur de diagnostic manuel représente une perte financière directe.
+- **Déficit d'entrées/sorties (I/O)** : Un client exigeant un suivi de carburant (sonde RS232), une coupure moteur et un bouton panique nécessite un boîtier haut de gamme type Meitrack T333. L'envoi par erreur d'un boîtier plus simple interrompt l'installation sur place par manque de ports physiques.
+
+2. **Rigidité architecturale et « Hard-Coding »**
+
+Le système actuel dépend trop de l'équipe de développement pour des modifications qui devraient être accessibles au pôle exploitation.
+
+- **Goulot d'étranglement de la DSI** : Chaque nouvelle règle métier (ex : seuil de vitesse de 20s) est codée en dur. Cela force les développeurs à modifier le code source, compiler et redéployer le service sur les serveurs, ralentissant l'innovation globale.
+- **Perte de focus** : Les ressources qualifiées sont mobilisées sur des tâches répétitives de maintenance au lieu de travailler sur l'amélioration des algorithmes de géolocalisation.
+
+3. **Impact financier et logistique des erreurs de terrain**
+
+Une erreur détectée lors de la pose (ex : à Toamasina ou Antsirabe) engendre des coûts cachés :
+
+- **Échecs de pose** : Les frais de carburant, de temps de trajet et les indemnités sont perdus si le matériel est incompatible. Cela diminue la marge bénéficiaire de chaque contrat.
+- **Image de marque** : Un retard d'installation laisse les actifs du client sans protection, dégradant la perception de TAG-IP comme leader technologique.
+
+4. **Dépendance humaine et gestion du savoir**
+
+La centralisation de l'expertise chez quelques seniors crée un risque de continuité opérationnelle en cas de départ (Brain Drain). L'absence de base de connaissances partagée freine l'autonomie des juniors sur les montages complexes (ex : Mercedes Actros) et sature inutilement les experts, ralentissant la productivité globale de la DSI.
+
+#### 1.3.3 Expression du besoin
+
+L'expression du besoin pour le projet TagIp s'articule autour de la volonté de standardiser les processus d'installation et de sécuriser la transmission du savoir-faire technique au sein de la DSI. Le besoin ne se limite pas à une simple interface de consultation, mais s'étend à un véritable outil d'aide à la décision.
+
+1. **Centralisation et accessibilité du référentiel technique**
+
+Le premier besoin identifié est la création d'une base de données unique regroupant l'intégralité des schémas de montage et des spécificités électriques par modèle de véhicule. Actuellement, l'information est dispersée ou détenue par les seniors. Le système doit permettre à n'importe quel technicien d'accéder instantanément aux fiches techniques (ex: repérage des câbles CAN, points de branchement 12V/24V) afin d'éliminer toute incertitude avant l'intervention physique sur le véhicule.
+
+2. **Automatisation du diagnostic de compatibilité matériel**
+
+Pour pallier les risques de sinistres électriques, le logiciel doit intégrer un moteur de vérification automatique. En saisissant le modèle du véhicule et le type de boîtier GPS (ex: Teltonika ou Meitrack), l'application doit valider la compatibilité de tension et vérifier que le nombre d'entrées/sorties (I/O) est suffisant pour les options demandées par le client. Ce besoin d'automatisation est critique pour réduire le taux d'échec de pose et les pertes financières liées aux déplacements inutiles.
+
+3. **Décentralisation de la gestion des règles métiers**
+
+Un besoin majeur réside dans la fin du « Hard-Coding ». L'exploitation doit pouvoir configurer elle-même les paramètres d'alerte (seuils de vitesse, temps d'arrêt, zones géographiques) via une interface intuitive, sans solliciter l'équipe de développement. Cela répond à un besoin d'agilité : la DSI doit pouvoir faire évoluer les services en temps réel pour répondre aux exigences spécifiques des clients sans passer par un cycle complet de redéploiement du code.
+
+4. **Digitalisation de l'expertise et montée en compétence**
+
+Enfin, le projet doit servir de support à la formation continue. En intégrant des « astuces de montage » et des procédures de dépannage standardisées pour les modèles complexes, le logiciel réduit la courbe d'apprentissage des stagiaires et des techniciens juniors. Ce besoin de digitalisation du savoir vise à désaturer les cadres seniors et à protéger l'entreprise contre la perte d'expertise, garantissant ainsi la pérennité opérationnelle de TAG-IP.
 
 ---
 
@@ -14,262 +431,314 @@
 
 #### 2.1.1 Outils similaires
 
-Le marché des traceurs GPS professionnels est vaste et fragmenté. On recense plus de 500 modèles commercialisés par une centaine de fabricants à travers le monde, couvrant des gammes allant du traceur personnel grand public au terminal professionnel multi-interface destiné aux flottes de véhicules lourds. Cette diversité technique, si elle offre un large choix aux installateurs, constitue également un défi majeur : comment sélectionner objectivement le traceur le plus adapté à un besoin donné parmi une offre aussi pléthorique ? Les catalogues des fabricants présentent des différences significatives en termes de plages de tension d'alimentation, d'interfaces de communication supportées (CAN-Bus, RS232, RS485, 1-Wire, Bluetooth), de nombre d'entrées et sorties numériques et analogiques, d'indice de protection, de capacité mémoire, de modes de consommation, et de capteurs embarqués. Face à cette complexité, les installateurs ont développé des pratiques variées pour évaluer la compatibilité entre les besoins d'un véhicule ou d'un actif et les spécifications des traceurs disponibles, mais aucune solution unifiée n'existait jusqu'à présent.
+Avant d'analyser les limites des solutions existantes, il est nécessaire de présenter les principaux outils actuellement utilisés dans le domaine de la gestion des traceurs GPS et des plateformes IoT. Ces outils constituent des références sur le marché et offrent des fonctionnalités variées, mais présentent également des contraintes qui expliquent pourquoi ils ne répondent pas pleinement aux besoins de Tag‑IP.
 
-Plusieurs types d'outils existent sur le marché, chacun répondant partiellement au besoin de sélection de traceurs :
+**2.1.1.1 ThingsBoard**
 
-**Les configurateurs fabricants.** Les principaux constructeurs de traceurs GPS proposent des outils de sélection en ligne permettant de filtrer leurs gammes de produits. Teltonika, leader du marché européen, met à disposition un configurateur web qui permet de filtrer sa gamme (FMB, FMC, FMU, FMx) par critères techniques : tension d'alimentation, interfaces de communication, usage intérieur/extérieur, nombre d'entrées/sorties. L'outil est complet pour la gamme Teltonika mais ne couvre aucun autre fabricant. Queclink propose un configurateur similaire pour ses gammes GV (véhicules), GL (actifs) et GT (trackers), avec des filtres par type de véhicule, protocole de communication, et fonctionnalités embarquées. Concox, fabricant chinois majeur, offre également un outil de sélection en ligne axé sur ses gammes GT (traceurs) et GV (véhicules). Ces outils sont précieux pour explorer le catalogue d'un fabricant spécifique, mais leur limitation à un seul constructeur les rend insuffisants pour un installateur qui travaille avec plusieurs fournisseurs et doit comparer objectivement des modèles de marques différentes.
+ThingsBoard est une plateforme open source de gestion IoT largement utilisée dans le monde. Elle permet de collecter, traiter et visualiser des données issues de capteurs et de dispositifs connectés.
 
-**Les bases de données comparatives.** Des plateformes web telles que GPS-Traceur.com ou TrackingHardware.com compilent des fiches techniques détaillées de centaines de modèles de traceurs GPS provenant de différents fabricants. Elles offrent une vue d'ensemble du marché avec des fonctionnalités de comparaison côte à côte et des filtres par caractéristiques. GPS-Traceur.com, par exemple, référence plus de 400 modèles avec des informations sur les protocoles de communication, les certifications, et la compatibilité avec les principales plateformes de gestion de flotte. TrackingHardware.com se concentre sur les spécifications matérielles détaillées. Ces bases de données constituent une source d'information précieuse mais ne disposent pas d'un moteur de compatibilité paramétrable : l'utilisateur doit lui-même confronter manuellement les spécifications d'un traceur avec les exigences de son installation. Elles fournissent les données brutes mais pas l'analyse décisionnelle.
+- **Fonctionnalités principales** : collecte de données en temps réel, gestion des appareils, visualisation via des tableaux de bord personnalisables, configuration d'alertes et intégration avec divers protocoles (MQTT, HTTP, CoAP).
+- **Exemple narratif** : une entreprise de logistique utilise ThingsBoard pour suivre la température de ses camions frigorifiques. Les données sont transmises en temps réel et affichées sur un tableau de bord centralisé. En cas de dépassement de seuil critique, une alerte est automatiquement envoyée aux responsables.
+- **Avantages** : flexibilité, communauté active, possibilité de personnaliser les modules, documentation riche.
+- **Limites** : complexité de mise en œuvre, nécessité de compétences techniques avancées pour la configuration, temps de formation important pour les nouveaux utilisateurs.
+- **Analyse critique** : bien que puissant, ThingsBoard peut être trop complexe pour des utilisateurs non techniques. Dans un projet comme Tag‑IP, où des stagiaires doivent intervenir rapidement, cette complexité peut ralentir l'adoption et limiter l'efficacité.
 
-**Les feuilles de calcul internes.** Une enquête menée auprès d'une dizaine d'entreprises d'installation de traceurs GPS révèle qu'environ 80% d'entre elles utilisent des classeurs Excel ou Google Sheets comme outil principal de catalogage et d'évaluation des traceurs. Ces feuilles de calcul, souvent élaborées sur plusieurs années, listent les modèles de traceurs avec leurs caractéristiques techniques et servent de support à l'évaluation manuelle de la compatibilité avec les profils d'installation. Cette approche artisanale présente des limites évidentes : absence de centralisation (chaque installateur peut avoir sa propre version du fichier), difficulté de mise à jour (l'ajout d'un nouveau modèle de traceur nécessite une saisie manuelle et une propagation à toute l'équipe), risque d'erreur humaine (formules cassées, valeurs incohérentes), absence de scoring standardisé (chaque évaluateur applique ses propres critères), et absence de traçabilité des décisions. Malgré ces inconvénients, les feuilles de calcul restent la solution la plus répandue car elles sont simples à mettre en œuvre, ne nécessitent pas d'investissement logiciel, et sont flexibles.
+**2.1.1.2 Kaa IoT Platform**
 
-**Les solutions de gestion de flotte.** Les plateformes SaaS de gestion de flotte telles que Wialon, Samsara et FleetComplete intègrent des fonctionnalités de recommandation de matériel GPS. Wialon, plateforme leader avec plus de 3 millions de véhicules connectés, propose un annuaire de matériels compatibles avec sa plateforme, permettant aux intégrateurs de sélectionner des traceurs validés. Samsara, solution nord-américaine, recommande ses propres traceurs conçus pour fonctionner de manière optimale avec sa plateforme cloud. FleetComplete propose un marché d'appareils compatibles. Cependant, ces fonctionnalités de recommandation sont généralement liées à l'écosystème de traceurs que la plateforme supporte ou commercialise, créant un verrouillage propriétaire qui limite les possibilités de choix. Elles ne permettent pas non plus une comparaison libre et objective entre modèles de différents fabricants sur la base des besoins spécifiques d'une installation.
+Kaa est une autre solution open source orientée vers la gestion des objets connectés. Elle se distingue par une architecture modulaire et une grande capacité d'intégration.
 
-**Les comparateurs techniques généralistes.** Des sites comme Alibaba, GlobalSources ou des forums spécialisés (GPSForum, FleetForum) proposent des comparatifs techniques mais sans moteur d'évaluation paramétrable. Les installateurs doivent naviguer entre ces différentes sources, compiler manuellement les informations, et effectuer leur propre analyse. Cette approche, bien que possible, est chronophage et ne garantit pas l'exhaustivité ni l'objectivité de la comparaison.
+- **Fonctionnalités principales** : intégration de capteurs variés, gestion des flux de données, interopérabilité avec différents systèmes, support de protocoles multiples.
+- **Exemple narratif** : une entreprise industrielle connecte ses machines à Kaa pour analyser les données de production en temps réel. Les ingénieurs peuvent identifier rapidement les anomalies et optimiser la maintenance préventive.
+- **Avantages** : grande flexibilité, architecture modulaire, capacité à gérer des environnements complexes, possibilité d'intégrer des solutions tierces.
+- **Limites** : courbe d'apprentissage élevée, documentation parfois insuffisante, besoin de ressources techniques importantes.
+- **Analyse critique** : Kaa est adapté aux environnements industriels complexes, mais son utilisation dans un projet comme Tag‑IP peut être trop lourde et difficile à maintenir. Les stagiaires risquent de rencontrer des difficultés pour comprendre et exploiter pleinement la plateforme.
 
-Le tableau ci-dessous synthétise les caractéristiques des différentes catégories d'outils identifiés :
+**2.1.1.3 Solutions propriétaires des fabricants**
 
-| Critère | Configurateurs fabricants | Bases de données comparatives | Feuilles de calcul internes | Solutions de gestion de flotte |
-|---------|--------------------------|------------------------------|----------------------------|-------------------------------|
-| Périmètre | Mono-fabricant | Multi-fabricants | Variable | Écosystème propriétaire |
-| Moteur de scoring | Non | Non | Manuel | Partiel |
-| Traçabilité | Non | Non | Limitée | Oui |
-| Standardisation | Faible | Faible | Aucune | Élevée |
-| Mise à jour | Automatique | Manuelle | Manuelle | Automatique |
-| Coût | Gratuit | Gratuit | Faible | Élevé (abonnement) |
-| Personnalisation | Aucune | Aucune | Totale | Limitée |
+De nombreux fabricants de traceurs GPS proposent leurs propres plateformes propriétaires. Ces solutions sont conçues pour fonctionner exclusivement avec les traceurs de la marque.
+
+- **Fonctionnalités principales** : gestion des traceurs de la marque, visualisation des données, configuration simplifiée, support technique intégré.
+- **Exemple narratif** : un client achète des traceurs d'un fournisseur et utilise directement la plateforme associée pour suivre ses véhicules. L'interface est simple et intuitive, mais ne permet pas d'intégrer des traceurs d'autres marques.
+- **Avantages** : simplicité d'utilisation, interface intuitive, support technique dédié, déploiement rapide.
+- **Limites** : compatibilité restreinte aux traceurs de la marque, dépendance forte au fournisseur, coûts supplémentaires pour intégrer d'autres équipements.
+- **Analyse critique** : ces solutions sont pratiques pour un usage limité, mais elles ne répondent pas aux besoins de Tag‑IP, qui doit gérer un catalogue diversifié et ouvert.
+
+**2.1.1.4 Analyse comparative en texte**
+
+En comparant ces trois types de solutions, on observe que les plateformes open source (ThingsBoard et Kaa) offrent une grande flexibilité et une compatibilité élargie. Elles permettent de gérer des environnements complexes et de personnaliser les fonctionnalités. Cependant, cette ouverture se paie par une complexité technique élevée, qui peut décourager des utilisateurs non experts et ralentir l'adoption dans des contextes où la rapidité est essentielle.
+
+À l'inverse, les solutions propriétaires séduisent par leur simplicité et leur ergonomie. Elles sont faciles à prendre en main et ne nécessitent pas de compétences techniques avancées. Toutefois, elles enferment les utilisateurs dans un écosystème fermé, limitant la compatibilité et augmentant la dépendance vis‑à‑vis du fournisseur.
+
+Pour Tag‑IP, aucune de ces solutions ne répond pleinement aux attentes. Le projet nécessite une plateforme à la fois flexible, compatible, ergonomique et interactive, capable de s'adapter aux besoins spécifiques des clients tout en restant accessible aux stagiaires et administrateurs.
 
 #### 2.1.2 Limites observées
 
-L'analyse des solutions existantes fait ressortir six lacunes significatives qui justifient la création d'un outil dédié :
+L'étude des solutions existantes a révélé plusieurs insuffisances qui empêchent leur adoption dans le contexte de Tag‑IP. Ces limites concernent la flexibilité des systèmes, la compatibilité des dispositifs, l'ergonomie des interfaces, l'intégration avec d'autres environnements et la capacité de visualisation interactive. Chacune de ces limites est détaillée ci‑après.
 
-**Absence de moteur de scoring multicritères.** Aucun outil disponible sur le marché ne propose un système de notation pondérée permettant de quantifier objectivement le degré de compatibilité entre un profil d'installation et un modèle de traceur. Les configurateurs fabricants se contentent d'un filtrage binaire (le traceur possède ou ne possède pas l'interface CAN-Bus, par exemple) sans évaluer le niveau d'adéquation global. Les feuilles de calcul internes peuvent intégrer des formules de scoring, mais celles-ci sont rarement standardisées au sein d'une même équipe et encore moins d'une entreprise à l'autre. Les conséquences de cette absence sont multiples. Premièrement, la décision repose entièrement sur le jugement expert de l'installateur, ce qui introduit une subjectivité et une variabilité dans les recommandations : deux installateurs confrontés au même besoin peuvent recommander des traceurs différents sans qu'il soit possible de déterminer objectivement lequel est le plus adapté. Deuxièmement, l'absence de scoring rend difficile la priorisation entre plusieurs traceurs compatibles : comment choisir entre deux modèles qui satisfont tous les critères techniques mais avec des niveaux de performance différents ? Troisièmement, le coût des erreurs de sélection peut être élevé : un traceur mal adapté peut entraîner des dysfonctionnements (coupures d'alimentation, perte de signal, saturation des entrées/sorties), des interventions supplémentaires sur le véhicule, voire le remplacement du matériel, générant des surcoûts significatifs pour l'installateur et le client final.
+**2.1.2.1 Manque de flexibilité**
 
-**Fragmentation des catalogues.** Chaque fabricant maintient son propre référentiel technique avec des conventions de dénomination et des classifications qui lui sont propres. Teltonika utilise des gammes (FMB pour les traceurs Black Box, FMC pour les traceurs CAN-Bus, FMU pour les traceurs universels) avec des suffixes numériques qui indiquent le niveau de fonctionnalités. Queclink distingue ses produits par lettres (GV pour véhicules, GL pour actifs/logistique, GT pour trackers) avec sa propre logique de numérotation. Concox utilise des codes produit comme "GT06N" ou "GT06E" sans nomenclature systématique. Au-delà des noms, les spécifications techniques elles-mêmes sont présentées de manière hétérogène : certains fabricants indiquent le courant de veille en mA, d'autres en µA ; les indices de protection IP peuvent être précisés ou absents ; les plages de tension sont parfois exprimées en nominal (12V) plutôt qu'en plage effective (9-16V). Cette hétérogénéité complique considérablement la comparaison objective entre modèles de différentes marques. Pour un installateur qui gère un catalogue de 50 à 100 traceurs répartis sur 10 à 15 fabricants, la simple collecte et normalisation des données techniques représente un travail considérable et source d'erreurs.
+La personnalisation des profils de montage est une exigence centrale pour Tag‑IP. Or, les plateformes étudiées ne permettent pas toujours d'adapter les profils aux contraintes particulières de chaque organisation.
 
-**Absence de traçabilité des décisions.** Dans les approches manuelles, il n'existe pas d'historique formalisé des évaluations de compatibilité. Lorsqu'un installateur recommande un traceur pour un type de véhicule donné, la justification technique de cette décision n'est pas systématiquement documentée. Les conséquences de cette absence de traçabilité sont importantes pour les organisations. Le contrôle qualité devient difficile : comment vérifier a posteriori qu'une recommandation était fondée ? Comment identifier des erreurs récurrentes dans les choix de traceurs ? Le partage de connaissances au sein d'une équipe est entravé : un nouvel installateur ne peut pas s'appuyer sur l'expérience de ses collègues, car les décisions passées ne sont pas documentées de manière structurée. En cas de départ d'un installateur expérimenté, une partie significative de la connaissance métier peut être perdue. Enfin, la relation avec les clients peut être affectée : en l'absence de justification technique transparente, il est difficile de démontrer le bien-fondé d'une recommandation et d'instaurer un climat de confiance.
+- **Exemple narratif** : une entreprise de transport souhaite ajouter un capteur de température spécifique à son profil de véhicule. L'outil ne propose pas cette option, obligeant l'entreprise à contourner le système ou à développer un module supplémentaire.
+- **Conséquences** : perte de temps, augmentation des coûts, complexité accrue dans la maintenance, frustration des équipes techniques.
+- **Analyse critique** : ce manque de flexibilité est lié au fait que les plateformes visent une standardisation pour toucher un large public, mais cela se fait au détriment de l'adaptation fine aux besoins particuliers. Dans un projet comme Tag‑IP, où chaque client peut avoir des contraintes spécifiques, cette rigidité est un frein majeur.
 
-**Difficulté de passage à l'échelle.** À mesure que le catalogue de traceurs s'enrichit et que la diversité des profils d'installation augmente, l'évaluation manuelle devient rapidement ingérable. Avec 50 modèles de traceurs et 30 profils de montage types, le nombre de combinaisons à évaluer est de 1 500 (50 × 30). Si l'évaluation manuelle d'un couple (profil, traceur) prend 5 minutes en moyenne, le temps total nécessaire pour évaluer l'ensemble du catalogue est de 125 heures, soit plus de 3 semaines de travail à temps plein. Cette charge devient rédhibitoire pour les entreprises qui souhaitent maintenir leur catalogue de référence à jour. De plus, l'ajout d'un nouveau traceur au catalogue nécessite de réévaluer l'ensemble des profils existants pour mettre à jour les recommandations, ce qui multiplie l'effort. Cette situation conduit souvent les installateurs à limiter leur catalogue aux modèles les plus courants, au détriment de la qualité du service rendu au client final.
+**2.1.2.2 Compatibilité restreinte**
 
-**Absence de standardisation des profils de montage.** Il n'existe pas, dans les solutions actuelles, de concept formalisé de « profil de montage » décrivant de manière structurée les exigences d'une installation. Chaque nouveau projet reprend généralement de zéro l'analyse des besoins : quel type de véhicule équiper ? Quelle tension d'alimentation ? Quelles interfaces de bus ? Quels capteurs ? Cette absence de standardisation a plusieurs conséquences négatives. Premièrement, elle empêche la capitalisation des connaissances : un profil de montage bien défini pour un projet pourrait être réutilisé pour un projet similaire, mais en l'absence de formalisation, chaque analyse repart d'une feuille blanche. Deuxièmement, elle introduit une variabilité dans la qualité des analyses : selon l'expérience et la rigueur de l'installateur, certains critères importants peuvent être oubliés (par exemple, la nécessité d'une antenne déportée dans un environnement métallique, ou la compatibilité avec une installation extérieure nécessitant un indice IP élevé). Troisièmement, elle rend difficile la comparaison entre profils : comment savoir si deux profils décrivant des « camions » sont réellement similaires en termes d'exigences techniques ?
+Les solutions propriétaires se concentrent sur un catalogue fermé de traceurs GPS, ce qui limite la diversité des modèles utilisables.
 
-**Verrouillage propriétaire.** Les outils proposés par les fabricants sont intrinsèquement conçus pour orienter l'utilisateur vers leurs propres produits. Ce conflit d'intérêts est compréhensible d'un point de vue commercial mais limite objectivement les possibilités de choix pour l'installateur et, in fine, pour le client final. Un installateur utilisant exclusivement le configurateur Teltonika ne verra jamais les produits Queclink ou Concox, même si ces derniers pourraient être plus adaptés à certains besoins spécifiques. Ce verrouillage a un impact direct sur la qualité du conseil : l'installateur ne peut pas recommander le meilleur traceur pour un besoin donné, mais seulement le meilleur traceur dans la gamme du fabricant qu'il utilise. Dans un marché où la marge sur le matériel est souvent plus attractive que la marge sur la prestation de service, ce verrouillage peut également conduire à des recommandations biaisées, favorisant les modèles les plus rentables plutôt que les plus adaptés.
+- **Exemple narratif** : un client qui utilise des traceurs d'un fournisseur externe ne peut pas les intégrer dans l'interface propriétaire.
+- **Conséquences** : dépendance forte au fournisseur, coûts supplémentaires pour changer de matériel, impossibilité d'assurer une compatibilité élargie.
+- **Analyse critique** : cette restriction est souvent une stratégie commerciale des fabricants pour verrouiller leurs clients. Cependant, elle va à l'encontre des besoins de Tag‑IP, qui doit gérer un catalogue diversifié et ouvert. Cette limitation réduit la liberté de choix et peut compromettre la satisfaction des clients.
+
+**2.1.2.3 Complexité des interfaces**
+
+Certaines plateformes IoT souffrent d'une ergonomie insuffisante. Les interfaces sont souvent conçues pour des utilisateurs experts et non pour des administrateurs ou clients recherchant la simplicité.
+
+- **Exemple narratif** : un utilisateur non technique se perd dans une interface trop complexe et abandonne l'outil.
+- **Conséquences** : baisse de productivité, erreurs de configuration, insatisfaction des clients, augmentation des coûts de formation.
+- **Analyse critique** : l'ergonomie est un facteur clé d'adoption. Une interface trop complexe réduit l'efficacité et augmente les coûts de formation. Dans un projet de stage, cela ralentit l'apprentissage et la contribution des stagiaires, qui doivent consacrer plus de temps à comprendre l'outil qu'à développer des fonctionnalités.
+
+**2.1.2.4 Intégration limitée**
+
+L'interopérabilité avec d'autres systèmes ou bases de données est parfois réduite. Les plateformes propriétaires, en particulier, ne favorisent pas l'intégration dans un environnement collaboratif.
+
+- **Exemple narratif** : une organisation souhaite connecter son système interne de gestion logistique à la plateforme, mais l'outil ne propose pas d'API ouverte.
+- **Conséquences** : duplication des données, incohérences, difficultés de collaboration entre équipes, perte de temps dans la synchronisation manuelle.
+- **Analyse critique** : dans un environnement comme Tag‑IP, où les stagiaires travaillent en équipe sur des périmètres spécifiques, cette limitation constitue un frein organisationnel majeur. L'absence d'intégration fluide empêche la mise en place de workflows efficaces et ralentit la prise de décision.
+
+**2.1.2.5 Absence de visualisation interactive**
+
+Peu de solutions offrent une interface en temps réel comparable à ce que permet Phoenix LiveView. La visualisation des compatibilités reste souvent statique et peu intuitive.
+
+- **Exemple narratif** : un administrateur doit relancer plusieurs requêtes pour obtenir les résultats de compatibilité, ce qui ralentit son travail et complique la comparaison des options.
+- **Conséquences** : perte de temps, manque de réactivité, difficulté à prendre des décisions rapides, adoption limitée par les utilisateurs.
+- **Analyse critique** : la visualisation interactive est un élément différenciateur. Elle permet une meilleure compréhension des données et une prise de décision plus rapide. Son absence dans les solutions existantes est une limite critique pour Tag‑IP, qui mise sur l'ergonomie et la réactivité pour séduire ses clients.
 
 ### 2.2 Besoins et contraintes
 
+L'analyse des solutions existantes a montré que, malgré des apports intéressants, elles ne répondent pas pleinement aux attentes de Tag‑IP. Il est donc nécessaire de définir précisément les besoins et contraintes du projet afin de guider la conception d'un système adapté. Cette section présente les fonctionnalités principales attendues, les acteurs impliqués et leurs cas d'utilisation, ainsi que les contraintes techniques et organisationnelles.
+
 #### 2.2.1 Fonctionnalités principales
 
-L'étude des limites des solutions existantes et l'analyse des besoins des installateurs de traceurs GPS conduisent à définir un ensemble de fonctionnalités essentielles pour le système TAG-Monitor :
+Le système envisagé doit intégrer un ensemble de fonctionnalités essentielles pour répondre aux besoins des utilisateurs. Ces fonctionnalités ne sont pas de simples options techniques : elles constituent le cœur du projet et garantissent son efficacité, sa pertinence et son adoption par les différents acteurs.
 
-**Gestion des profils de montage.** L'application doit permettre de définir des profils d'installation structurés décrivant l'ensemble des spécifications techniques requises pour un véhicule ou un actif donné. La création d'un profil s'effectue via un assistant en 5 étapes (wizard). La première étape (identification) permet de saisir le nom du profil, une description libre, et de sélectionner le type d'objet à équiper parmi une liste prédéfinie (voiture, camion, moto, utilitaire léger, engin de chantier, bateau, remorque, actif fixe). La deuxième étape (connectivité) permet de spécifier les interfaces de bus de données requises : CAN-Bus pour la communication avec les calculateurs du véhicule, 1-Wire pour les capteurs de température et autres périphériques à un fil, RS232 et RS485 pour les équipements série industriels. L'utilisateur indique également le nombre d'entrées numériques, d'entrées analogiques et de sorties nécessaires. La troisième étape (alimentation) permet de définir la plage de tension d'alimentation (tension minimale et maximale en volts), le type de batterie le cas échéant, et les besoins en mode ultra-low power pour les installations sur batteries sans recharge permanente. La quatrième étape (équipements) permet de sélectionner les capteurs et équipements requis : buzzer intégré, géofencing par zones prédéfinies, sonde carburant (avec distinction entre sonde analogique et sonde numérique), accéléromètre 3 axes, mémoire tampon pour le stockage local des données, antenne déportée pour les environnements à faible réception GPS, et montage extérieur nécessitant un indice de protection IP adapté. La cinquième étape (compatibilité) affiche la liste de tous les traceurs connus avec leurs scores de compatibilité calculés en temps réel par le moteur de scoring, permettant à l'installateur de visualiser immédiatement les modèles les plus adaptés à son profil.
+**2.2.1.1 Création et gestion des profils de montage**
 
-**Catalogage des modèles de traceurs.** L'application doit permettre de référencer les traceurs GPS disponibles sur le marché avec leurs caractéristiques techniques complètes. Chaque fiche traceur inclut les informations d'identification (nom commercial, référence constructeur unique, description), les spécifications de connectivité (interfaces CAN-Bus, 1-Wire, RS232, RS485), les capacités d'entrées/sorties (nombre d'entrées numériques, d'entrées analogiques, de sorties), l'indice de protection IP, les fonctionnalités embarquées (accéléromètre, mode ultra-low power, mémoire tampon, antennes externes), les caractéristiques électriques (courant de veille), et les associations many-to-many avec trois entités de référence : les types de véhicules compatibles (voiture, camion, moto, etc.), les types d'alimentation supportés (12V, 24V, 9-36V, batterie), et les capteurs disponibles (buzzer, géofencing, sonde carburant analogique, sonde carburant numérique). Cette structure de données riche permet au moteur de compatibilité de confronter précisément les besoins exprimés par un profil avec les capacités réelles d'un traceur.
+La création et la gestion des profils de montage représentent la base du système. Chaque organisation cliente doit pouvoir définir les caractéristiques physiques de ses équipements (type de véhicule, alimentation, capteurs connectés).
 
-**Moteur de calcul de compatibilité.** La fonctionnalité centrale du système est un algorithme de scoring multicritères qui évalue la compatibilité entre un profil de montage et un modèle de traceur. L'algorithme analyse 17 critères pondérés, chacun contribuant au score total sur 100 points : le type de véhicule (8 points), l'alimentation et la plage de tension (10 points), les interfaces de bus CAN-Bus (8 points), 1-Wire (5 points), RS232 (4 points) et RS485 (4 points), les capacités d'entrées/sorties numériques (8 points), analogiques (5 points) et de sorties (5 points), l'indice de protection IP (10 points), le mode ultra-low power (5 points), l'accéléromètre (5 points), la mémoire tampon (5 points), les antennes externes (4 points), le buzzer (4 points), la sonde carburant (5 points) et le géofencing (5 points). Le seuil de compatibilité est fixé à 40 points : un score inférieur qualifie le traceur comme incompatible avec le profil. Le calcul peut s'effectuer dans deux modes : un mode persistant où le résultat est enregistré dans la base de données avec upsert (évitant les duplications et garantissant l'atomicité), et un mode transitoire où le calcul est effectué à la volée à partir d'un dictionnaire de paramètres sans persistance, utilisé notamment lors de la création d'un nouveau profil pour afficher les scores en temps réel dans l'étape 5 du wizard.
+- **Exemple narratif** : une entreprise de transport crée un profil pour un bus équipé de capteurs de vitesse et de température. Ce profil devient une référence pour tous les véhicules similaires de la flotte.
+- **Importance** : cette fonctionnalité garantit une personnalisation fine et adaptée aux besoins spécifiques. Elle permet d'éviter l'utilisation de profils génériques, souvent trop imprécis.
+- **Analyse critique** : sans cette possibilité, les organisations seraient contraintes d'utiliser des profils standards, ce qui réduirait la précision des compatibilités et entraînerait des erreurs de configuration.
+- **Conséquence organisationnelle** : elle permet aux administrateurs de standardiser les pratiques tout en laissant une marge de personnalisation aux clients. Cela favorise une meilleure collaboration et une meilleure traçabilité des équipements.
+- **Impact technique** : la gestion des profils nécessite une base de données robuste et une interface intuitive pour faciliter la création et la modification des profils.
+- **Transition** : cette fonctionnalité est donc la pierre angulaire du système, sur laquelle reposent toutes les autres.
 
-**Visualisation des résultats.** L'application doit présenter les scores de compatibilité de manière claire et exploitable. Pour chaque association profil-traceur, le système affiche le score global sur 100 points avec un code couleur (vert pour les scores ≥ 40, rouge pour les scores < 40), ainsi que le détail complet des 17 critères avec pour chacun le nombre de points obtenus et une justification textuelle en français (par exemple : « CAN-Bus : 8/8 — Interface supportée par le traceur » ou « CAN-Bus : 0/8 — Interface non supportée par ce traceur »). Ce rapport détaillé permet à l'installateur de comprendre immédiatement les points forts et les points faibles de chaque association, de justifier ses recommandations auprès du client, et d'identifier les compromis acceptables (par exemple, un traceur avec un score de 85 malgré l'absence de RS232 peut être retenu si cette interface n'est pas critique pour l'installation).
+**2.2.1.2 Consultation du catalogue de traceurs GPS**
 
-**Recherche et filtrage avancés.** Les listes de profils de montage et de modèles de traceurs doivent être recherchables et paginées pour faciliter la navigation dans des catalogues de grande taille. La recherche textuelle permet de filtrer les profils par nom et les traceurs par nom ou référence constructeur, avec une exécution côté serveur pour garantir des performances optimales. La pagination est configurée à 20 éléments par page avec des requêtes SQL utilisant LIMIT/OFFSET, évitant le chargement complet des tables en mémoire. Cette fonctionnalité est essentielle pour maintenir la réactivité de l'interface lorsque le catalogue atteint plusieurs centaines d'entrées.
+Le système doit offrir une interface permettant d'explorer les modèles disponibles et leurs spécifications techniques.
 
-**Interface temps réel.** Le tableau de bord doit afficher en temps réel les statistiques clés (nombre de profils, de traceurs, de compatibilités enregistrées) et les notifications système via un mécanisme de PubSub (Phoenix PubSub). Les notifications sont diffusées sur un topic dédié (« dashboard ») lors des événements significatifs : création, modification ou suppression d'un profil ou d'un traceur, enregistrement d'une compatibilité, connexion/déconnexion d'un utilisateur. Les notifications sont présentées sous forme de toasts qui apparaissent en haut de l'écran et disparaissent automatiquement après 10 secondes, offrant un feedback immédiat à l'utilisateur sans interrompre son flux de travail.
+- **Exemple narratif** : un administrateur compare deux modèles de traceurs en fonction de leur autonomie et de leur compatibilité avec différents capteurs.
+- **Importance** : cela facilite la sélection du traceur le plus adapté aux contraintes du client.
+- **Analyse critique** : un catalogue bien structuré est un outil de décision stratégique. Il permet de réduire les erreurs de choix, d'optimiser les coûts et de gagner du temps.
+- **Conséquence organisationnelle** : il favorise une meilleure communication entre les équipes techniques et les clients, qui disposent d'une base commune de référence.
+- **Impact technique** : le catalogue doit être régulièrement mis à jour et intégrer des filtres de recherche avancés (par type de capteur, autonomie, compatibilité énergétique).
+- **Transition** : cette fonctionnalité complète la gestion des profils en offrant une vision claire des options disponibles.
 
-**Duplication de profils et traceurs.** Pour accélérer la création de contenus similaires et favoriser la réutilisation, les profils de montage et les fiches de traceurs doivent pouvoir être dupliqués avec l'ensemble de leurs associations et de leurs données. La duplication d'un profil crée une copie complète incluant toutes les spécifications (nom, description, type de véhicule, plages de tension, interfaces, E/S, capteurs, équipements). La duplication d'un traceur crée une copie complète incluant les associations many-to-many (types de véhicules, alimentations, capteurs). Dans les deux cas, le libellé de l'élément dupliqué est suffixé par « (copie) » et l'utilisateur est redirigé vers la page d'édition pour personnaliser les champs.
+**2.2.1.3 Calcul automatique des compatibilités**
+
+Un algorithme doit déterminer, à partir des profils définis, quels traceurs sont compatibles.
+
+- **Exemple narratif** : un profil de véhicule électrique est automatiquement associé aux traceurs capables de gérer une alimentation basse tension.
+- **Importance** : cette automatisation réduit les erreurs et accélère le processus de décision.
+- **Analyse critique** : l'automatisation est un facteur clé de productivité. Elle permet de passer d'une logique manuelle, chronophage et sujette à erreurs, à une logique systématique et fiable.
+- **Conséquence organisationnelle** : elle libère du temps pour les équipes, qui peuvent se concentrer sur des tâches à plus forte valeur ajoutée.
+- **Impact technique** : l'algorithme doit être conçu pour évoluer avec le catalogue, intégrer des règles de compatibilité complexes et offrir des résultats en temps réel.
+- **Transition** : cette fonctionnalité est le lien direct entre les profils et le catalogue, et constitue le moteur du système.
+
+**2.2.1.4 Interface interactive en temps réel**
+
+Grâce à Phoenix LiveView, les utilisateurs doivent pouvoir visualiser instantanément les résultats et interagir avec le système.
+
+- **Exemple narratif** : lorsqu'un administrateur modifie un profil, la liste des traceurs compatibles se met à jour en direct, sans rechargement de la page.
+- **Importance** : cette réactivité améliore l'expérience utilisateur et la prise de décision.
+- **Analyse critique** : une interface interactive est un facteur différenciateur. Elle rend le système plus intuitif et plus attractif, ce qui favorise son adoption par des utilisateurs variés.
+- **Conséquence organisationnelle** : elle réduit les délais de validation et améliore la collaboration entre les différents acteurs.
+- **Impact technique** : l'utilisation de Phoenix LiveView permet de gérer des interactions en temps réel, mais nécessite une optimisation des performances pour éviter les ralentissements.
 
 #### 2.2.2 Acteurs et cas d'utilisation
 
-Le système TAG-Monitor identifie deux acteurs principaux auxquels s'ajoute un cas d'utilisation système :
+Le projet implique plusieurs catégories d'acteurs, chacun ayant des rôles spécifiques et des attentes particulières. La compréhension de ces acteurs et de leurs interactions est essentielle pour concevoir un système adapté et efficace.
 
-**Acteur primaire : l'installateur de traceurs GPS (utilisateur authentifié).** Cet acteur représente le professionnel chargé d'équiper des véhicules ou des actifs avec des traceurs GPS. Ses missions incluent l'analyse des besoins du client, la sélection du matériel le plus adapté, l'installation physique, et la configuration du traceur. Dans le cadre de TAG-Monitor, il utilise le système pour formaliser les besoins d'installation sous forme de profils de montage, cataloguer les traceurs disponibles, évaluer objectivement la compatibilité entre profils et traceurs, et consulter l'historique des évaluations. Ses cas d'utilisation sont :
+**2.2.2.1 Administrateurs Tag‑IP**
 
-| Code | Intitulé | Description |
-|------|----------|-------------|
-| UC-101 | Créer un profil de montage | Création via l'assistant en 5 étapes (wizard) avec validation progressive |
-| UC-102 | Consulter un profil de montage | Affichage des détails du profil et de ses compatibilités associées |
-| UC-103 | Modifier un profil de montage | Modification des spécifications d'un profil existant |
-| UC-104 | Supprimer un profil de montage | Suppression avec cascade sur les compatibilités associées |
-| UC-105 | Dupliquer un profil de montage | Copie complète avec suffixe « (copie) » et redirection vers l'édition |
-| UC-106 | Rechercher un profil par nom | Filtrage textuel côté serveur avec pagination (20 éléments/page) |
-| UC-201 | Créer une fiche modèle de traceur | Saisie des caractéristiques techniques et associations many-to-many |
-| UC-202 | Consulter un modèle de traceur | Affichage des spécifications et des compatibilités associées |
-| UC-203 | Modifier un modèle de traceur | Modification des caractéristiques et des associations |
-| UC-204 | Supprimer un modèle de traceur | Suppression avec cascade sur les compatibilités et associations |
-| UC-205 | Dupliquer un modèle de traceur | Copie complète avec suffixe « (copie) » et redirection vers l'édition |
-| UC-206 | Rechercher un modèle par nom ou référence | Filtrage textuel côté serveur avec pagination |
-| UC-301 | Calculer la compatibilité | Déclenchement du moteur de scoring entre un profil et un traceur |
-| UC-302 | Consulter les résultats de compatibilité | Affichage du score global et du détail par critère |
-| UC-303 | Filtrer les traceurs par score | Tri et filtrage des traceurs selon leur score de compatibilité |
-| UC-401 | Consulter le tableau de bord | Affichage des statistiques clés en temps réel |
-| UC-402 | Recevoir une notification système | Affichage de toasts pour les événements du système |
+- **Rôle** : configurer et superviser les profils, gérer le catalogue de traceurs GPS, assurer la cohérence du système.
+- **Attentes** : disposer d'outils fiables, ergonomiques et sécurisés pour garantir la qualité des données et la fluidité des opérations.
+- **Exemple narratif** : un administrateur crée un nouveau profil de véhicule utilitaire, définit ses caractéristiques techniques (alimentation, type de capteurs), puis vérifie que le catalogue propose des traceurs compatibles.
+- **Analyse critique** : les administrateurs sont les garants de la cohérence globale. Si leurs outils manquent de fiabilité ou d'ergonomie, cela entraîne des erreurs qui se répercutent sur l'ensemble du système.
 
-**Acteur secondaire : l'administrateur système.** Cet acteur dispose des mêmes capacités que l'installateur, avec en plus la gestion des utilisateurs du système. Ses cas d'utilisation additionnels sont :
+**2.2.2.2 Clients/organisations**
 
-| Code | Intitulé | Description |
-|------|----------|-------------|
-| UC-501 | Créer un compte utilisateur | Inscription d'un nouvel installateur avec email et mot de passe |
-| UC-502 | Désactiver un compte utilisateur | Révocation de l'accès d'un utilisateur sans suppression de ses données |
-| UC-503 | Réinitialiser le mot de passe | Envoi d'un email de réinitialisation pour un utilisateur |
+- **Rôle** : définir leurs besoins, consulter les compatibilités pour leurs équipements, sélectionner les traceurs adaptés.
+- **Attentes** : obtenir rapidement des résultats clairs, personnalisés et compréhensibles, sans avoir besoin de compétences techniques avancées.
+- **Exemple narratif** : une entreprise de transport souhaite équiper sa flotte de bus. Elle crée un profil pour ses véhicules et consulte la liste des traceurs compatibles. L'interface interactive lui permet de comparer plusieurs modèles en temps réel.
+- **Analyse critique** : les clients sont les utilisateurs finaux. Leur satisfaction dépend directement de la simplicité et de la pertinence des résultats fournis par le système. Une interface trop complexe ou des compatibilités mal calculées réduiraient leur confiance dans l'outil.
 
-**Spécification détaillée UC-301 : Calculer la compatibilité.**
+**2.2.2.3 Développeurs stagiaires**
 
-Ce cas d'utilisation représente la fonctionnalité centrale du système autour de laquelle s'articule l'ensemble de la valeur ajoutée de TAG-Monitor.
+- **Rôle** : contribuer à la mise en place des modules, en travaillant sur un périmètre limité défini par l'entreprise.
+- **Attentes** : bénéficier d'une interface claire, de tâches bien définies et d'un environnement technique documenté.
+- **Exemple narratif** : un stagiaire est chargé de développer le module de calcul des compatibilités. Il doit comprendre les profils existants, tester l'algorithme et valider les résultats avec l'administrateur.
+- **Analyse critique** : les stagiaires jouent un rôle clé dans l'évolution du système. Leur efficacité dépend de la clarté des périmètres qui leur sont confiés et de la qualité de la documentation technique.
 
-- **Préconditions :** L'utilisateur est authentifié. Au moins un profil de montage et un modèle de traceur existent dans la base de données. Le profil de montage doit avoir ses spécifications complètes renseignées (type de véhicule, plages de tension, interfaces, E/S, protection, capteurs). Le modèle de traceur doit avoir ses caractéristiques techniques renseignées.
+**2.2.2.4 Cas d'utilisation principaux**
 
-- **Déclencheur :** L'utilisateur clique sur le bouton « Calculer la compatibilité » depuis la page de détail d'un profil ou d'un traceur, ou bien il atteint l'étape 5 de l'assistant de création d'un profil (mode transitoire).
+Les cas d'utilisation décrivent les interactions typiques entre les acteurs et le système.
 
-- **Scénario principal :**
-  1. Le système reçoit la demande de calcul avec l'identifiant du profil et l'identifiant du traceur (ou la liste de tous les traceurs pour l'étape 5 du wizard).
-  2. Le système charge les spécifications complètes du profil via la ressource Ash `ProfilMontage` : type de véhicule, plage de tension, interfaces, E/S, protection, capteurs, équipements.
-  3. Pour chaque traceur à évaluer, le système charge ses caractéristiques techniques complètes via la ressource Ash `ModeleTraceur`, y compris ses associations many-to-many (types de véhicules, types d'alimentation, capteurs).
-  4. Le système exécute l'algorithme de scoring sur les 17 critères pondérés :
-     - Pour chaque critère, la fonction de vérification correspondante est appelée avec les valeurs du profil et du traceur.
-     - Chaque fonction retourne un tuple `{points, raison}` où les points sont soit le maximum (critère satisfait ou non applicable), soit 0 (critère non satisfait).
-     - Les raisons détaillées sont collectées pour former le rapport textuel.
-  5. Le système calcule le score total (somme des points des 17 critères, maximum 100).
-  6. Le système détermine le statut de compatibilité : compatible (score ≥ 40) ou incompatible (score < 40).
-  7. Le système enregistre le résultat dans la table `compatibilites` avec upsert (en mode persistant) ou le retourne directement (en mode transitoire sans persistance).
-  8. Le système affiche le score global et le détail par critère à l'utilisateur.
+1. **Ajout d'un nouveau profil de montage**
+   - Scénario : un administrateur définit les caractéristiques d'un nouveau véhicule et enregistre le profil dans la base.
+   - Impact : enrichissement du catalogue de profils, meilleure personnalisation pour les clients.
 
-- **Postconditions :** Le résultat de compatibilité est visible par l'utilisateur. En mode persistant, un enregistrement est créé ou mis à jour dans la table `compatibilites`. En mode transitoire, les résultats sont affichés sans persistance.
+2. **Recherche de compatibilité entre un profil et un modèle de traceur**
+   - Scénario : un client sélectionne un profil existant et demande au système de calculer les traceurs compatibles.
+   - Impact : gain de temps, réduction des erreurs de sélection, meilleure adéquation entre besoins et solutions.
 
-- **Scénarios alternatifs :**
-  - *Profil sans besoin exprimé pour un critère :* Le critère est considéré comme non applicable et donne la totalité des points (exemple : si le profil n'exprime pas de besoin de buzzer, les 4 points du critère buzzer sont automatiquement attribués).
-  - *Traceur sans certaines spécifications :* Les critères correspondants donnent 0 point, indiquant que le traceur ne répond pas au besoin exprimé.
-  - *Calcul pour un nouveau profil (étape 5 du wizard) :* Le mode transitoire est utilisé, sans persistance des résultats. Les scores sont affichés en temps réel et mis à jour à chaque modification des spécifications du profil.
-  - *Erreur de données :* Si les données du profil ou du traceur sont incomplètes ou incohérentes, le système retourne un message d'erreur explicite invitant l'utilisateur à compléter les informations manquantes.
+3. **Visualisation des résultats de compatibilité dans une interface interactive**
+   - Scénario : un administrateur ou un client consulte les résultats en temps réel grâce à Phoenix LiveView.
+   - Impact : prise de décision rapide, meilleure compréhension des données, adoption facilitée du système.
 
 #### 2.2.3 Contraintes techniques et organisationnelles
 
-**Contraintes techniques.** La solution doit être développée avec Elixir (v1.15+) et le framework Phoenix (v1.8+), en utilisant PostgreSQL (v15+) comme système de gestion de base de données. L'interface utilisateur est construite avec Phoenix LiveView pour une expérience temps réel sans nécessité de JavaScript complexe côté client. Le style est basé sur Tailwind CSS v4, sans framework CSS supplémentaire, pour garantir une apparence professionnelle et cohérente. Le serveur HTTP est Bandit (v1.5+), et l'envoi d'emails est assuré par Swoosh. Les requêtes HTTP externes (si nécessaires) utilisent la bibliothèque Req. Aucune dépendance externe de type HTTPoison, Tesla ou httpc n'est autorisée.
+La mise en œuvre du projet s'inscrit dans un cadre précis marqué par des contraintes techniques, organisationnelles et des risques potentiels. Ces contraintes définissent les conditions de réussite et orientent les choix méthodologiques. Elles imposent une discipline dans le développement et une vigilance constante de la part des stagiaires et des encadrants.
 
-**Contraintes de sécurité.** L'authentification est obligatoire pour accéder aux fonctionnalités de l'application. Elle repose sur un système de mots de passe hachés (Bcrypt, algorithme de hachage adaptatif résistant aux attaques par force brute) avec option de connexion par lien magique (token à usage unique valable 15 minutes, envoyé par email). Les sessions sont gérées via des tokens stockés en base de données avec réémission périodique (tous les 7 jours). La confirmation par email est requise pour les nouveaux comptes. La protection contre les attaques courantes est assurée par : tokens CSRF dans tous les formulaires, requêtes paramétrées via Ecto/AshPostgres pour prévenir les injections SQL, échappement automatique des sorties dans les templates HEEx pour prévenir les attaques XSS, et validation systématique des entrées côté serveur. Les mots de passe ne sont jamais stockés en clair. Les tokens de session sont hachés avant stockage.
+**2.2.3.1 Contraintes techniques**
 
-**Contraintes organisationnelles.** L'application doit être déployable sur un serveur dédié ou en cloud, avec une base de données PostgreSQL centralisée. La langue de l'interface est le français. La base de données d'amorçage (seeds) doit inclure un jeu de données réaliste : 5 profils de montage types (véhicule utilitaire léger, camion longue distance, voiture particulière, moto, engin de chantier) et 22 modèles de traceurs répartis sur 10 fabricants (Teltonika, Queclink, Concox, Meitrack, TKSTAR, Suntech, iStartek, Jimiiot, Eelink, et un fabricant supplémentaire), permettant une démonstration immédiate des capacités du système. Le projet utilise Git pour le contrôle de version avec une commande `mix precommit` pour vérifier les tests, le formatage et les avertissements du compilateur avant chaque commit.
+**2.2.3.1.1 Utilisation des technologies imposées**
 
-**Contraintes de performance.** Le temps de calcul de compatibilité pour un couple (profil, traceur) doit être inférieur à 20 millisecondes pour permettre une évaluation en temps réel lors de la navigation. Pour un catalogue de 200 traceurs, le calcul complet (affichage de l'étape 5 du wizard) doit s'effectuer en moins de 4 secondes. Le système doit supporter jusqu'à 500 profils de montage et 200 modèles de traceurs, soit 100 000 combinaisons potentielles, sans dégradation significative des performances. L'application doit gérer jusqu'à 50 connexions LiveView simultanées avec un temps de réponse inférieur à 200 ms pour les opérations CRUD standard.
+Le projet doit obligatoirement s'appuyer sur un ensemble de technologies définies par l'entreprise : Elixir, Ash Framework, Phoenix LiveView et PostgreSQL. Ce choix garantit une cohérence technique et une intégration optimale dans l'écosystème de Tag‑IP. Toutefois, il limite la liberté des développeurs qui doivent s'adapter à des outils parfois peu répandus et nécessitant une phase d'apprentissage supplémentaire.
 
-**Contraintes juridiques.** L'application doit être conforme au Règlement Général sur la Protection des Données (RGPD) de l'Union européenne. Les données personnelles (adresses email) sont stockées de manière sécurisée et ne sont pas partagées avec des tiers. Aucune donnée de géolocalisation n'est collectée ou stockée par l'application (celle-ci se limite à la sélection de matériel, pas au suivi de véhicules).
+**2.2.3.1.2 Performance**
+
+La rapidité du calcul des compatibilités constitue une exigence incontournable. Les utilisateurs attendent des résultats en temps réel, et toute mauvaise optimisation des requêtes ou de l'algorithme entraînerait des temps de réponse trop longs. Une telle situation nuirait directement à l'expérience utilisateur et compromettrait l'efficacité du système.
+
+**2.2.3.1.3 Sécurité**
+
+La protection des données et la gestion des accès utilisateurs sont essentielles. Une faille de sécurité compromettrait la confiance des clients et mettrait en danger l'intégrité des informations. La sécurité doit donc être intégrée dès la conception, avec des mécanismes robustes d'authentification et de contrôle des accès.
+
+**2.2.3.2 Contraintes organisationnelles**
+
+**2.2.3.2.1 Travail en équipe**
+
+Le projet implique une répartition claire des responsabilités entre stagiaires et encadrants. Une mauvaise coordination peut entraîner des doublons ou des incohérences dans le code, tandis qu'une organisation structurée favorise la collaboration et la qualité du produit final.
+
+**2.2.3.2.2 Périmètre limité pour les stagiaires**
+
+Les stagiaires interviennent sur des modules précis afin de sécuriser le projet. Cette limitation protège la qualité globale, mais peut réduire leur marge d'apprentissage. Elle nécessite un encadrement pédagogique attentif pour maintenir leur motivation et leur permettre de comprendre la logique d'ensemble du système.
+
+**2.2.3.2.3 Respect des délais**
+
+La livraison des fonctionnalités doit respecter le calendrier fixé par l'entreprise. Tout retard compromet la crédibilité du projet et perturbe la planification des autres équipes. Le respect des délais impose une gestion rigoureuse des priorités et une discipline dans l'organisation du travail.
+
+**2.2.3.3 Analyse des risques**
+
+**2.2.3.3.1 Risque technique**
+
+Les difficultés liées à l'utilisation d'Elixir ou à l'intégration de Phoenix LiveView peuvent ralentir le développement et nécessiter une formation supplémentaire.
+
+**2.2.3.3.2 Risque organisationnel**
+
+Une mauvaise coordination entre les membres de l'équipe peut générer des retards et des conflits dans le code, entraînant une perte de temps et une baisse de productivité.
+
+**2.2.3.3.3 Risque fonctionnel**
+
+Un décalage entre les besoins des clients et les fonctionnalités développées risque de provoquer insatisfaction et révisions coûteuses, ce qui peut compromettre la crédibilité du projet.
 
 ### 2.3 Spécifications générales
 
 #### 2.3.1 Modules principaux
 
-Le système TAG-Monitor s'articule autour de cinq modules principaux, chacun responsable d'un domaine fonctionnel spécifique :
+Le système conçu pour Tag‑IP repose sur une organisation modulaire. Chaque module joue un rôle spécifique et contribue à l'efficacité globale de la solution. Cette approche permet de structurer le projet, de faciliter la maintenance et d'assurer une évolutivité future. Les modules principaux sont détaillés ci‑après.
 
-**Module 1 : Authentification et gestion des utilisateurs.**
-- *Responsabilités :* Ce module gère l'ensemble du cycle de vie des comptes utilisateurs : inscription avec confirmation par email, connexion par mot de passe (haché avec Bcrypt), connexion par lien magique (token unique valable 15 minutes envoyé par email), réinitialisation de mot de passe, gestion des sessions (création, réémission après 7 jours, révocation à la déconnexion), et mode sudo pour les opérations sensibles. Il s'appuie sur le mécanisme `phx.gen.auth` de Phoenix, adapté pour utiliser un concept de `Scope` qui encapsule l'utilisateur courant et ses sessions.
-- *Interfaces :* Expose les LiveViews `UserLive.Settings`, `UserLive.Login`, `UserLive.Register`, `UserLive.ForgotPassword`, `UserLive.ResetPassword`, les contrôleurs `UserSessionController`, et les hooks LiveView `mount_current_scope`, `require_authenticated`, `redirect_if_user_is_authenticated` définis dans `TagIpWeb.UserAuth`.
-- *Dépendances :* Ecto (schémas User, UserToken), Bcrypt (hachage de mots de passe), Swoosh (envoi d'emails).
-- *Fichiers sources :* `lib/tag_ip/accounts/user.ex`, `lib/tag_ip/accounts/user_token.ex`, `lib/tag_ip/accounts/scope.ex`, `lib/tag_ip/accounts/user_notifier.ex`, `lib/tag_ip_web/user_auth.ex`, `lib/tag_ip_web/controllers/user_session_controller.ex`, `lib/tag_ip_web/live/user_live/`.
+**2.3.1.1 Module de gestion des traceurs GPS**
 
-**Module 2 : Gestion des profils de montage.**
-- *Responsabilités :* Ce module permet aux installateurs de définir des profils d'installation structurés via un assistant en 5 étapes. Il gère les opérations CRUD (création, consultation, modification, suppression) et la duplication des profils. Il assure la validation des données selon les règles de gestion (nom unique, plages de tension cohérentes, types de véhicules valides). Il orchestre l'appel au moteur de compatibilité lors de l'étape 5 pour afficher les scores en temps réel.
-- *Interfaces :* Expose la ressource Ash `ProfilMontage` avec les actions CRUD standard, l'action de duplication, et les requêtes de recherche textuelle. Les LiveViews `ProfilMontageLive` assurent le rendu de l'assistant en 5 étapes avec validation progressive.
-- *Dépendances :* Ash Framework (ressource, data layer AshPostgres), AshPhoenix (intégration formulaire), `TagIp.Resources.Compatibilite` (moteur de scoring).
-- *Fichiers sources :* `lib/tag_ip/resources/profil_montage.ex`, `lib/tag_ip_web/live/profil_montage_live/`.
+Ce module constitue la pierre angulaire du système. Il assure l'enregistrement, la configuration et le suivi des traceurs GPS. Les utilisateurs peuvent ajouter de nouveaux dispositifs, vérifier leur état et gérer leurs paramètres.
 
-**Module 3 : Gestion des modèles de traceurs.**
-- *Responsabilités :* Ce module permet de cataloguer les modèles de traceurs GPS avec leurs caractéristiques techniques. Il gère les opérations CRUD et la duplication des fiches traceurs, ainsi que les associations many-to-many avec les entités de référence (types de véhicules, types d'alimentation, capteurs). L'unicité de la référence constructeur est garantie au niveau de la ressource.
-- *Interfaces :* Expose la ressource Ash `ModeleTraceur` avec les actions CRUD standard, l'action de duplication, les requêtes de recherche textuelle, et les requêtes de gestion des associations (ajout/suppression de type de véhicule, d'alimentation, de capteur).
-- *Dépendances :* Ash Framework (ressource, data layer AshPostgres), AshPhoenix (intégration formulaire), ressources `TypeVehicule`, `Alimentation`, `Capteur` (entités de référence), tables de jonction `ModeleTraceurTypeVehicule`, `ModeleTraceurAlimentation`, `ModeleTraceurCapteur`.
-- *Fichiers sources :* `lib/tag_ip/resources/modele_traceur.ex`, `lib/tag_ip/resources/modele_traceur_type_vehicule.ex`, `lib/tag_ip/resources/modele_traceur_alimentation.ex`, `lib/tag_ip/resources/modele_traceur_capteur.ex`, `lib/tag_ip_web/live/modele_traceur_live/`.
+- **Exemple narratif** : un administrateur intègre un nouveau traceur dans la base. Le module vérifie automatiquement sa compatibilité avec les profils existants et l'ajoute au catalogue.
+- **Impacts techniques** : l'architecture doit permettre la prise en charge de multiples modèles, avec des protocoles variés. La base de données doit être conçue pour stocker des informations détaillées (numéro de série, caractéristiques techniques, date d'installation).
+- **Impacts organisationnels** : ce module réduit les erreurs humaines en automatisant l'enregistrement et la mise à jour des traceurs. Il facilite la gestion d'un catalogue diversifié, ce qui est essentiel pour Tag‑IP.
+- **Analyse critique** : il doit être flexible pour accueillir différents modèles de traceurs, tout en restant simple d'utilisation pour les stagiaires et administrateurs.
 
-**Module 4 : Calcul de compatibilité.**
-- *Responsabilités :* Cœur décisionnel de l'application, ce module implémente l'algorithme de scoring sur 17 critères pondérés. Il expose deux modes de calcul : un mode persistant (enregistrement dans la table `compatibilites` avec upsert) et un mode transitoire (calcul à la volée sans persistance). Chaque fonction de vérification de critère retourne un tuple `{points, raison}` permettant la génération du rapport détaillé. Le module gère également les interprétations de domaines complexes : conversion des chaînes d'alimentation en plages numériques (12V → 9-16V, 24V → 18-32V, 9-36V → 9-36V, 12/24V → les deux plages), comparaison numérique des indices IP (IP67 ≥ IP65), et vérification d'inclusion de plages de tension.
-- *Interfaces :* Action `calculer_compatibilite` sur la ressource `Compatibilite` (mode persistant), fonction `calculer_depuis_params/2` (mode transitoire), fonctions de vérification par critère (`verifier_type_vehicule/2`, `verifier_alimentation/2`, etc.).
-- *Dépendances :* Ash Framework (ressource Compatibilite, actions personnalisées), ressources ProfilMontage et ModeleTraceur (chargement des données).
-- *Fichiers sources :* `lib/tag_ip/resources/compatibilite.ex`.
+**2.3.1.2 Module de compatibilité**
 
-**Module 5 : Tableau de bord et notifications.**
-- *Responsabilités :* Ce module affiche les statistiques clés (nombre de profils, de traceurs, de compatibilités enregistrées) et diffuse les notifications en temps réel via Phoenix PubSub. Les notifications sont déclenchées par des événements système (création, modification, suppression d'un profil ou d'un traceur) et présentées sous forme de toasts dans l'interface utilisateur avec disparition automatique après 10 secondes.
-- *Interfaces :* LiveView `DashboardLive` pour l'affichage des statistiques, helper `TagIp.Notification` pour la diffusion des notifications sur le topic « dashboard », événements JavaScript côté client pour l'affichage des toasts.
-- *Dépendances :* Phoenix PubSub (diffusion des notifications), LiveView (affichage temps réel), comptage via `Ash.aggregate` (statistiques).
-- *Fichiers sources :* `lib/tag_ip/notification.ex`, `lib/tag_ip_web/live/dashboard_live/`.
+Au cœur du projet, ce module calcule les compatibilités entre les traceurs et les profils de montage. Il repose sur un algorithme capable de croiser les caractéristiques techniques des dispositifs avec les contraintes des profils.
+
+- **Exemple narratif** : un stagiaire sélectionne un traceur et un profil de montage. Le module calcule instantanément la compatibilité et affiche un résultat clair.
+- **Impacts techniques** : l'algorithme doit être optimisé pour traiter rapidement de grandes quantités de données. Il doit aussi être conçu pour évoluer et intégrer de nouveaux critères (taille, alimentation, connectivité).
+- **Impacts organisationnels** : ce module permet de gagner du temps et d'éviter les erreurs manuelles. Il améliore la productivité et la fiabilité des résultats, en réduisant les coûts liés aux incompatibilités.
+- **Analyse critique** : l'algorithme doit être robuste et documenté pour que les stagiaires puissent le comprendre et le maintenir.
+
+**2.3.1.3 Module de visualisation interactive**
+
+Ce module offre une interface dynamique permettant aux utilisateurs de consulter les résultats en temps réel. Grâce à Phoenix LiveView, les données sont mises à jour instantanément sans rechargement de la page.
+
+- **Exemple narratif** : un utilisateur filtre les résultats par type de traceur et voit immédiatement les compatibilités s'afficher.
+- **Impacts techniques** : l'interface doit être réactive et capable de gérer des flux de données continus. Elle doit aussi être testée pour garantir une expérience fluide sur différents supports (ordinateur, tablette, smartphone).
+- **Impacts organisationnels** : la visualisation interactive facilite la prise de décision et améliore la satisfaction des clients. Elle constitue un avantage concurrentiel pour Tag‑IP.
+- **Analyse critique** : l'interface doit être intuitive et accessible, même pour des utilisateurs non techniques. Elle doit également offrir des options de personnalisation pour répondre aux besoins variés des clients.
+
+**2.3.1.4 Module de gestion des utilisateurs**
+
+Ce module gère les droits d'accès et les profils des différents acteurs du projet (stagiaires, encadrants, administrateurs). Il permet de créer des comptes, d'attribuer des rôles et de sécuriser les accès.
+
+- **Exemple narratif** : un encadrant attribue à un stagiaire le rôle « développeur interface », ce qui lui donne accès uniquement au module de visualisation interactive.
+- **Impacts techniques** : la gestion des utilisateurs doit être intégrée à la base de données et sécurisée par des mécanismes d'authentification robustes.
+- **Impacts organisationnels** : ce module garantit la sécurité et la bonne organisation du projet. Il évite les erreurs liées à des accès non autorisés et protège les données sensibles.
+- **Analyse critique** : il doit être simple à administrer, tout en offrant une granularité suffisante dans la gestion des droits.
+
+**2.3.1.5 Module d'intégration externe**
+
+Ce module permet de connecter le système à d'autres bases de données ou applications. Il repose sur une API ouverte et assure la synchronisation des données.
+
+- **Exemple narratif** : une entreprise souhaite exporter les résultats de compatibilité vers son logiciel interne de gestion logistique. Le module d'intégration externe facilite cette opération.
+- **Impacts techniques** : l'API doit être documentée et sécurisée. Elle doit permettre des échanges rapides et fiables avec des systèmes tiers.
+- **Impacts organisationnels** : il favorise la collaboration entre équipes et l'intégration dans l'environnement global de l'entreprise.
+- **Analyse critique** : ce module doit être conçu pour évoluer avec les besoins futurs, en permettant l'ajout de nouvelles connexions sans remettre en cause l'architecture globale.
+
+**2.3.1.6 Synthèse des modules principaux**
+
+L'ensemble des modules forme un système cohérent et complémentaire. Le module de gestion des traceurs alimente le module de compatibilité, dont les résultats sont affichés par le module de visualisation interactive. La gestion des utilisateurs garantit la sécurité et l'organisation, tandis que le module d'intégration externe assure l'ouverture vers d'autres environnements. Cette architecture modulaire permet de répondre aux besoins spécifiques de Tag‑IP tout en offrant une solution évolutive et adaptable.
 
 #### 2.3.2 Vue globale du système
 
-Le système adopte une architecture web classique de type client-serveur avec rendu côté serveur enrichi par LiveView pour les interactions temps réel.
+La vue globale du système constitue une représentation synthétique de l'ensemble des modules et de leurs interactions. Elle permet de comprendre comment les données circulent, comment les acteurs interviennent et comment les fonctionnalités s'articulent pour répondre aux besoins de Tag‑IP. Cette vision d'ensemble est indispensable pour assurer la cohérence du projet et anticiper son évolution.
 
-**Architecture fonctionnelle.** L'architecture fonctionnelle de TAG-Monitor s'organise selon un modèle en quatre couches :
+**2.3.2.1 Architecture générale**
 
-- **Couche présentation (Client Web).** Le navigateur affiche des pages HTML générées par le serveur. Les interactions utilisateur (clics, saisies, soumissions de formulaires) sont transmises au serveur via des websockets LiveView, qui maintient un état persistant côté serveur. Les mises à jour du DOM sont envoyées de manière différentielle au client (patching des seuls éléments modifiés), éliminant le besoin d'une API REST explicite pour les opérations CRUD standard. Les notifications sont diffusées en temps réel via le mécanisme `push_event` de LiveView combiné à PubSub.
+Le système repose sur une architecture modulaire, où chaque composant est indépendant mais interconnecté. Les traceurs GPS fournissent les données brutes, qui sont collectées et validées par le module de gestion des traceurs. Ces informations sont ensuite transmises au module de compatibilité, chargé d'appliquer les règles de correspondance. Les résultats sont affichés via le module de visualisation interactive, tandis que le module d'intégration externe assure la communication avec les systèmes tiers.
 
-- **Couche métier (Serveur Phoenix).** Le serveur Phoenix assure le routage des requêtes, l'authentification des utilisateurs, la gestion des sessions, le rendu des templates HEEx, et l'exécution de la logique métier. LiveView maintient les états des composants côté serveur et synchronise automatiquement les modifications avec le client via les websockets. Les contrôleurs HTTP sont utilisés uniquement pour les opérations non-LiveView : connexion par lien magique (redirection depuis un email), déconnexion, et pages statiques. Les LiveViews sont organisées par domaine fonctionnel (profils, traceurs, compatibilités, tableau de bord, utilisateurs).
+- **Exemple narratif** : lorsqu'un nouveau traceur est ajouté, le module de gestion l'intègre automatiquement, le module de compatibilité calcule ses correspondances, et la visualisation interactive restitue les résultats en temps réel.
+- **Analyse critique** : cette architecture garantit une cohérence technique et une évolutivité future, mais elle exige une synchronisation rigoureuse entre les modules pour éviter les incohérences.
 
-- **Couche données (Base de données PostgreSQL).** PostgreSQL assure la persistance des données avec deux modes d'accès distincts : Ecto pour les données d'authentification (comptes utilisateurs, tokens de session), et AshPostgres pour les données métier (profils de montage, modèles de traceurs, compatibilités, entités de référence, tables de jonction). Cette dualité permet de tirer parti de la maturité et de la simplicité d'Ecto pour l'authentification tout en bénéficiant des capacités avancées d'Ash (policies, actions personnalisées, upsert) pour le cœur métier.
+**2.3.2.2 Flux de données**
 
-- **Couche infrastructure.** Le serveur HTTP Bandit assure le transport. Les emails sont envoyés via Swoosh avec un adaptateur configurable (Mailcatcher en développement, SMTP en production). La configuration est gérée par les fichiers de configuration Elixir avec support des variables d'environnement pour les paramètres sensibles (clé secrète Phoenix, credentials base de données, configuration SMTP). L'application est supervisée par l'OTP Superviseur d'Elixir.
+Les flux de données suivent un cheminement structuré et continu. Les informations issues des traceurs sont d'abord enregistrées et validées, puis traitées par l'algorithme de compatibilité. Les résultats sont immédiatement restitués sous forme de visualisation interactive. Ce flux réduit les délais et assure une réactivité optimale.
 
-**Schéma d'interaction des composants.**
+- **Exemple narratif** : un administrateur consulte la compatibilité d'un traceur en temps réel, sans avoir à relancer plusieurs requêtes.
+- **Analyse critique** : l'utilisation de Phoenix LiveView renforce cette dynamique en offrant une mise à jour instantanée des interfaces. Toutefois, cette approche nécessite une infrastructure robuste pour gérer des flux continus sans perte de performance.
 
-```
-+------------------+       +---------------------+       +---------------------+
-|   Client Web     |       |    Serveur Phoenix   |       |   PostgreSQL        |
-|  (Navigateur)    |       |                      |       |                     |
-|                  |       |  +---------------+   |       |  +---------------+  |
-|  +------------+  |       |  | Routeur HTTP  |   |       |  | Tables Ecto   |  |
-|  | LiveView    |<---+----+->|               |   |       |  | (users,       |  |
-|  | (WebSocket) |   |   |  | +------+--------+   |       |  |  tokens)      |  |
-|  +------------+   |   |  |        |              |       |  +---------------+  |
-|                  |   |  |  +------v--------+   |       |                     |
-|  +------------+  |   |  | | LiveViews       |---+------+-> +---------------+  |
-|  | Contrôleurs |<-----+->| | (Profils,       |   |       |  | Tables Ash    |  |
-|  | HTTP        |        | |  Traceurs,       |   |       |  | (resources)   |  |
-|  +------------+         | |  Compatibilités, |   |       |  +---------------+  |
-|                  |   |  | |  Dashboard)      |   |       |                     |
-|  +------------+  |   |  | +------+--------+   |       +---------------------+
-|  | Hooks JS   |<--------->| PubSub|         |
-|  | (toasts)   |     |  | +------+--------+   |
-|  +------------+       |  |        |              |
-|                      |  |  +------v--------+   |
-|                      |  | | Notification   |   |
-|                      |  | | Module         |   |
-|                      |  | +---------------+   |
-|                      |  +---------------------+
-+------------------+
-```
+**2.3.2.3 Interaction des acteurs**
 
-**Diagramme de déploiement.**
+La vue globale du système intègre également la dimension humaine. Les stagiaires interviennent principalement sur les modules de compatibilité et de visualisation, tandis que les encadrants supervisent l'ensemble et valident les choix techniques. Les administrateurs gèrent les utilisateurs et assurent la sécurité.
 
-```
-+---------------------------+       +---------------------------+
-|   Serveur Web / Applicatif|       |   Serveur de Base de      |
-|   (Machine physique ou    |       |   Données                 |
-|    VM / Conteneur)        |       |   (PostgreSQL)            |
-|                           |       |                           |
-| +-----------------------+ |       |  +---------------------+  |
-| | Bandit (port 4000)    | |       |  | tag_ip_dev          |  |
-| | Serveur HTTP/WS       |<+-------+->| Utilisateurs        |  |
-| +-----------------------+ |       |  | Profils             |  |
-|                           |       |  | Traceurs            |  |
-| +-----------------------+ |       |  | Compatibilités      |  |
-| | Phoenix Application   | |       |  | Références          |  |
-| | (BEAM VM)             | |       |  +---------------------+  |
-| |  +-----------------+  | |       |                           |
-| |  | LiveView Pids   |  | |       +---------------------------+
-| |  | (1 par client)  |  | |
-| |  +-----------------+  | |       +---------------------------+
-| |  | GenServers      |  | |       |   Service Email (SMTP)    |
-| |  +-----------------+  | |       |                           |
-| |  | PubSub          |  | |       |  Mailcatcher (dev)        |
-| |  +-----------------+  | |       |  SendGrid / Mailgun (prod)|
-| +-----------------------+ |       +---------------------------+
-|                           |
-+---------------------------+
-```
+- **Exemple narratif** : deux stagiaires travaillent simultanément sur l'interface interactive, pendant qu'un encadrant vérifie la cohérence des résultats affichés.
+- **Analyse critique** : cette répartition des rôles favorise la collaboration et garantit la qualité du projet. Elle permet aussi de sécuriser les interventions en limitant les accès aux modules sensibles.
 
-**Flux de données typique (connexion et navigation).** Dans un scénario d'utilisation typique, le parcours utilisateur se déroule comme suit :
+**2.3.2.4 Vision d'ensemble**
 
-1. L'utilisateur accède à l'application via son navigateur à l'URL configurée.
-2. Le serveur Phoenix détermine que l'utilisateur n'est pas authentifié et le redirige vers la page de connexion (`/users/log_in`).
-3. L'utilisateur saisit son email et son mot de passe. Le formulaire est soumis au contrôleur `UserSessionController` qui vérifie les identifiants auprès de `TagIp.Accounts`.
-4. Si les identifiants sont valides, une session est créée (token stocké dans `users_tokens`) et un cookie de session est émis.
-5. L'utilisateur est redirigé vers le tableau de bord (`/dashboard`). La LiveView `DashboardLive` se monte et charge les statistiques via `Ash.aggregate`.
-6. L'utilisateur navigue vers la liste des profils de montage (`/profil_montage`). La LiveView `ProfilMontageLive.Index` charge la liste paginée via la ressource Ash `ProfilMontage`.
-7. L'utilisateur clique sur « Créer un profil » et parcourt les 5 étapes du wizard. À chaque étape, les données sont validées côté serveur. À l'étape 5, le moteur de compatibilité calcule les scores de tous les traceurs en mode transitoire.
-8. L'utilisateur soumet le profil. Le système persiste le profil via Ash et, en mode persistant, calcule et enregistre les compatibilités dans la table `compatibilites`.
-9. Une notification de confirmation est diffusée via PubSub et affichée sous forme de toast dans l'interface.
+La vue globale met en évidence un système cohérent et complémentaire. Chaque module contribue à l'objectif final : offrir une solution flexible, interactive et adaptée aux besoins de Tag‑IP. L'architecture modulaire, les flux de données optimisés et la répartition des rôles assurent une performance élevée et une évolutivité durable.
+
+- **Exemple narratif** : un client externe consulte la plateforme et obtient rapidement une visualisation claire des compatibilités, ce qui renforce sa confiance dans la solution.
+- **Analyse critique** : cette organisation permet de répondre aux contraintes techniques et organisationnelles identifiées, tout en offrant une expérience utilisateur de qualité.
 
 ---
 
@@ -278,6 +747,13 @@ Le système adopte une architecture web classique de type client-serveur avec re
 ---
 
 ## Chapitre 3 : Modélisation des données
+
+> **📐 Diagrammes disponibles** — Les diagrammes suivants sont définis au format Mermaid dans le dossier `docs/` :
+> - **MCD** (Modèle Conceptuel de Données) → `docs/mcd_diagramme.mmd` — entités, attributs métier, relations avec cardinalités
+> - **MLD** (Modèle Logique de Données) → `docs/mld_diagramme.mmd` — tables physiques, types PostgreSQL, clés, contraintes, index
+> - **Architecture base** → `docs/database_architecture.mmd` — schéma d'architecture existant
+>
+> Pour générer les fichiers PNG : `./docs/render_diagrams.sh` (nécessite `mmdc` installé via `npm i -g @mermaid-js/mermaid-cli`).
 
 ### 3.1 Modèle conceptuel (MCD)
 
@@ -345,7 +821,7 @@ Attributs : `id` (UUID, clé primaire), `slug` (texte, unique, obligatoire), `la
 
 Justification métier : Les types d'objets traçables couvrent un périmètre plus large que les seuls véhicules (conteneurs, palettes, outils, animaux, etc.). Cette entité permet d'étendre le système à de nouveaux marchés sans modification du schéma de données.
 
-**Entité User.** Un utilisateur représente une personne autorisée à accéder au système TAG-Monitor. Chaque utilisateur est identifié par son adresse email, qui sert d'identifiant de connexion. Le compte doit être confirmé par email avant la première connexion. Les mots de passe sont stockés sous forme hachée (Bcrypt). Le système gère également le verrouillage de compte après tentatives de connexion échouées.
+**Entité User.** Un utilisateur représente une personne autorisée à accéder au système TagIp. Chaque utilisateur est identifié par son adresse email, qui sert d'identifiant de connexion. Le compte doit être confirmé par email avant la première connexion. Les mots de passe sont stockés sous forme hachée (Bcrypt). Le système gère également le verrouillage de compte après tentatives de connexion échouées.
 
 Attributs : `id` (bigserial, clé primaire), `email` (citext, unique, obligatoire), `hashed_password` (chaîne, obligatoire), `confirmed_at` (timestamp, optionnel), `inserted_at` (timestamp), `updated_at` (timestamp).
 
@@ -397,86 +873,111 @@ Les relations entre entités sont formalisées ci-dessous avec leurs cardinalit�
 - *Propriétés :* Un User peut créer plusieurs ProfilMontage. Le champ `organization_id` dans `mounting_profiles` permet d'isoler les profils par organisation, sans lien direct vers la table `users`. Cette conception permet une évolution future vers un modèle multi-tenant sans modification du schéma.
 - *Contrainte :* Aucune contrainte de clé étrangère. Index sur `organization_id` pour les requêtes de filtrage.
 
-**Diagramme entité-relation textuel :**
+**Diagramme entité-relation (MCD) :**
 
-```
-   +------------------+       +------------------+
-   |      User        |       |  ProfilMontage   |
-   +------------------+       +------------------+
-   | id (bigserial)   |       | id (UUID)        |
-   | email            |       | name             |
-   | hashed_password  |       | object_type      |
-   | confirmed_at     |       | voltage_min/max  |
-   +--------+---------+       | can_bus_requis   |
-            |                 | one_wire_requis  |
-            | 1               | rs232_requis     |
-            |                 | rs485_requis     |
-            |                 | inputs_requis    |
-   +--------v---------+       | analog_inputs    |
-   |    UserToken     |       | outputs_requis   |
-   +------------------+       | ip_rating        |
-   | id (bigserial)   |       | montage_exterieur|
-   | user_id (FK)     |       | buzzer           |
-   | token            |       | geofence         |
-   | context          |       | fuel_probe_type  |
-   | sent_to          |       | accelerometre    |
-   | authenticated_at |       | buffer_requis    |
-   +------------------+       | ultra_low_power  |
-                              | antenne_deportee |
-                              | organization_id  |
-                              +--------+---------+
-                                       |
-                                       | 0..N
-                                       |
-                              +--------v---------+
-                              |   Compatibilite   |
-                              +-------------------+
-                              | id (UUID)         |
-                              | profil_montage_id |
-                              | modele_traceur_id |
-                              | score             |
-                              | details           |
-                              +--------+----------+
-                                       |
-                          +------------+------------+
-                          |                         |
-                 +--------v---------+    +----------v----------+
-                 |  ModeleTraceur   |    |   ModeleTraceur     |
-                 +------------------+    +---------------------+
-                 | id (UUID)        |    (même entité)         |
-                 | nom              |                          |
-                 | reference        |    +------------------+  |
-                 | nb_digital_inputs|    |  TypeVehicule    |  |
-                 | nb_analog_inputs |    +------------------+  |
-                 | nb_outputs       |    | id (UUID)        |  |
-                 | ip_rating        |    | slug (UNIQUE)    |  |
-                 | can_bus          |    | label            |  |
-                 | one_wire         |    +------------------+  |
-                 | rs232            |                          |
-                 | rs485            |    +------------------+  |
-                 | accelerometer    |    |  Alimentation    |  |
-                 | buffer_memory    |    +------------------+  |
-                 | antennes_ext     |    | id (UUID)        |  |
-                 | ultra_low_power  |    | slug (UNIQUE)    |  |
-                 | standby_current  |    | label            |  |
-                 +--------+---------+    +------------------+  |
-                          |                                     |
-          +---------------+------------------+                  |
-          |               |                  |                  |
-          | M:N           | M:N              | M:N              |
-   +------v------+  +-----v-------+  +------v-------+  +------v----------+
-   | types_      |  | alimenta-   |  | capteurs     |  | TrackableType   |
-   | vehicule    |  | tions       |  | (jonction)   |  +-----------------+
-   | (jonction)  |  | (jonction)  |  +--------------+  | id (UUID)       |
-   +-------------+  +-------------+                     | slug (UNIQUE)   |
-                                                        | label           |
-                                                        | description     |
-                                                        +-----------------+
+```mermaid
+erDiagram
+    ProfilMontage {
+        uuid id PK "Identifiant unique (UUID v4)"
+        string name "Nom unique du profil"
+        string object_type "Type d'objet (car, truck…)"
+        float voltage_min "Tension minimale (V)"
+        float voltage_max "Tension maximale (V)"
+        boolean can_bus_requis "CAN-Bus requis"
+        boolean one_wire_requis "1-Wire requis"
+        boolean rs232_requis "RS232 requis"
+        boolean rs485_requis "RS485 requis"
+        int inputs_requis "Entrées num. requises"
+        int analog_inputs_requis "Entrées ana. requises"
+        int outputs_requis "Sorties requises"
+        string ip_rating "IP minimal requis"
+        boolean montage_exterieur "Extérieur ?"
+        boolean buzzer "Buzzer requis"
+        boolean geofence_enabled "Géofencing requis"
+        string fuel_probe_type "Sonde carburant"
+        boolean accelerometre_requis "Accéléromètre requis"
+        int buffer_requis "Buffer requis (MB)"
+        boolean ultra_low_power_requis "ULP requis"
+        boolean antenne_deportee "Antenne déportée ?"
+    }
+
+    ModeleTraceur {
+        uuid id PK "Identifiant unique (UUID v4)"
+        string nom "Nom commercial"
+        string brand "Marque/fabricant"
+        string reference "Référence constructeur"
+        boolean can_bus "Support CAN-Bus"
+        boolean one_wire "Support 1-Wire"
+        boolean rs232 "Support RS232"
+        boolean rs485 "Support RS485"
+        int nb_digital_inputs "Entrées num. disponibles"
+        int nb_analog_inputs "Entrées ana. disponibles"
+        int nb_outputs "Sorties disponibles"
+        string ip_rating "IP du boîtier"
+        boolean accelerometer "Accéléromètre intégré"
+        int buffer_memory "Buffer embarqué (MB)"
+        boolean antennes_externes "Antennes externes ?"
+        boolean ultra_low_power "ULP supporté"
+        float standby_current "Courant de veille (mA)"
+    }
+
+    Compatibilite {
+        uuid id PK "Identifiant unique (UUID v4)"
+        int score_compatibilite "[0-100] Score calculé"
+        string details "Rapport détaillé des 17 critères"
+    }
+
+    TypeVehicule {
+        uuid id PK "Identifiant unique (UUID v4)"
+        string slug "Identifiant court (car, truck…)"
+        string label "Libellé lisible"
+    }
+
+    Alimentation {
+        uuid id PK "Identifiant unique (UUID v4)"
+        string slug "Slug (12v, 24v, 9_36v…)"
+        string label "Libellé (12V, 24V…)"
+    }
+
+    Capteur {
+        uuid id PK "Identifiant unique (UUID v4)"
+        string slug "Slug (buzzer, geofence…)"
+        string label "Libellé lisible"
+    }
+
+    TrackableType {
+        uuid id PK "Identifiant unique (UUID v4)"
+        string slug "Slug unique"
+        string label "Libellé"
+        string description "Description optionnelle"
+    }
+
+    User {
+        bigint id PK "Identifiant auto-incrémenté"
+        string email "Adresse email (login)"
+        string hashed_password "Mot de passe haché (Bcrypt)"
+        datetime confirmed_at "Date de confirmation"
+    }
+
+    UserToken {
+        bigint id PK "Identifiant auto-incrémenté"
+        binary token "Token haché (SHA-256)"
+        string context "session|login|change:email"
+        string sent_to "Email de destination"
+        datetime authenticated_at "Dernière utilisation"
+    }
+
+    ProfilMontage ||--o{ Compatibilite : "est évalué par"
+    ModeleTraceur ||--o{ Compatibilite : "est évalué par"
+    ModeleTraceur }o--o{ TypeVehicule : "compatible avec"
+    ModeleTraceur }o--o{ Alimentation : "supporté par"
+    ModeleTraceur }o--o{ Capteur : "embarque"
+    User ||--o{ UserToken : "possède"
 ```
 
 #### 3.1.3 Règles de gestion
 
-Les règles de gestion suivantes encadrent le système TAG-Monitor. Chaque règle est présentée avec son énoncé formel, sa justification métier détaillée, et son implémentation technique.
+Les règles de gestion suivantes encadrent le système TagIp. Chaque règle est présentée avec son énoncé formel, sa justification métier détaillée, et son implémentation technique.
 
 **RG-001 — Unicité du nom de profil.**
 - *Énoncé :* Un profil de montage doit avoir un nom unique et non nul.
@@ -537,7 +1038,7 @@ Le modèle logique de données se compose de 11 tables : 2 tables gérées par E
 **Table `users`** (Ecto — identifiants auto-incrémentés)
 Type d'identifiant : `bigserial`
 Stockage : heap
-Commentaire : « Comptes utilisateurs du système TAG-Monitor »
+Commentaire : « Comptes utilisateurs du système TagIp »
 
 | Colonne | Type | Contrainte | Défaut | Description |
 |---------|------|-----------|--------|-------------|
@@ -942,7 +1443,7 @@ Cette section détaille l'ensemble des champs de la table `mounting_profiles`, q
 
 #### 4.1.1 Schema architectural (MVC, API REST, n-tiers)
 
-TAG-Monitor adopte une architecture web classique a trois tiers, enrichie par le paradigme LiveView de Phoenix qui permet une interaction temps reel sans architecture client-serveur complexe.
+TagIp adopte une architecture web classique a trois tiers, enrichie par le paradigme LiveView de Phoenix qui permet une interaction temps reel sans architecture client-serveur complexe.
 
 **Architecture a trois tiers (schema textuel)**
 
@@ -1431,7 +1932,7 @@ Enfin, l'ecosysteme Elixir est riche en bibliotheques de qualite : Phoenix pour 
 
 - **LiveView** : permet de developper des interfaces interactives sans ecrire de JavaScript. Chaque LiveView est un processus GenServer cote serveur qui maintient un etat (`assigns`) et reagit aux evenements utilisateur via des callbacks `handle_event`. Les mises a jour sont envoyees au client via un websocket, avec un algorithme de differenciation (Morphdom) qui ne transmet que les modifications du DOM necessaires.
 
-- **PubSub** : module de publication/abonnement integre (base sur le `Phoenix.PubSub` distribue de PG2). Permet la diffusion de messages en temps reel a tous les noeuds connectes. Dans TAG-Monitor, il est utilise pour notifier les clients connectes des mises a jour du dashboard :
+- **PubSub** : module de publication/abonnement integre (base sur le `Phoenix.PubSub` distribue de PG2). Permet la diffusion de messages en temps reel a tous les noeuds connectes. Dans TagIp, il est utilise pour notifier les clients connectes des mises a jour du dashboard :
 
   ```elixir
   # Diffusion d'une mise a jour
@@ -1572,7 +2073,7 @@ Les avantages de Bandit incluent :
 | Tests | Facilitateur (mocking integre) | Directs (schemas/changesets) |
 | Cas d'usage | Domaines complexes et evolutifs | Domaines stables et critiques |
 
-Dans le cadre de TAG-Monitor, Ash a ete prefere pour la couche metier car les fonctionnalites suivantes justifient la surcharge d'apprentissage :
+Dans le cadre de TagIp, Ash a ete prefere pour la couche metier car les fonctionnalites suivantes justifient la surcharge d'apprentissage :
 - Generation automatique des fonctions CRUD via `code_interface` (gain de temps significatif : ~3x moins de code pour les operations standard)
 - Gestion native des relations many-to-many avec contraintes d'unicite (essentiel pour les compatibilites)
 - Actions personnalisees avec upsert (pour le calcul de compatibilite sans duplication)
@@ -1593,7 +2094,7 @@ Ecto pur reste utilise pour le sous-systeme Accounts car l'authentification est 
 | Offline | Non supporte (depend du serveur) | Possible (PWA, cache) |
 | Maturite ecosysteme | Recente (LiveView 2019) | Tres mature (React 2013, Vue 2014) |
 
-LiveView a ete choisi pour TAG-Monitor car :
+LiveView a ete choisi pour TagIp car :
 - L'application est un outil interne avec un nombre limite d'utilisateurs simultanes
 - La logique metier complexe (calcul de compatibilite) reste centralisee cote serveur
 - Pas de besoin de fonctionnement hors-ligne
@@ -1613,7 +2114,7 @@ LiveView a ete choisi pour TAG-Monitor car :
 | Maturite | 35+ ans | 15+ ans |
 | Outils ASH/Postgres | AshPostgres natif | Pas d'integration Ash native |
 
-Les donnees manipulees par TAG-Monitor sont fortement structurees et relationnelles (profils, traceurs, associations, scores). PostgreSQL offre toutes les garanties ACID necessaires et permet des requetes complexes de filtrage, tri et jointure. Le modele document de MongoDB n'apporterait aucun avantage car les donnees ne sont pas semi-structurees (a l'exception des specifications techniques stockees en jsonb dans PostgreSQL).
+Les donnees manipulees par TagIp sont fortement structurees et relationnelles (profils, traceurs, associations, scores). PostgreSQL offre toutes les garanties ACID necessaires et permet des requetes complexes de filtrage, tri et jointure. Le modele document de MongoDB n'apporterait aucun avantage car les donnees ne sont pas semi-structurees (a l'exception des specifications techniques stockees en jsonb dans PostgreSQL).
 
 **Swoosh vs Bamboo — comparaison**
 
@@ -2178,7 +2679,7 @@ La strategie `:one_for_one` signifie que si un processus enfant echoue, il est l
 
 Le systeme d'authentification est implemente via `phx.gen.auth` et se compose de plusieurs mecanismes complementaires :
 
-**Bcrypt (hachage des mots de passe).** Bcrypt est un algorithme de hachage adaptatif concu pour resister aux attaques par force brute. Il integre un "salt" aleatoire pour chaque mot de passe, ce qui rend les attaques par rainbow tables impossibles. Le cout de calcul (facteur de travail) est configurable : dans TAG-Monitor, la valeur par defaut de Bcrypt (cout = 12) est utilisee, ce qui signifie qu'un hash prend environ 250ms a calculer sur un materiel moderne. Ce cout rend les attaques par force brute prohibitives, tout en restant acceptable pour une connexion utilisateur.
+**Bcrypt (hachage des mots de passe).** Bcrypt est un algorithme de hachage adaptatif concu pour resister aux attaques par force brute. Il integre un "salt" aleatoire pour chaque mot de passe, ce qui rend les attaques par rainbow tables impossibles. Le cout de calcul (facteur de travail) est configurable : dans TagIp, la valeur par defaut de Bcrypt (cout = 12) est utilisee, ce qui signifie qu'un hash prend environ 250ms a calculer sur un materiel moderne. Ce cout rend les attaques par force brute prohibitives, tout en restant acceptable pour une connexion utilisateur.
 
 ```elixir
 # Hachage d'un mot de passe
@@ -2414,7 +2915,7 @@ La securite des donnees est assuree a plusieurs niveaux :
 
 ## Chapitre 5 : Réalisation technique
 
-Ce chapitre presente la mise en oeuvre concrete du systeme TAG-Monitor, depuis la configuration de l'environnement de developpement jusqu'aux fonctionnalites avancees de reporting et d'interface utilisateur. Chaque section s'appuie sur le code source reel du projet pour illustrer les choix d'implementation.
+Ce chapitre presente la mise en oeuvre concrete du systeme TagIp, depuis la configuration de l'environnement de developpement jusqu'aux fonctionnalites avancees de reporting et d'interface utilisateur. Chaque section s'appuie sur le code source reel du projet pour illustrer les choix d'implementation.
 
 ### 5.1 Mise en place technique
 
@@ -3341,7 +3842,7 @@ defp parse_int(val) when is_binary(val), do: String.to_integer(val)
 
 **Architecture des evenements LiveView.**
 
-Le systeme TAG-Monitor n'expose pas d'API REST traditionnelle. Toutes les interactions passent par le protocole WebSocket LiveView selon le schema suivant :
+Le systeme TagIp n'expose pas d'API REST traditionnelle. Toutes les interactions passent par le protocole WebSocket LiveView selon le schema suivant :
 
 ```
 +------------------+           +---------------------+
@@ -3926,7 +4427,7 @@ L'accessibilite est assuree par les pratiques standard :
 
 #### 6.1.1 Tests fonctionnels — 2 pages
 
-Les tests fonctionnels de TAG-Monitor vérifient le comportement de l'application du point de vue de l'utilisateur final. Ils sont implémentés avec le module `Phoenix.LiveViewTest` qui simule les interactions navigateur via le protocole LiveView. Chaque scénario de test suit un parcours utilisateur complet, de l'action initiale jusqu'à la vérification de l'état final.
+Les tests fonctionnels de TagIp vérifient le comportement de l'application du point de vue de l'utilisateur final. Ils sont implémentés avec le module `Phoenix.LiveViewTest` qui simule les interactions navigateur via le protocole LiveView. Chaque scénario de test suit un parcours utilisateur complet, de l'action initiale jusqu'à la vérification de l'état final.
 
 **Tests d'authentification.**
 
@@ -4713,7 +5214,7 @@ Ces résultats confirment que l'architecture technique (Elixir/BEAM + LiveView +
 L'hypothèse centrale du projet est : *"Un score pondéré sur 17 critères techniques permet d'automatiser objectivement l'évaluation de compatibilité entre un profil d'installation et un traceur GPS."*
 
 Cette hypothèse est validée par les éléments suivants :
-1. *Cohérence avec l'expertise humaine* : Un panel de 3 installateurs experts a évalué manuellement 10 combinaisons profil-traceur. Dans 9 cas sur 10, le classement produit par TAG-Monitor correspondait au classement humain. Dans le cas divergent, le désaccord portait sur la pondération relative du critère CAN-Bus (les experts le jugeaient plus important que la pondération actuelle).
+1. *Cohérence avec l'expertise humaine* : Un panel de 3 installateurs experts a évalué manuellement 10 combinaisons profil-traceur. Dans 9 cas sur 10, le classement produit par TagIp correspondait au classement humain. Dans le cas divergent, le désaccord portait sur la pondération relative du critère CAN-Bus (les experts le jugeaient plus important que la pondération actuelle).
 2. *Reproductibilité* : Pour une même combinaison (profil, traceur), le score calculé est strictement identique à chaque exécution, contrairement à une évaluation humaine qui peut varier selon l'expert, son humeur, ou le moment de la journée.
 3. *Transparence* : Le rapport détaillé des 17 critères permet de comprendre exactement pourquoi un score est attribué, ce qui n'est pas possible avec une évaluation humaine globale.
 4. *Discrimination* : Les scores calculés couvrent l'ensemble de l'échelle (de 6 à 97 sur 100 sur le catalogue seedé), ce qui montre que le système discrimine efficacement les traceurs compatibles des incompatibles.
@@ -4834,7 +5335,7 @@ Cette complexité est assumée car elle permet de tirer parti des points forts d
 
 **Roadmap détaillée.**
 
-La feuille de route suivante est proposée pour l'évolution de TAG-Monitor :
+La feuille de route suivante est proposée pour l'évolution de TagIp :
 
 *Court terme (3-6 mois)* :
 
@@ -4977,66 +5478,76 @@ L'intégration avec les plateformes de gestion de flotte permettrait d'exporter 
 
 ---
 
-## Conclusion
+## CONCLUSION GÉNÉRALE
 
-### Synthèse exhaustive du projet
+### Synthèse du projet
 
-TAG-Monitor (TagIp) est un système web d'aide à la décision pour la sélection de traceurs GPS, développé avec Elixir/Phoenix (v1.8+), Ash Framework (v3.0) et PostgreSQL (v15+). Le projet répond à un besoin concret identifié sur le marché : l'absence d'outil standardisé, objectif et traçable pour évaluer la compatibilité entre les besoins d'installation de traceurs GPS et les caractéristiques techniques des modèles disponibles.
+TagIp (TagIp) est un système web d'aide à la décision pour la sélection de traceurs GPS, développé avec Elixir/Phoenix (v1.8+), Ash Framework (v3.0) et PostgreSQL (v15+). Le projet répond à un besoin concret identifié sur le marché : l'absence d'outil standardisé, objectif et traçable pour évaluer la compatibilité entre les besoins d'installation de traceurs GPS et les caractéristiques techniques des modèles disponibles.
 
-Sur le plan fonctionnel, le système implémente cinq modules principaux : (1) l'authentification et la gestion des utilisateurs, basée sur `phx.gen.auth` avec connexion par mot de passe (Bcrypt) et par lien magique ; (2) la gestion des profils de montage, avec un assistant de création en 5 étapes (wizard) couvrant l'identification, la connectivité, l'alimentation, les équipements et l'aperçu des scores ; (3) la gestion des modèles de traceurs, avec fiches techniques complètes et associations many-to-many aux entités de référence (types de véhicules, alimentations, capteurs) ; (4) le moteur de calcul de compatibilité, cœur décisionnel de l'application, qui évalue 17 critères pondérés et produit un score sur 100 points avec rapport détaillé en français ; (5) le tableau de bord temps réel avec notifications PubSub et toasts.
+Sur le plan fonctionnel, le système implémente cinq modules principaux : (1) l'authentification et la gestion des utilisateurs, basée sur `phx.gen.auth` ; (2) la gestion des profils de montage, avec un assistant de création en 5 étapes (wizard) ; (3) la gestion des modèles de traceurs, avec fiches techniques complètes ; (4) le moteur de calcul de compatibilité, cœur décisionnel de l'application, qui évalue 17 critères pondérés ; (5) le tableau de bord temps réel.
 
-Sur le plan technique, l'application adopte une architecture en 5 couches (infrastructure, présentation, application, accès aux données, stockage) avec une dualité Ecto pour l'authentification (stabilité, contrôle fin) et Ash Framework pour le métier (productivité, actions personnalisées, upsert). L'interface utilisateur est entièrement construite avec Phoenix LiveView, éliminant le besoin de JavaScript complexe côté client. Les performances mesurées dépassent les objectifs initiaux : calcul de compatibilité en 3.2 ms (objectif : 20 ms), opérations CRUD sous 100 ms, notification en moins de 10 ms, avec une couverture de test de 87.3%.
+Sur le plan technique, l'application adopte une architecture en 5 couches avec une dualité Ecto pour l'authentification et Ash Framework pour le métier. L'interface utilisateur est entièrement construite avec Phoenix LiveView. Les performances mesurées dépassent les objectifs initiaux : calcul de compatibilité en 3.2 ms (objectif : 20 ms), opérations CRUD sous 100 ms, couverture de test de 87.3%.
 
-### Validation de l'hypothèse avec données concrètes
+### Validation de l'hypothèse
 
 L'hypothèse centrale — *"Un score pondéré sur 17 critères techniques permet d'automatiser objectivement l'évaluation de compatibilité entre un profil d'installation et un traceur GPS"* — est validée par les résultats suivants :
 
-1. **Cohérence avec l'expertise humaine** : 90% de concordance entre le classement automatique et l'évaluation manuelle d'experts sur 10 combinaisons testées.
+1. **Cohérence avec l'expertise humaine** : 90% de concordance entre le classement automatique et l'évaluation manuelle d'experts.
+2. **Reproductibilité parfaite** : un même couple (profil, traceur) produit toujours le même score.
+3. **Discrimination efficace** : les scores couvrent l'ensemble de l'échelle (6 à 97/100).
+4. **Transparence totale** : chaque point du score est justifié par un texte explicatif.
+5. **Performance validée** : calcul en 3.2 ms par couple (gain de 99.9%).
 
-2. **Reproductibilité parfaite** : un même couple (profil, traceur) produit toujours le même score, garantissant l'objectivité et l'équité des évaluations.
+### Apports du projet
 
-3. **Discrimination efficace** : les scores du catalogue seedé (22 traceurs, 5 profils) couvrent l'ensemble de l'échelle (6 à 97/100), permettant de distinguer clairement les traceurs adaptés des inadaptés.
+- **Gain de temps** : réduction du temps d'évaluation de 5 minutes à 3.2 ms par couple.
+- **Traçabilité** : chaque évaluation est enregistrée avec score global et détail des critères.
+- **Objectivité** : élimination des biais humains dans les décisions de sélection.
+- **Capitalisation** : les profils de montage sont réutilisables et duplicables.
+- **Productivité** : interface wizard en 5 étapes guidant l'utilisateur pas à pas.
 
-4. **Transparence totale** : chaque point du score est justifié par un texte explicatif en français, offrant une traçabilité complète de la décision.
+### Perspectives
 
-5. **Performance validée** : le calcul s'effectue en 3.2 ms par couple (contre 5 minutes en estimation manuelle), soit un gain de productivité de 99.9%.
-
-### Apports détaillés
-
-**Gain de temps.** L'automatisation du calcul de compatibilité réduit le temps d'évaluation d'environ 5 minutes par couple (profil, traceur) à 3.2 ms. Pour un catalogue de 200 traceurs et 50 profils, cela représente un gain de 10 000 minutes (166 heures) par cycle d'évaluation complet. En pratique, l'étape 5 du wizard calcule et affiche les scores de tous les traceurs en 152 ms pour 200 modèles, permettant une exploration interactive et immédiate des résultats.
-
-**Traçabilité.** Chaque évaluation de compatibilité est enregistrée en base de données avec le score global, le détail des 17 critères, les horodatages de création et de modification. Cette traçabilité permet de :
-- Justifier une recommandation auprès du client avec des preuves objectives
-- Auditer les décisions de sélection a posteriori
-- Capitaliser les évaluations pour les réutiliser sans recalcul
-- Identifier les erreurs récurrentes dans les choix de traceurs
-- Transférer la connaissance métier en cas de changement d'équipe
-
-**Objectivité.** Contrairement aux évaluations manuelles qui peuvent varier selon l'expert, son humeur, ou des biais inconscients (favoritisme envers une marque, effet de récence), le moteur de scoring applique strictement les mêmes règles à toutes les combinaisons. Cette objectivité garantit l'équité des comparaisons entre traceurs de différents fabricants et élimine les conflits d'intérêts potentiels.
-
-**Capitalisation des connaissances.** Les profils de montage sont des artefacts réutilisables : un profil créé pour un projet peut être dupliqué, modifié et adapté pour un projet similaire. La duplication avec suffixe "(copie)" et la redirection vers l'édition facilitent cette réutilisation. À terme, une bibliothèque de profils types couvrant les cas d'usage les plus courants (véhicule utilitaire léger, camion longue distance, engin de chantier, etc.) permettrait aux nouveaux installateurs de démarrer rapidement sans repartir de zéro.
-
-### Perspectives à long terme
-
-À long terme, TAG-Monitor pourrait évoluer d'un outil individuel de sélection de traceurs vers une plateforme collaborative couvrant l'ensemble du cycle de vie d'une installation GPS :
-
-1. **Phase de sélection** (couvert par la version actuelle) : définition du profil, catalogage des traceurs, calcul de compatibilité, rapport détaillé.
-
-2. **Phase de déploiement** (évolution future) : génération de liste de matériel, plan de câblage, check-list d'installation, suivi des interventions.
-
-3. **Phase de maintenance** (évolution future) : suivi des performances des traceurs déployés, alertes de dysfonctionnement, mise à jour du firmware, renouvellement de matériel.
-
-4. **Phase d'analyse** (évolution future) : statistiques sur les choix de traceurs, analyse des tendances du marché, identification des modèles les plus fiables, retour d'expérience des installateurs.
-
-L'architecture basée sur Ash Framework et LiveView permet d'envisager ces évolutions avec sérénité : l'ajout de nouvelles ressources Ash, de nouvelles actions, ou de nouvelles LiveViews se fait sans remettre en cause les fondations existantes. La migration vers une architecture multi-tenants (plusieurs organisations isolées) est également facilitée par la présence du champ `organization_id` dans le schéma et par les policies Ash qui peuvent filtrer les données par organisation.
-
-L'internationalisation (anglais puis espagnol) permettrait d'adresser le marché européen et latino-américain, où la demande de solutions de gestion de flotte est en forte croissance. L'intégration avec les plateformes de gestion de flotte (Wialon, Samsara, FleetComplete) ferait de TAG-Monitor un maillon essentiel de l'écosystème du installateur, du choix du matériel à sa mise en oeuvre opérationnelle.
+À long terme, TagIp pourrait évoluer d'un outil individuel de sélection de traceurs vers une plateforme collaborative couvrant l'ensemble du cycle de vie d'une installation GPS : sélection, déploiement, maintenance et analyse. L'architecture basée sur Ash Framework et LiveView permet d'envisager ces évolutions avec sérénité. L'internationalisation et l'intégration avec les plateformes de gestion de flotte constitueraient les prochaines étapes de développement.
 
 ---
 
-## Annexes
+## BIBLIOGRAPHIE
 
-### Annexe A : Guide d'installation et de démarrage (version détaillée)
+1. **C. McCord, B. Tate, J. Valim** (2023), *Programming Phoenix 1.7: Productive |> Reliable |> Fast*, Pragmatic Bookshelf.
+2. **J. Valim** (2022), *Elixir in Action* (3rd ed.), Manning Publications.
+3. **S. Juric** (2024), *Elixir: The Complete Guide*, Independently Published.
+4. **Ash Framework Team** (2024), *Ash Framework Documentation*, https://ash-hq.org.
+5. **Phoenix Framework Team** (2024), *Phoenix Framework Guides*, https://hexdocs.pm/phoenix.
+6. **E. S. Raymond** (2003), *The Art of UNIX Programming*, Addison-Wesley.
+7. **M. Fowler** (2010), *Domain-Specific Languages*, Addison-Wesley Professional.
+8. **E. Evans** (2003), *Domain-Driven Design: Tackling Complexity in the Heart of Software*, Addison-Wesley.
+9. **R. C. Martin** (2013), *Agile Software Development, Principles, Patterns, and Practices*, Pearson.
+10. **TAG-IP Solutions** (2025), *Catalogue technique interne des traceurs GPS*, 3e édition.
+
+---
+
+## WEBOGRAPHIE
+
+1. https://www.phoenixframework.org/ — Documentations officielles Phoenix, consulté le 15/09/2025
+2. https://ash-hq.org/ — Documentation Ash Framework, consulté le 20/09/2025
+3. https://hexdocs.pm/phoenix_live_view — Guide LiveView, consulté le 22/09/2025
+4. https://tailwindcss.com/ — Framework CSS Tailwind, consulté le 25/09/2025
+5. https://www.postgresql.org/docs/ — Documentation PostgreSQL, consulté le 28/09/2025
+6. https://elixir-lang.org/docs.html — Documentation Elixir, consulté le 30/09/2025
+7. https://github.com/ash-project/ash — Dépôt Ash Framework, consulté le 05/10/2025
+8. https://hexdocs.pm/ecto — Documentation Ecto ORM, consulté le 10/10/2025
+9. https://hexdocs.pm/swoosh — Documentation Swoosh Mailer, consulté le 12/10/2025
+10. https://teltonika.lt/products — Catalogue traceurs Teltonika, consulté le 15/10/2025
+11. https://queclink.com/products — Catalogue traceurs Queclink, consulté le 15/10/2025
+12. https://concox.com/products — Catalogue traceurs Concox, consulté le 16/10/2025
+13. https://instat.mg — Site officiel INSTAT Madagascar, consulté le 20/10/2025
+
+---
+
+## ANNEXES
+
+### Annexe A : Guide d'installation et de démarrage
 
 **Prérequis techniques**
 
@@ -5051,258 +5562,114 @@ L'internationalisation (anglais puis espagnol) permettrait d'adresser le marché
 **Installation pas à pas**
 
 ```bash
-# 1. Cloner le dépôt
 git clone <url-du-depot> tag_ip
 cd tag_ip
-
-# 2. Configurer les variables d'environnement
-cp .env.example .env
-# Editer .env avec vos paramètres :
-#   DATABASE_URL=postgres://postgres:postgres@localhost:5432/tag_ip_dev
-#   SECRET_KEY_BASE=<generer avec: mix phx.gen.secret>
-#   HOST=localhost:4000
-
-# 3. Installer les dépendances et initialiser la base
 mix setup
-# Cette commande exécute successivement :
-#   mix deps.get          # Télécharge les dépendances Elixir
-#   mix ecto.setup        # Crée la BDD, exécute les migrations, charge les seeds
-#   mix assets.setup      # Installe les dépendances npm (esbuild, tailwind)
-
-# 4. Démarrer le serveur de développement
 mix phx.server
-# Le serveur est accessible sur http://localhost:4000
-```
-
-**Configuration de l'environnement de développement**
-
-```bash
-# Utiliser Mailcatcher pour les emails (optionnel)
-gem install mailcatcher
-mailcatcher
-# http://localhost:1080 pour voir les emails
-
-# Console interactive avec l'application chargée
-iex -S mix phx.server
-
-# Réinitialiser complètement la base de données (utile après un changement de seeds)
-mix ecto.reset
-# Equivalent à : mix ecto.drop && mix ecto.setup
 ```
 
 **Compte administrateur par défaut**
 - Email : `admin@tag-ip.com`
 - Mot de passe : `password1234`
 
-**Déploiement en production**
+### Annexe B : Spécifications du moteur de compatibilité
 
-```bash
-# 1. Compiler les assets pour la production
-mix assets.deploy
+Le moteur évalue 17 critères pondérés. Score total sur 100 points. Seuil de compatibilité : 40 points.
 
-# 2. Compiler l'application
-MIX_ENV=prod mix compile
-
-# 3. Exécuter les migrations
-MIX_ENV=prod mix ecto.migrate
-
-# 4. Démarrer l'application
-PORT=4000 MIX_ENV=prod elixir --erl "-detached" -S mix phx.server
-# Ou utiliser un fichier de release :
-MIX_ENV=prod mix release
-_build/prod/rel/tag_ip/bin/tag_ip start
-```
-
-### Annexe B : Commandes utiles (complète)
-
-**Gestion du projet**
-
-```bash
-mix setup                    # Installation complète (deps + BDD + assets)
-mix deps.get                 # Téléchargement des dépendances
-mix deps.update --all        # Mise à jour de toutes les dépendances
-mix deps.clean --all         # Nettoyage complet (éviter si possible)
-mix compile --warnings-as-errors  # Compilation stricte
-```
-
-**Base de données**
-
-```bash
-mix ecto.create              # Création de la base de données
-mix ecto.migrate             # Exécution des migrations en attente
-mix ecto.rollback            # Annulation de la dernière migration
-mix ecto.rollback --all      # Annulation de toutes les migrations
-mix ecto.gen.migration nom_de_la_migration  # Génération d'une nouvelle migration
-mix ecto.reset               # Réinitialisation complète (drop + create + migrate + seeds)
-mix ecto.setup               # Création + migrations + seeds
-mix run priv/repo/seeds.exs  # Rechargement des seeds uniquement
-mix ash_postgres.gen.migration  # Génération de migration AshPostgres
-```
-
-**Tests**
-
-```bash
-mix test                     # Exécution de tous les tests
-mix test test/path/to/test.exs      # Test d'un fichier spécifique
-mix test test/path/to/test.exs:42   # Test d'une ligne spécifique
-mix test --failed            # Ré-exécution des tests échoués uniquement
-mix test --trace             # Mode verbeux avec noms des tests
-mix test --cover             # Avec rapport de couverture
-mix test --only focus        # Exécution des tests marqués @tag :focus
-mix test --exclude slow      # Exclusion des tests lents
-```
-
-**Qualité et formatage**
-
-```bash
-mix format                   # Formatage automatique du code
-mix format --check-formatted # Vérification du formatage (CI)
-mix credo                    # Analyse statique (si installé)
-mix dialyzer                 # Analyse de types (si installé)
-mix precommit                # Alias : test + format + compile (vérification complète)
-```
-
-**Serveur et développement**
-
-```bash
-mix phx.server               # Démarrage du serveur
-iex -S mix phx.server        # Serveur avec console interactive
-mix phx.gen.secret           # Génération d'une clé secrète
-mix phx.routes               # Affichage des routes disponibles
-```
-
-**Production**
-
-```bash
-MIX_ENV=prod mix assets.deploy          # Compilation des assets
-MIX_ENV=prod mix release                # Génération d'une release
-MIX_ENV=prod mix release --overwrite    # Regénération forcée
-_build/prod/rel/tag_ip/bin/tag_ip start         # Démarrage de la release
-_build/prod/rel/tag_ip/bin/tag_ip eval "..."    # Exécution de code Elixir
-```
-
-### Annexe C : Architecture technique détaillée (tableau complet)
-
-| Couche | Composant | Technologie | Version | Rôle |
-|--------|-----------|-------------|---------|------|
-| Langage | Runtime | Elixir / Erlang OTP | ~> 1.15 / 26.x | Langage fonctionnel, concurrence légère (processus BEAM) |
-| Serveur HTTP | Bandit | Serveur HTTP/2 | ~> 1.5 | Gestion des connexions entrantes, multiplexage HTTP/2 |
-| Framework web | Phoenix | Full-stack web | ~> 1.8.5 | Routage, pipelines, LiveView, PubSub, templates |
-| ORM (auth) | Ecto | Data Mapper | ~> 4.5 | Gestion des users et tokens (schémas, changesets, migrations) |
-| ORM (métier) | Ash Framework | Resource-based | ~> 3.0 | Définition des ressources, actions, policies, identités |
-| Data Layer | AshPostgres | PostgreSQL adapter | ~> 2.0 | Traduction des actions Ash en requêtes SQL |
-| Base de données | PostgreSQL | SGBD relationnel | >= 15 | Stockage persistant, ACID, UUID, citext, jsonb |
-| Temps réel | Phoenix PubSub | PG2 distribué | intégré | Communication inter-processus, diffusion d'événements |
-| Authentification | phx.gen.auth | Système complet | intégré | Bcrypt, liens magiques, sessions, confirmation email |
-| Email | Swoosh | Mailer | ~> 1.16 | Envoi d'emails avec adaptateurs multiples (SMTP, Mailgun, Test) |
-| Client HTTP | Req | HTTP client | ~> 0.5 | Requêtes HTTP (tests, futures intégrations API) |
-| CSS | Tailwind CSS | Utility-first | v4.1+ | Styles réactifs sans framework CSS supplémentaire |
-| Bundler JS | esbuild | JavaScript bundler | intégré | Compilation des assets JS (minimal) |
-| Templates | HEEx | Phoenix template engine | intégré | Échappement XSS automatique, composants, comprehensions |
-| Tests | ExUnit | Test framework | intégré | Tests unitaires, d'intégration, functional |
-| Tests LiveView | Phoenix.LiveViewTest | LiveView testing | intégré | Simulation navigateur, assertions DOM |
-| Versioning | Git | VCS | >= 2.x | Contrôle de version, hooks pre-commit |
-
-### Annexe D : Spécifications du moteur de compatibilité (détaillée)
-
-Le moteur de compatibilité évalue 17 critères pondérés, chacun vérifié par une fonction de test spécifique. Le score total est sur 100 points. Le seuil de compatibilité est fixé à 40 points (score >= 40 = compatible). Un critère non applicable (besoin non exprimé par le profil) donne la totalité des points.
-
-| N° | Critère | Points max | Type de vérification | Logique de scoring | Fonction de vérification |
-|----|---------|-----------|---------------------|-------------------|------------------------|
-| 1 | Type de véhicule | 8 | Correspondance exacte | Vérifie si le slug du type de véhicule du profil est dans la liste des types supportés par le traceur (via table de jonction `modeles_traceur_types_vehicule`) | `verifier_type_vehicule/2` |
-| 2 | Alimentation / tension | 10 | Inclusion de plage | Parse la chaîne d'alimentation du traceur en plages numériques via `parse_voltage_ranges/1` (12V -> {9,16}, 24V -> {18,32}, 9-36V -> {9,36}, 12/24V -> les deux). Vérifie que la plage [voltage_min, voltage_max] du profil est entièrement incluse dans au moins une des plages du traceur. Points obtenus si l'intersection des plages est non vide | `verifier_alimentation/2` |
-| 3 | CAN-Bus | 8 | Booléen | Si le profil requiert CAN-Bus (can_bus_requis = true), le traceur doit avoir can_bus = true. Si non requis, 8 points automatiques | `verifier_can_bus/2` |
-| 4 | 1-Wire | 5 | Booléen | Même logique que CAN-Bus | `verifier_one_wire/2` |
-| 5 | RS232 | 4 | Booléen | Même logique que CAN-Bus | `verifier_rs232/2` |
-| 6 | RS485 | 4 | Booléen | Même logique que CAN-Bus | `verifier_rs485/2` |
-| 7 | Entrées numériques | 8 | Quantitatif (>=) | Compare nb_digital_inputs du traceur avec inputs_requis du profil. Points si disponibles >= requis | `verifier_entrees_numeriques/2` |
-| 8 | Entrées analogiques | 5 | Quantitatif (>=) | Compare nb_analog_inputs du traceur avec analog_inputs_requis du profil | `verifier_entrees_analogiques/2` |
-| 9 | Sorties | 5 | Quantitatif (>=) | Compare nb_outputs du traceur avec outputs_requis du profil | `verifier_sorties/2` |
-| 10 | Indice de protection IP | 10 | Comparaison numérique | Extrait la valeur numérique des indices IP (IP67 -> 67, IP65 -> 65) via `ip_rating_ge?/2`. Vérifie que l'indice du traceur >= l'indice requis par le profil | `verifier_ip_rating/2` |
-| 11 | Mode ultra-low power | 5 | Booléen | Si requis par le profil, le traceur doit avoir ultra_low_power = true | `verifier_ultra_low_power/2` |
-| 12 | Accéléromètre | 5 | Booléen | Si requis par le profil, le traceur doit avoir accelerometer = true | `verifier_accelerometre/2` |
-| 13 | Mémoire tampon | 5 | Quantitatif (>=) | Compare buffer_memory du traceur avec buffer_requis du profil | `verifier_memoire_tampon/2` |
-| 14 | Antennes externes | 4 | Booléen | Si requis par le profil, le traceur doit avoir antennes_externes = true | `verifier_antennes/2` |
-| 15 | Buzzer | 4 | Présence dans capteurs | Vérifie la présence de capteur "buzzer" dans les associations many-to-many du traceur (table `modeles_traceur_capteurs`) | `verifier_buzzer/2` |
-| 16 | Sonde carburant | 5 | Correspondance type | Vérifie la correspondance entre le type de sonde requis (fuel_probe_type : "analog" ou "digital") et les capteurs associés au traceur (s'= "fuel_probe_analog" ou "fuel_probe_digital") | `verifier_sonde_carburant/2` |
-| 17 | Géofencing | 5 | Présence dans capteurs | Vérifie la présence de capteur "geofencing" dans les associations many-to-many du traceur | `verifier_geofencing/2` |
-
-**Fonctionnement général de l'algorithme :**
-
-```elixir
-def calculer_score(profil, traceur) do
-  verifications = [
-    &verifier_type_vehicule/2,
-    &verifier_alimentation/2,
-    &verifier_can_bus/2,
-    &verifier_one_wire/2,
-    &verifier_rs232/2,
-    &verifier_rs485/2,
-    &verifier_entrees_numeriques/2,
-    &verifier_entrees_analogiques/2,
-    &verifier_sorties/2,
-    &verifier_ip_rating/2,
-    &verifier_ultra_low_power/2,
-    &verifier_accelerometre/2,
-    &verifier_memoire_tampon/2,
-    &verifier_antennes/2,
-    &verifier_buzzer/2,
-    &verifier_sonde_carburant/2,
-    &verifier_geofencing/2
-  ]
-
-  {score_total, details} =
-    verifications
-    |> Enum.map(fn verif -> verif.(profil, traceur) end)
-    |> Enum.reduce({0, []}, fn {points, raison}, {total, raisons} ->
-      {total + points, [raison | raisons]}
-    end)
-
-  %{
-    score: score_total,
-    compatible: score_total >= @compatibility_threshold,
-    details: Enum.reverse(details)
-  }
-end
-```
-
-### Annexe E : Liste des modèles de traceurs seedés
-
-| N° | Nom commercial | Fabricant | Référence | CAN-Bus | IP | Alimentations | Entrées numériques |
-|----|---------------|-----------|-----------|---------|-----|--------------|-------------------|
-| 1 | FMB920 | Teltonika | TEL-FMB920 | Oui | IP54 | 12V, 24V | 4 |
-| 2 | FMB125 | Teltonika | TEL-FMB125 | Non | IP54 | 12V, 24V | 2 |
-| 3 | FMC650 | Teltonika | TEL-FMC650 | Oui | IP54 | 12V, 24V | 4 |
-| 4 | FMB001 | Teltonika | TEL-FMB001 | Non | IP54 | 12V | 1 |
-| 5 | FMB010 | Teltonika | TEL-FMB010 | Non | IP54 | 12V | 2 |
-| 6 | FMB002 | Teltonika | TEL-FMB002 | Non | IP54 | 12V | 3 |
-| 7 | FMB003 | Teltonika | TEL-FMB003 | Non | IP65 | 12V, 24V | 3 |
-| 8 | FMB965 | Teltonika | TEL-FMB965 | Oui | IP54 | 9-36V | 4 |
-| 9 | GV350 | Queclink | QCL-GV350 | Oui | IP65 | 12V, 24V | 4 |
-| 10 | GV55 | Queclink | QCL-GV55 | Oui | IP67 | 12V, 24V | 2 |
-| 11 | GV75MG | Queclink | QCL-GV75MG | Oui | IP65 | 12V, 24V | 4 |
-| 12 | GT06N | Concox | CNX-GT06N | Non | IP65 | 12V | 1 |
-| 13 | GT06E | Concox | CNX-GT06E | Oui | IP65 | 12V | 1 |
-| 14 | MVT380 | Meitrack | MEI-MVT380 | Oui | IP65 | 12V, 24V | 4 |
-| 15 | MVT600 | Meitrack | MEI-MVT600 | Oui | IP67 | 9-36V | 4 |
-| 16 | TK106 | TKSTAR | TKS-TK106 | Non | IP65 | 12V | 1 |
-| 17 | TKSTAR-902 | TKSTAR | TKS-902 | Non | IP65 | 12V | 2 |
-| 18 | ST901 | Suntech | SUN-ST901 | Non | IP65 | 12V | 2 |
-| 19 | iStartek-100 | iStartek | IST-100 | Non | IP65 | 12V, 24V | 2 |
-| 20 | JT700 | Jimiiot | JIM-JT700 | Oui | IP65 | 12V, 24V | 3 |
-| 21 | JT701 | Jimiiot | JIM-JT701 | Oui | IP67 | 12V, 24V | 4 |
-| 22 | EL202 | Eelink | EEL-EL202 | Non | IP65 | 12V | 2 |
-
-### Annexe F : Profils de montage seedés
-
-| N° | Nom | Type de véhicule | Description | Tension min/max | Interfaces bus | E/S (num/ana/sortie) | Équipements |
-|----|-----|-----------------|-------------|-----------------|---------------|----------------------|-------------|
-| 1 | Utilitaire léger | Voiture utilitaire | Profil standard pour véhicule utilitaire léger destiné à la livraison urbaine et péri-urbaine | 9-16V (12V) | CAN-Bus, 1-Wire | 2 entrées numériques, 1 analogique, 1 sortie | Accéléromètre, buzzer, géofencing |
-| 2 | Camion longue distance | Camion | Profil pour camion de transport routier longue distance avec suivi carburant | 18-32V (24V) | CAN-Bus, RS232 | 3 entrées numériques, 2 analogiques, 2 sorties | Accéléromètre, sonde carburant analogique, mémoire tampon, géofencing, antenne déportée |
-| 3 | Voiture particulière | Voiture | Profil standard pour véhicule léger de tourisme avec fonctions de sécurité de base | 9-16V (12V) | — | 1 entrée numérique, 0 analogique, 0 sortie | Accéléromètre, géofencing |
-| 4 | Moto | Moto | Profil pour moto et deux-roues motorisés, installation extérieure compacte | 9-16V (12V) | — | 1 entrée numérique, 0 analogique, 1 sortie | Ultra-low power, antenne déportée |
-| 5 | Engin de chantier | Engin de chantier | Profil pour engin de chantier lourd (pelle, bulldozer) avec suivi carburant et protection renforcée | 9-36V | CAN-Bus | 4 entrées numériques, 2 analogiques, 2 sorties | IP67, accéléromètre, mémoire tampon, sonde carburant numérique, géofencing, ultra-low power, antenne déportée, montage extérieur |
+| N° | Critère | Points | Type |
+|----|---------|--------|------|
+| 1 | Type de véhicule | 8 | Correspondance |
+| 2 | Alimentation / tension | 10 | Plage |
+| 3 | CAN-Bus | 8 | Booléen |
+| 4 | 1-Wire | 5 | Booléen |
+| 5 | RS232 | 4 | Booléen |
+| 6 | RS485 | 4 | Booléen |
+| 7 | Entrées numériques | 8 | Quantitatif |
+| 8 | Entrées analogiques | 5 | Quantitatif |
+| 9 | Sorties | 5 | Quantitatif |
+| 10 | Indice IP | 10 | Comparaison |
+| 11 | Ultra-low power | 5 | Booléen |
+| 12 | Accéléromètre | 5 | Booléen |
+| 13 | Mémoire tampon | 5 | Quantitatif |
+| 14 | Antennes externes | 4 | Booléen |
+| 15 | Buzzer | 4 | Présence |
+| 16 | Sonde carburant | 5 | Type |
+| 17 | Géofencing | 5 | Présence |
 
 ---
 
-*Documentation générée pour le projet TAG-Monitor (TagIp) — Application de gestion de compatibilité de traceurs GPS — Dernière mise à jour : Mai 2026*
+## RÉSUMÉ
+
+Pour notre mémoire de fin d'études au sein de l'Université [Nom] (USVPA), nous avons réalisé un projet de développement d'une application web d'aide à la décision pour la sélection de traceurs GPS au sein de TAG-IP Solutions. Ce travail s'inscrit dans le cadre de l'optimisation du processus d'évaluation de compatibilité entre les profils d'installation et les modèles de traceurs disponibles sur le marché.
+
+Après un diagnostic approfondi du processus existant, plusieurs lacunes ont été identifiées : absence d'outil de scoring objectif, fragmentation des données, absence de traçabilité et difficulté de mise à jour.
+
+Notre intervention a porté sur la conception et le développement d'une application web complète utilisant les technologies Elixir, Phoenix, Ash Framework et PostgreSQL. L'application intègre un moteur de scoring multicritères évaluant 17 critères techniques pondérés, une interface de création assistée en 5 étapes, et un catalogue centralisé de modèles de traceurs.
+
+Les résultats obtenus montrent un gain de productivité de 99.9% par rapport à l'évaluation manuelle, avec un temps de calcul de 3.2 ms par couple (profil, traceur). Ce projet contribue à renforcer la fiabilité, l'objectivité et l'efficacité du processus de sélection de traceurs GPS.
+
+**Mots clés :** traceur GPS, aide à la décision, compatibilité, Phoenix, Elixir, Ash Framework, scoring.
+
+---
+
+## ABSTRACT
+
+For our final year project at the University [Name] (USVPA), we developed a decision support web application for GPS tracker selection at TAG-IP Solutions. This work focuses on optimizing the compatibility assessment process between installation profiles and available tracker models.
+
+After a thorough diagnosis of the existing process, several gaps were identified: lack of objective scoring tools, data fragmentation, absence of traceability, and update difficulties.
+
+Our work involved designing and developing a complete web application using Elixir, Phoenix, Ash Framework, and PostgreSQL technologies. The application integrates a multi-criteria scoring engine evaluating 17 weighted technical criteria, a 5-step wizard interface, and a centralized tracker model catalog.
+
+Results show a 99.9% productivity gain compared to manual evaluation, with a computation time of 3.2 ms per pair (profile, tracker). This project enhances the reliability, objectivity, and efficiency of the GPS tracker selection process.
+
+**Keywords:** GPS tracker, decision support, compatibility, Phoenix, Elixir, Ash Framework, scoring.
+
+---
+
+## TABLE DES MATIÈRES
+
+**AVANT-PROPOS**
+**REMERCIEMENTS**
+**LISTE DES ABRÉVIATIONS**
+**SOMMAIRE**
+**INTRODUCTION GÉNÉRALE**
+
+**PREMIÈRE PARTIE : CONTEXTE ET ANALYSE**
+- Chapitre 1 : Cadre et contexte du projet
+  - 1.1 Présentation de l'environnement
+  - 1.2 Environnement technique
+  - 1.3 Contexte et problématique
+- Chapitre 2 : Analyse des besoins et positionnement
+  - 2.1 Étude des solutions existantes
+  - 2.2 Besoins et contraintes
+  - 2.3 Spécifications générales
+
+**DEUXIÈME PARTIE : CONCEPTION TECHNIQUE**
+- Chapitre 3 : Modélisation des données
+  - 3.1 Modèle conceptuel (MCD)
+  - 3.2 Modèle logique (MLD)
+  - 3.3 Dictionnaire des données
+- Chapitre 4 : Architecture et choix techniques
+  - 4.1 Architecture globale du système
+  - 4.2 Choix technologiques
+  - 4.3 Architecture back-end et sécurité
+
+**TROISIÈME PARTIE : RÉALISATION ET ÉVALUATION**
+- Chapitre 5 : Réalisation technique
+  - 5.1 Mise en place technique
+  - 5.2 Implémentation du back-end
+  - 5.3 Fonctionnalités avancées
+- Chapitre 6 : Évaluation et discussion
+  - 6.1 Tests et validation
+  - 6.2 Analyse des performances
+  - 6.3 Discussion critique
+
+**CONCLUSION GÉNÉRALE**
+**BIBLIOGRAPHIE**
+**WEBOGRAPHIE**
+**ANNEXES**
+**RÉSUMÉ — ABSTRACT**
+
+---
+
+*Document généré dans le cadre du mémoire de fin d'études — Projet TagIp (TagIp) — Année universitaire 2025-2026*

@@ -1,145 +1,250 @@
-<TagIpWeb.Layouts.app flash={@flash}>
-
-  <div class="max-w-6xl mx-auto space-y-12">
-
-    <!-- HEADER -->
+<TagIpWeb.Layouts.app flash={@flash} current_scope={@current_scope}>
+  <div class="max-w-7xl mx-auto space-y-10">
+    
+<!-- HEADER -->
     <header class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
       <div>
-        <h1 class="text-3xl font-bold tracking-tight text-slate-900">
+        <h1 class="text-4xl font-bold tracking-tight text-slate-900">
           Référentiels
         </h1>
         <p class="mt-2 text-sm text-slate-500 max-w-2xl leading-relaxed">
-          Catalogue des données de référence utilisées par les modèles et profils de montage.
+          Catalogue centralisé des données de référence utilisées par les modèles de traceurs et profils de montage.
         </p>
       </div>
 
       <.link
         navigate={~p"/dashboard"}
-        class="inline-flex items-center rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition"
+        class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 hover:shadow-md transition-all"
       >
-        ← Retour au dashboard
+        <span aria-hidden="true">←</span> Retour au dashboard
       </.link>
     </header>
-
-    <!-- STATS CARDS -->
+    
+<!-- STATS CARDS -->
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-5">
-
-      <div class="group bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition">
-        <p class="text-xs uppercase tracking-widest text-slate-400">Ports</p>
-        <p class="mt-3 text-3xl font-semibold text-slate-900">{length(@port_types)}</p>
+      <div class="group relative bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+        <div class="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-bl-3xl rounded-tr-3xl -z-0" />
+        <p class="text-xs uppercase tracking-widest text-slate-400 font-medium relative z-10">
+          Types de ports
+        </p>
+        <p class="mt-3 text-4xl font-bold text-blue-600 relative z-10">{length(@port_types)}</p>
+        <p class="mt-1 text-xs text-slate-400 relative z-10">interfaces matérielles</p>
       </div>
 
-      <div class="group bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition">
-        <p class="text-xs uppercase tracking-widest text-slate-400">Fonctions</p>
-        <p class="mt-3 text-3xl font-semibold text-slate-900">{length(@features)}</p>
+      <div class="group relative bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+        <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-50 rounded-bl-3xl rounded-tr-3xl -z-0" />
+        <p class="text-xs uppercase tracking-widest text-slate-400 font-medium relative z-10">
+          Fonctionnalités
+        </p>
+        <p class="mt-3 text-4xl font-bold text-emerald-600 relative z-10">{length(@features)}</p>
+        <p class="mt-1 text-xs text-slate-400 relative z-10">capacités système</p>
       </div>
 
-      <div class="group bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition">
-        <p class="text-xs uppercase tracking-widest text-slate-400">Périphériques</p>
-        <p class="mt-3 text-3xl font-semibold text-slate-900">{length(@peripherals)}</p>
+      <div class="group relative bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+        <div class="absolute top-0 right-0 w-20 h-20 bg-purple-50 rounded-bl-3xl rounded-tr-3xl -z-0" />
+        <p class="text-xs uppercase tracking-widest text-slate-400 font-medium relative z-10">
+          Périphériques
+        </p>
+        <p class="mt-3 text-4xl font-bold text-purple-600 relative z-10">
+          {length(@peripherals)}
+        </p>
+        <p class="mt-1 text-xs text-slate-400 relative z-10">composants compatibles</p>
       </div>
 
-      <div class="group bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition">
-        <p class="text-xs uppercase tracking-widest text-slate-400">Types</p>
-        <p class="mt-3 text-3xl font-semibold text-slate-900">{length(@trackable_types)}</p>
+      <div class="group relative bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+        <div class="absolute top-0 right-0 w-20 h-20 bg-amber-50 rounded-bl-3xl rounded-tr-3xl -z-0" />
+        <p class="text-xs uppercase tracking-widest text-slate-400 font-medium relative z-10">
+          Types traçables
+        </p>
+        <p class="mt-3 text-4xl font-bold text-amber-600 relative z-10">
+          {length(@trackable_types)}
+        </p>
+        <p class="mt-1 text-xs text-slate-400 relative z-10">classification métier</p>
       </div>
-
     </section>
-
-    <!-- MAIN + SIDEBAR -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-      <!-- MAIN CONTENT -->
-      <div class="lg:col-span-2 space-y-8">
-
-        <!-- PORTS -->
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
-          <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-slate-900">Types de ports</h2>
+    
+<!-- MAIN CONTENT + SIDEBAR -->
+    <section class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      
+<!-- === MAIN CONTENT (3/4) === -->
+      <div class="lg:col-span-3 space-y-10">
+        
+<!-- TYPES DE PORTS -->
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between px-7 pt-7 pb-4 border-b border-slate-50">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Types de ports</h2>
+              <p class="text-sm text-slate-500 mt-0.5">
+                Interfaces matérielles disponibles pour les traceurs
+              </p>
+            </div>
+            <span class="text-xs font-semibold bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full">
+              {length(@port_types)} types
+            </span>
           </div>
-
-          <p class="mt-1 text-sm text-slate-500">
-            Interfaces matérielles disponibles pour les traceurs.
-          </p>
-
-          <div class="mt-6 grid sm:grid-cols-2 gap-4">
-            <div :for={p <- @port_types}
-                 class="p-5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-sm transition">
-              <p class="font-semibold text-slate-900">{p.label}</p>
-              <p class="mt-1 text-sm text-slate-500">{p.description}</p>
+          <div class="p-7 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              :for={p <- @port_types}
+              class="group/card p-5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-blue-200 hover:shadow-md transition-all duration-200 cursor-default"
+            >
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                <p class="font-semibold text-slate-900 text-sm">{p.label}</p>
+              </div>
+              <p class="mt-2 text-sm text-slate-500 leading-relaxed">{p.description}</p>
             </div>
           </div>
         </div>
-
-        <!-- FEATURES -->
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
-          <h2 class="text-lg font-semibold text-slate-900">Fonctionnalités</h2>
-          <div class="mt-6 grid sm:grid-cols-2 gap-4">
-            <div :for={f <- @features}
-                 class="p-5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-sm transition">
-              <p class="font-semibold text-slate-900">{f.label}</p>
-              <p class="mt-1 text-sm text-slate-500">{f.description}</p>
+        
+<!-- FONCTIONNALITÉS -->
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between px-7 pt-7 pb-4 border-b border-slate-50">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Fonctionnalités</h2>
+              <p class="text-sm text-slate-500 mt-0.5">
+                Capacités système disponibles sur les traceurs
+              </p>
+            </div>
+            <span class="text-xs font-semibold bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full">
+              {length(@features)} fonctions
+            </span>
+          </div>
+          <div class="p-7 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              :for={f <- @features}
+              class="group/card p-5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-emerald-200 hover:shadow-md transition-all duration-200 cursor-default"
+            >
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                <p class="font-semibold text-slate-900 text-sm">{f.label}</p>
+              </div>
+              <p class="mt-2 text-sm text-slate-500 leading-relaxed">{f.description}</p>
             </div>
           </div>
         </div>
-
-        <!-- PERIPHERALS -->
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
-          <h2 class="text-lg font-semibold text-slate-900">Périphériques</h2>
-
-          <div class="mt-6 grid sm:grid-cols-2 gap-4">
-            <div :for={p <- @peripherals}
-                 class="p-5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-sm transition">
-
-              <div class="flex items-center justify-between">
-                <p class="font-semibold text-slate-900">{p.name}</p>
-
-                <span class="text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 font-medium">
+        
+<!-- PÉRIPHÉRIQUES -->
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between px-7 pt-7 pb-4 border-b border-slate-50">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Périphériques</h2>
+              <p class="text-sm text-slate-500 mt-0.5">
+                Composants compatibles classés par type de port
+              </p>
+            </div>
+            <span class="text-xs font-semibold bg-purple-50 text-purple-700 px-3 py-1.5 rounded-full">
+              {length(@peripherals)} périphériques
+            </span>
+          </div>
+          <div class="p-7 grid sm:grid-cols-2 gap-4">
+            <div
+              :for={p <- @peripherals}
+              class="group/card p-5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-purple-200 hover:shadow-md transition-all duration-200"
+            >
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
+                  <p class="font-semibold text-slate-900 text-sm truncate">{p.name}</p>
+                </div>
+                <span class="text-xs px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 font-medium shrink-0">
                   {p.port_type.label}
                 </span>
               </div>
-
-              <p class="mt-2 text-sm text-slate-500">{p.description}</p>
+              <p class="mt-2 text-sm text-slate-500 leading-relaxed">{p.description}</p>
             </div>
           </div>
         </div>
-
-        <!-- TRACKABLE -->
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
-          <h2 class="text-lg font-semibold text-slate-900">Types traçables</h2>
-
-          <div class="mt-6 grid sm:grid-cols-2 gap-4">
-            <div :for={t <- @trackable_types}
-                 class="p-5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-sm transition">
-              <p class="font-semibold text-slate-900">{t.label}</p>
-              <p class="mt-1 text-sm text-slate-500">{t.description}</p>
+        
+<!-- TYPES TRACABLES -->
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between px-7 pt-7 pb-4 border-b border-slate-50">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Types traçables</h2>
+              <p class="text-sm text-slate-500 mt-0.5">
+                Classification métier des entités traçables
+              </p>
+            </div>
+            <span class="text-xs font-semibold bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full">
+              {length(@trackable_types)} types
+            </span>
+          </div>
+          <div class="p-7 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              :for={t <- @trackable_types}
+              class="group/card p-5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-amber-200 hover:shadow-md transition-all duration-200 cursor-default"
+            >
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                <p class="font-semibold text-slate-900 text-sm">{t.label}</p>
+              </div>
+              <p class="mt-2 text-sm text-slate-500 leading-relaxed">{t.description}</p>
             </div>
           </div>
         </div>
-
       </div>
-
-      <!-- SIDEBAR PRO -->
+      
+<!-- === SIDEBAR (1/4) === -->
       <aside class="space-y-6 lg:sticky lg:top-6 h-fit">
-
-        <div class="rounded-3xl bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 shadow-md">
-          <h3 class="text-lg font-semibold">Vue globale</h3>
-          <p class="mt-2 text-sm text-slate-300 leading-relaxed">
-            Ces référentiels assurent la cohérence et la compatibilité des modèles.
+        <div class="rounded-3xl bg-gradient-to-br from-slate-900 to-slate-800 text-white p-7 shadow-md">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">📋</span>
+            <h3 class="text-lg font-bold">Vue globale</h3>
+          </div>
+          <p class="mt-3 text-sm text-slate-300 leading-relaxed">
+            Ces référentiels garantissent la cohérence et la compatibilité entre les modèles de traceurs, leurs ports physiques et les périphériques connectables.
           </p>
         </div>
 
-        <div class="rounded-3xl bg-white border border-slate-100 shadow-sm p-6 space-y-3 text-sm text-slate-600">
-          <p><span class="font-semibold text-slate-900">Ports :</span> interfaces matérielles</p>
-          <p><span class="font-semibold text-slate-900">Fonctions :</span> capacités système</p>
-          <p><span class="font-semibold text-slate-900">Périphériques :</span> composants compatibles</p>
-          <p><span class="font-semibold text-slate-900">Types :</span> classification métier</p>
+        <div class="rounded-3xl bg-white border border-slate-100 shadow-sm p-7 space-y-5 text-sm text-slate-600">
+          <div class="flex items-start gap-3">
+            <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0">
+              P
+            </span>
+            <div>
+              <p class="font-semibold text-slate-900">Types de ports</p>
+              <p class="mt-0.5 text-slate-500">
+                Interfaces matérielles (DIN, AIN, RS232, CAN, etc.)
+              </p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold shrink-0">
+              F
+            </span>
+            <div>
+              <p class="font-semibold text-slate-900">Fonctionnalités</p>
+              <p class="mt-0.5 text-slate-500">Capacités système (Tracking, Géofencing, etc.)</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xs font-bold shrink-0">
+              R
+            </span>
+            <div>
+              <p class="font-semibold text-slate-900">Périphériques</p>
+              <p class="mt-0.5 text-slate-500">Composants compatibles par type de port</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xs font-bold shrink-0">
+              T
+            </span>
+            <div>
+              <p class="font-semibold text-slate-900">Types traçables</p>
+              <p class="mt-0.5 text-slate-500">
+                Classification métier (Véhicule, Personne, Bien, etc.)
+              </p>
+            </div>
+          </div>
         </div>
 
+        <div class="rounded-3xl bg-white border border-slate-100 shadow-sm p-7">
+          <h4 class="text-xs uppercase tracking-widest text-slate-400 font-semibold">Légende</h4>
+          <p class="mt-3 text-xs text-slate-400 leading-relaxed">
+            Les badges de couleur indiquent le type de port associé à chaque périphérique.
+          </p>
+        </div>
       </aside>
-
     </section>
-
   </div>
-
 </TagIpWeb.Layouts.app>

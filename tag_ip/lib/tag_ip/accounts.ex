@@ -173,6 +173,20 @@ defmodule TagIp.Accounts do
   end
 
   ## =========================================================
+  ## RESET PASSWORD
+  ## =========================================================
+
+  def get_user_by_reset_password_token(token) do
+    case UserToken.verify_reset_password_token_query(token) do
+      {:ok, query} ->
+        Repo.one(query)
+
+      _ ->
+        nil
+    end
+  end
+
+  ## =========================================================
   ## PASSWORD CHANGE HELPERS
   ## =========================================================
 

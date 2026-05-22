@@ -1,0 +1,271 @@
+%% ============================================================================
+%% MLD — MODÈLE LOGIQUE DE DONNÉES (Physique)
+%% Projet TagIp : Schéma PostgreSQL — Approche hybride Ecto + AshPostgres
+%% ============================================================================
+
+erDiagram
+    %% =========================================================================
+    %% ZONE MÉTIER — Ressources Ash (domaines: TagIp.Resources & TagIp.TagIp)
+    %% =========================================================================
+
+    mounting_profiles {
+        uuid id PK  "gen_random_uuid()"
+        text name "UNIQUE NOT NULL — Nom du profil"
+        text description "NULL — Description libre"
+        text object_type "NULL — Slug du type de véhicule"
+        float voltage_min "NULL — Tension min (volts)"
+        float voltage_max "NULL — Tension max (volts)"
+        boolean can_bus_requis "NOT NULL DEFAULT false"
+        boolean one_wire_requis "NOT NULL DEFAULT false"
+        boolean rs232_requis "NOT NULL DEFAULT false"
+        boolean rs485_requis "NOT NULL DEFAULT false"
+        int inputs_requis "NOT NULL DEFAULT 0 — CHECK >= 0"
+        int analog_inputs_requis "NOT NULL DEFAULT 0 — CHECK >= 0"
+        int outputs_requis "NOT NULL DEFAULT 0 — CHECK >= 0"
+        text ip_rating "NULL — ex: IP65"
+        boolean montage_exterieur "NOT NULL DEFAULT false"
+        boolean buzzer "NOT NULL DEFAULT false"
+        boolean geofence_enabled "NOT NULL DEFAULT false"
+        text fuel_probe_type "NULL — analog|digital|null"
+        boolean accelerometre_requis "NOT NULL DEFAULT false"
+        int buffer_requis "NOT NULL DEFAULT 0 — CHECK >= 0"
+        boolean ultra_low_power_requis "NOT NULL DEFAULT false"
+        boolean antenne_deportee "NOT NULL DEFAULT false"
+        text reporting_interval "NULL"
+        text driver_id_type "NULL"
+        uuid organization_id "NULL — Pour multi-tenant futur"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    modeles_traceur {
+        uuid id PK  "gen_random_uuid()"
+        varchar(100) nom "NOT NULL — Nom commercial"
+        varchar(50) reference "UNIQUE NOT NULL — Réf. constructeur"
+        text brand "NULL — Marque/fabricant"
+        varchar(500) description "NULL"
+        boolean can_bus "NOT NULL DEFAULT false"
+        boolean one_wire "NOT NULL DEFAULT false"
+        boolean rs232 "NOT NULL DEFAULT false"
+        boolean rs485 "NOT NULL DEFAULT false"
+        int nb_digital_inputs "NOT NULL DEFAULT 0 — CHECK >= 0"
+        int nb_analog_inputs "NOT NULL DEFAULT 0 — CHECK >= 0"
+        int nb_outputs "NOT NULL DEFAULT 0 — CHECK >= 0"
+        varchar(10) ip_rating "NULL"
+        boolean accelerometer "NOT NULL DEFAULT false"
+        int buffer_memory "NOT NULL DEFAULT 0 — CHECK >= 0"
+        boolean antennes_externes "NOT NULL DEFAULT false"
+        boolean ultra_low_power "NOT NULL DEFAULT false"
+        float standby_current "NULL — Courant de veille (mA)"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    compatibilites {
+        uuid id PK  "gen_random_uuid()"
+        uuid profil_montage_id FK "NOT NULL — FK -> mounting_profiles(id) ON DELETE CASCADE"
+        uuid modele_traceur_id FK "NOT NULL — FK -> modeles_traceur(id) ON DELETE CASCADE"
+        int score_compatibilite "NOT NULL DEFAULT 0 — CHECK 0-100"
+        text details "NULL — Rapport JSON/texte des 17 critères"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    types_vehicule {
+        uuid id PK  "gen_random_uuid()"
+        varchar(50) slug "UNIQUE NOT NULL — ex: car, truck, motorcycle"
+        varchar(100) label "NOT NULL — ex: Voiture, Camion, Moto"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    alimentations {
+        uuid id PK  "gen_random_uuid()"
+        varchar(50) slug "UNIQUE NOT NULL — ex: 12v, 24v, 9_36v"
+        varchar(100) label "NOT NULL — ex: 12V, 24V, 9-36V"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    capteurs {
+        uuid id PK  "gen_random_uuid()"
+        varchar(50) slug "UNIQUE NOT NULL — ex: buzzer, geofence"
+        varchar(100) label "NOT NULL — ex: Buzzer, Géofencing"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    trackable_types {
+        uuid id PK  "gen_random_uuid()"
+        text slug "UNIQUE NOT NULL — Importé depuis CSV"
+        text label "NOT NULL"
+        text description "NULL"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    features {
+        uuid id PK  "gen_random_uuid()"
+        varchar(50) slug "UNIQUE NOT NULL"
+        varchar(100) label "NOT NULL"
+        text description "NULL"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    port_types {
+        uuid id PK  "gen_random_uuid()"
+        varchar(50) slug "UNIQUE NOT NULL"
+        varchar(100) label "NOT NULL"
+        text description "NULL"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    peripherals {
+        uuid id PK  "gen_random_uuid()"
+        uuid port_type_id FK "NOT NULL — FK -> port_types(id)"
+        text name "NOT NULL"
+        text description "NULL"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    %% --- Tables de Jonction M:N ---
+
+    modeles_traceur_types_vehicule {
+        uuid id PK  "gen_random_uuid()"
+        uuid modele_traceur_id FK "NOT NULL — FK -> modeles_traceur(id) ON DELETE CASCADE"
+        uuid type_vehicule_id FK "NOT NULL — FK -> types_vehicule(id) ON DELETE CASCADE"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    modeles_traceur_alimentations {
+        uuid id PK  "gen_random_uuid()"
+        uuid modele_traceur_id FK "NOT NULL — FK -> modeles_traceur(id) ON DELETE CASCADE"
+        uuid alimentation_id FK "NOT NULL — FK -> alimentations(id) ON DELETE CASCADE"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    modeles_traceur_capteurs {
+        uuid id PK  "gen_random_uuid()"
+        uuid modele_traceur_id FK "NOT NULL — FK -> modeles_traceur(id) ON DELETE CASCADE"
+        uuid capteur_id FK "NOT NULL — FK -> capteurs(id) ON DELETE CASCADE"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    model_features {
+        uuid id PK  "gen_random_uuid()"
+        uuid modele_traceur_id FK "NOT NULL — FK -> modeles_traceur(id) ON DELETE CASCADE"
+        uuid feature_id FK "NOT NULL — FK -> features(id) ON DELETE CASCADE"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    model_ports {
+        uuid id PK  "gen_random_uuid()"
+        uuid modele_traceur_id FK "NOT NULL — FK -> modeles_traceur(id) ON DELETE CASCADE"
+        uuid port_type_id FK "NOT NULL — FK -> port_types(id)"
+        text pin_label "NOT NULL — ex: DIN1, AIN2, RS232_TX"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    %% =========================================================================
+    %% ZONE AUTHENTIFICATION — Schemas Ecto (phx.gen.auth)
+    %% =========================================================================
+
+    users {
+        bigint id PK  "Auto-incrémenté (bigserial)"
+        citext email "UNIQUE NOT NULL — Identifiant de connexion"
+        varchar(255) hashed_password "NOT NULL — Hash Bcrypt (coût 12)"
+        timestamp confirmed_at "NULL — Date de confirmation"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+        timestamp updated_at "NOT NULL DEFAULT now()"
+    }
+
+    users_tokens {
+        bigint id PK  "Auto-incrémenté (bigserial)"
+        bigint user_id FK "NOT NULL — FK -> users(id) ON DELETE CASCADE"
+        bytea token "NOT NULL — SHA-256 hash du token"
+        varchar(50) context "NOT NULL — session|login|reset_password|change:email"
+        varchar(255) sent_to "NULL — Email de destination"
+        timestamp authenticated_at "NULL — Dernière utilisation"
+        timestamp inserted_at "NOT NULL DEFAULT now()"
+    }
+
+    %% =========================================================================
+    %% RELATIONS — Clés étrangères et contraintes d'intégrité référentielle
+    %% =========================================================================
+
+    %% --- R1 : Compatibilité (entité associative avec attributs) ---
+    mounting_profiles ||--o{ compatibilites : "1,N — profil_montage_id FK CASCADE"
+    modeles_traceur ||--o{ compatibilites : "1,N — modele_traceur_id FK CASCADE"
+
+    %% --- R2 : ModeleTraceur ↔ TypeVehicule (M:N via jonction) ---
+    modeles_traceur ||--o{ modeles_traceur_types_vehicule : "1,N — CASCADE"
+    types_vehicule ||--o{ modeles_traceur_types_vehicule : "1,N — CASCADE"
+
+    %% --- R3 : ModeleTraceur ↔ Alimentation (M:N via jonction) ---
+    modeles_traceur ||--o{ modeles_traceur_alimentations : "1,N — CASCADE"
+    alimentations ||--o{ modeles_traceur_alimentations : "1,N — CASCADE"
+
+    %% --- R4 : ModeleTraceur ↔ Capteur (M:N via jonction) ---
+    modeles_traceur ||--o{ modeles_traceur_capteurs : "1,N — CASCADE"
+    capteurs ||--o{ modeles_traceur_capteurs : "1,N — CASCADE"
+
+    %% --- R5 : ModeleTraceur ↔ Feature (M:N via jonction) ---
+    modeles_traceur ||--o{ model_features : "1,N — CASCADE"
+    features ||--o{ model_features : "1,N — CASCADE"
+
+    %% --- R6 : ModeleTraceur ↔ ModelPort ↔ PortType ---
+    modeles_traceur ||--o{ model_ports : "1,N — CASCADE"
+    port_types ||--o{ model_ports : "1,N"
+
+    %% --- R7 : PortType ↔ Peripheral ---
+    port_types ||--o{ peripherals : "1,N"
+
+    %% --- R8 : User ↔ UserToken (1:N avec CASCADE) ---
+    users ||--o{ users_tokens : "1,N — FK CASCADE"
+
+    %% =========================================================================
+    %% CONTRAINTES D'UNICITÉ COMPOSITES (Identités Ash)
+    %% =========================================================================
+    %%
+    %% compatibilites: UNIQUE(profil_montage_id, modele_traceur_id)
+    %%   -> upsert sur :calculer_compatibilite
+    %% modeles_traceur_types_vehicule:
+    %%   -> UNIQUE(modele_traceur_id, type_vehicule_id)
+    %% modeles_traceur_alimentations:
+    %%   -> UNIQUE(modele_traceur_id, alimentation_id)
+    %% modeles_traceur_capteurs:
+    %%   -> UNIQUE(modele_traceur_id, capteur_id)
+    %% model_features:
+    %%   -> UNIQUE(modele_traceur_id, feature_id)
+    %% model_ports:
+    %%   -> pas d'unicité composite (plusieurs broches du même type)
+    %%
+    %% =========================================================================
+    %% INDEX RECOMMANDÉS (en plus des PK et UNIQUE)
+    %% =========================================================================
+    %%
+    %% mounting_profiles:     INDEX(organization_id)  — Filtrage multi-tenant
+    %% mounting_profiles:     INDEX(name)             — Recherche textuelle
+    %% modeles_traceur:       INDEX(nom)              — Recherche par nom
+    %% compatibilites:        INDEX(profil_montage_id) — Jointure profil
+    %% compatibilites:        INDEX(modele_traceur_id) — Jointure traceur
+    %% users_tokens:          INDEX(user_id)           — Jointure user
+    %% users_tokens:          INDEX(token)             — Recherche de token
+    %%
+    %% =========================================================================
+    %% CONTRAINTES CHECK
+    %% =========================================================================
+    %%
+    %% compatibilites:        CHECK(score_compatibilite >= 0 AND <= 100)
+    %% mounting_profiles:     CHECK(voltage_min <= voltage_max)
+    %% mounting_profiles:     CHECK(inputs_requis >= 0 AND analog_inputs_requis >= 0 AND outputs_requis >= 0)
+    %% modeles_traceur:       CHECK(nb_digital_inputs >= 0 AND nb_analog_inputs >= 0 AND nb_outputs >= 0)
+    %% modeles_traceur:       CHECK(buffer_memory >= 0)

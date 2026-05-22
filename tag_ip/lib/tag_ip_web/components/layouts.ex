@@ -42,9 +42,6 @@ defmodule TagIpWeb.Layouts do
       {TagIpWeb.ReferenceLive.Index, :referentiels} -> true
       {TagIpWeb.CompatibiliteLive.Index, :compatibilites} -> true
       {TagIpWeb.CompatibiliteLive.Show, :compatibilites} -> true
-      {TagIpWeb.TrackableTypeLive.Index, :trackable_types} -> true
-      {TagIpWeb.TrackableTypeLive.Show, :trackable_types} -> true
-      {TagIpWeb.TrackableTypeLive.Form, :trackable_types} -> true
       _ -> false
     end
   end

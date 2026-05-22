@@ -31,7 +31,12 @@ defmodule TagIp.Resources.Peripheral do
   end
 
   actions do
-    defaults([:read, :destroy, :update, :create])
+    defaults([:read, :destroy, :update])
+
+    create :create do
+      primary?(true)
+      accept([:name, :description, :port_type_id])
+    end
   end
 
   code_interface do

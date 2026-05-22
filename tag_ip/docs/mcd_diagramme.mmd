@@ -1,0 +1,196 @@
+%% ============================================================================
+%% MCD — MODÈLE CONCEPTUEL DE DONNÉES
+%% Projet TagIp : Système d'aide à la décision pour la sélection de traceurs GPS
+%% ============================================================================
+
+erDiagram
+    %% =========================================================================
+    %% ENTITÉ : PROFIL MONTAGE
+    %% =========================================================================
+    ProfilMontage {
+        uuid id PK  "Identifiant unique (UUID v4)"
+        string name "[OBLIGATOIRE] Nom unique du profil (ex: Camion longue distance)"
+        string description "Description libre du contexte d'installation"
+        string object_type "Type d'objet (slug: car, truck, motorcycle…)"
+        float voltage_min "Tension minimale en volts (ex: 10.8)"
+        float voltage_max "Tension maximale en volts (ex: 32.0)"
+        boolean buzzer "Buzzer intégré requis ?"
+        string fuel_probe_type "Type sonde carburant (analog, digital, null)"
+        boolean geofence_enabled "Géofencing requis ?"
+        string driver_id_type "Type ID conducteur (iButton, RFID, Bluetooth)"
+        string reporting_interval "Intervalle de rapport (ex: 10s, 60s)"
+        boolean can_bus_requis "Interface CAN-Bus requise"
+        boolean one_wire_requis "Interface 1-Wire requise"
+        boolean rs232_requis "Interface RS232 requise"
+        boolean rs485_requis "Interface RS485 requise"
+        int inputs_requis "Nombre d'entrées numériques requises"
+        int analog_inputs_requis "Nombre d'entrées analogiques requises"
+        int outputs_requis "Nombre de sorties requises"
+        string ip_rating "Indice de protection IP minimal requis"
+        boolean montage_exterieur "Installation en extérieur ?"
+        boolean antenne_deportee "Antenne déportée nécessaire ?"
+        boolean accelerometre_requis "Accéléromètre 3 axes requis ?"
+        int buffer_requis "Mémoire tampon requise (MB)"
+        boolean ultra_low_power_requis "Mode ultra-low power requis ?"
+        uuid organization_id "ID organisation (multi-tenant futur)"
+    }
+
+    %% =========================================================================
+    %% ENTITÉ : MODÈLE TRACEUR
+    %% =========================================================================
+    ModeleTraceur {
+        uuid id PK  "Identifiant unique (UUID v4)"
+        string nom "[OBLIGATOIRE] Nom commercial (ex: FMB920)"
+        string brand "Marque / fabricant (ex: Teltonika)"
+        string reference "[OBLIGATOIRE] Référence constructeur unique"
+        string description "Description libre du produit"
+        boolean can_bus "Support CAN-Bus"
+        boolean one_wire "Support 1-Wire"
+        boolean rs232 "Support RS232"
+        boolean rs485 "Support RS485"
+        int nb_digital_inputs "Nombre d'entrées numériques disponibles"
+        int nb_analog_inputs "Nombre d'entrées analogiques disponibles"
+        int nb_outputs "Nombre de sorties disponibles"
+        string ip_rating "Indice de protection IP du boîtier"
+        boolean accelerometer "Accéléromètre 3 axes intégré ?"
+        int buffer_memory "Mémoire tampon embarquée (MB)"
+        boolean antennes_externes "Connecteurs antennes externes ?"
+        boolean ultra_low_power "Mode ultra-low power supporté ?"
+        float standby_current "Courant de veille (mA)"
+    }
+
+    %% =========================================================================
+    %% ENTITÉ : COMPATIBILITÉ (Entité associative)
+    %% =========================================================================
+    Compatibilite {
+        uuid id PK  "Identifiant unique (UUID v4)"
+        int score_compatibilite "[0-100] Score calculé (seuil 40 = compatible)"
+        string details "Rapport détaillé des 17 critères"
+    }
+
+    %% =========================================================================
+    %% ENTITÉS DE RÉFÉRENCE
+    %% =========================================================================
+    TypeVehicule {
+        uuid id PK  "Identifiant unique (UUID v4)"
+        string slug "[OBLIGATOIRE] Identifiant court (car, truck…)"
+        string label "[OBLIGATOIRE] Libellé lisible (Voiture, Camion…)"
+    }
+
+    Alimentation {
+        uuid id PK  "Identifiant unique (UUID v4)"
+        string slug "[OBLIGATOIRE] Slug (12v, 24v, 9_36v…)"
+        string label "[OBLIGATOIRE] Libellé (12V, 24V, 9-36V…)"
+    }
+
+    Capteur {
+        uuid id PK  "Identifiant unique (UUID v4)"
+        string slug "[OBLIGATOIRE] Slug (buzzer, geofence, fuel_probe_analog…)"
+        string label "[OBLIGATOIRE] Libellé (Buzzer, Géofencing…)"
+    }
+
+    TrackableType {
+        uuid id PK  "Identifiant unique (UUID v4)"
+        string slug "[OBLIGATOIRE] Slug unique"
+        string label "[OBLIGATOIRE] Libellé lisible"
+        string description "Description optionnelle"
+    }
+
+    Feature {
+        uuid id PK  "Identifiant unique (UUID v4)"
+        string slug "[OBLIGATOIRE] Slug (bluetooth_ble, eco_driving…)"
+        string label "[OBLIGATOIRE] Libellé"
+        string description "Description optionnelle"
+    }
+
+    PortType {
+        uuid id PK  "Identifiant unique (UUID v4)"
+        string slug "[OBLIGATOIRE] Slug (digital_input, 1_wire, rs232…)"
+        string label "[OBLIGATOIRE] Libellé"
+        string description "Description optionnelle"
+    }
+
+    %% =========================================================================
+    %% ENTITÉS DE JONCTION
+    %% =========================================================================
+    ModeleTraceurTypeVehicule {
+        uuid id PK  "Identifiant unique (UUID v4)"
+    }
+
+    ModeleTraceurAlimentation {
+        uuid id PK  "Identifiant unique (UUID v4)"
+    }
+
+    ModeleTraceurCapteur {
+        uuid id PK  "Identifiant unique (UUID v4)"
+    }
+
+    ModelFeature {
+        uuid id PK  "Identifiant unique (UUID v4)"
+    }
+
+    ModelPort {
+        uuid id PK  "Identifiant unique (UUID v4)"
+        string pin_label "[OBLIGATOIRE] Nom logique de la broche (DIN1, AIN2…)"
+    }
+
+    %% =========================================================================
+    %% ENTITÉ : PÉRIPHÉRIQUE
+    %% =========================================================================
+    Peripheral {
+        uuid id PK  "Identifiant unique (UUID v4)"
+        string name "[OBLIGATOIRE] Nom commercial"
+        string description "Description"
+    }
+
+    %% =========================================================================
+    %% ENTITÉS D'AUTHENTIFICATION (Ecto)
+    %% =========================================================================
+    User {
+        bigint id PK  "Identifiant auto-incrémenté"
+        citext email "[OBLIGATOIRE] Adresse email (identifiant login)"
+        string hashed_password "[OBLIGATOIRE] Mot de passe haché (Bcrypt)"
+        datetime confirmed_at "Date de confirmation du compte"
+    }
+
+    UserToken {
+        bigint id PK  "Identifiant auto-incrémenté"
+        binary token "[OBLIGATOIRE] Token haché (SHA-256)"
+        string context "[OBLIGATOIRE] Contexte: session, login, change:email…"
+        string sent_to "Email de destination (traçabilité)"
+        datetime authenticated_at "Dernière utilisation"
+    }
+
+    %% =========================================================================
+    %% RELATIONS
+    %% =========================================================================
+
+    %% --- Relation R1 : Profil ↔ Traceur via Compatibilite (M:N avec attributs) ---
+    ProfilMontage ||--o{ Compatibilite : "est évalué par"
+    ModeleTraceur ||--o{ Compatibilite : "est évalué par"
+
+    %% --- Relation R2 : ModeleTraceur ↔ TypeVehicule (M:N) ---
+    ModeleTraceur ||--o{ ModeleTraceurTypeVehicule : "compatible avec"
+    TypeVehicule ||--o{ ModeleTraceurTypeVehicule : "associé à"
+
+    %% --- Relation R3 : ModeleTraceur ↔ Alimentation (M:N) ---
+    ModeleTraceur ||--o{ ModeleTraceurAlimentation : "supporté par"
+    Alimentation ||--o{ ModeleTraceurAlimentation : "alimente"
+
+    %% --- Relation R4 : ModeleTraceur ↔ Capteur (M:N) ---
+    ModeleTraceur ||--o{ ModeleTraceurCapteur : "embarque"
+    Capteur ||--o{ ModeleTraceurCapteur : "équippé de"
+
+    %% --- Relation R5 : ModeleTraceur ↔ Feature (M:N) ---
+    ModeleTraceur ||--o{ ModelFeature : "doté de"
+    Feature ||--o{ ModelFeature : "présent sur"
+
+    %% --- Relation R6 : ModeleTraceur ↔ ModelPort ↔ PortType ---
+    ModeleTraceur ||--o{ ModelPort : "expose"
+    PortType ||--o{ ModelPort : "classifie comme"
+
+    %% --- Relation R7 : PortType ↔ Peripheral ---
+    PortType ||--o{ Peripheral : "permet"
+
+    %% --- Relation R8 : User ↔ UserToken (1:N) ---
+    User ||--o{ UserToken : "possède"
