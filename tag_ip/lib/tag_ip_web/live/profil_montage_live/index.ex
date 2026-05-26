@@ -1,6 +1,8 @@
 defmodule TagIpWeb.ProfilMontageLive.Index do
   use TagIpWeb, :live_view
 
+  alias TagIp.Resources.Compatibilite
+  alias TagIp.Resources.ModeleTraceur
   alias TagIp.Resources.ProfilMontage
 
   @page_size 10
@@ -115,9 +117,81 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
 
   @impl true
   def handle_event("duplicate", %{"id" => id}, socket) do
-    {:noreply,
-     socket
-     |> push_navigate(to: ~p"/profils/new?duplicate_from=#{id}")}
+    case ProfilMontage |> Ash.get(id) do
+      {:ok, source} ->
+        attrs = %{
+          name: "#{source.name} (copie)",
+          description: source.description,
+          reporting_interval: source.reporting_interval,
+          object_type: source.object_type,
+          voltage_min: source.voltage_min,
+          voltage_max: source.voltage_max,
+          buzzer: source.buzzer,
+          fuel_probe_type: source.fuel_probe_type,
+          geofence_enabled: source.geofence_enabled,
+          driver_id_type: source.driver_id_type,
+          can_bus_requis: source.can_bus_requis,
+          one_wire_requis: source.one_wire_requis,
+          rs232_requis: source.rs232_requis,
+          rs485_requis: source.rs485_requis,
+          inputs_requis: source.inputs_requis,
+          analog_inputs_requis: source.analog_inputs_requis,
+          outputs_requis: source.outputs_requis,
+          ip_rating: source.ip_rating,
+          montage_exterieur: source.montage_exterieur,
+          antenne_deportee: source.antenne_deportee,
+          accelerometre_requis: source.accelerometre_requis,
+          buffer_requis: source.buffer_requis,
+          ultra_low_power_requis: source.ultra_low_power_requis
+        }
+
+        case ProfilMontage.create(attrs) do
+          {:ok, profil} ->
+            modeles =
+              Ash.read!(ModeleTraceur,
+                page: [limit: 50],
+                load: [:types_vehicule, :alimentations, :capteurs]
+              )
+
+            params =
+              attrs
+              |> Enum.map(fn {k, v} -> {to_string(k), v} end)
+              |> Map.new()
+
+            compatibilities =
+              modeles.results
+              |> Enum.map(fn modele ->
+                result = Compatibilite.calculer_depuis_params(params, modele)
+                %{modele: modele, compatible: result.compatible, score: result.score}
+              end)
+              |> Enum.sort_by(fn c -> -c.score end)
+
+            for compat <- compatibilities, compat.compatible do
+              Compatibilite
+              |> Ash.ActionInput.for_action(:calculer_compatibilite, %{
+                profil_id: profil.id,
+                modele_id: compat.modele.id
+              })
+              |> Ash.run_action!()
+            end
+
+            TagIp.Notification.broadcast(
+              {:notification, :info, "Profil « #{profil.name} » dupliqué."}
+            )
+
+            {:noreply,
+             socket
+             |> put_flash(:info, "Profil dupliqué avec succès.")
+             |> assign(:profils, list_profils(socket.assigns.search, socket.assigns.page).results)}
+
+          {:error, reason} ->
+            {:noreply,
+             put_flash(socket, :error, "Erreur lors de la duplication : #{inspect(reason)}")}
+        end
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Profil introuvable.")}
+    end
   end
 
   defp list_profils(search, page) do

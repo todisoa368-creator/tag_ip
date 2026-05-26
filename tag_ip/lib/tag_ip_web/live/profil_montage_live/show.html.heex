@@ -62,12 +62,14 @@
             >
               Modifier
             </.link>
-            <.link
-              navigate={~p"/profils/new?duplicate_from=#{@profil.id}"}
+            <button
+              type="button"
+              phx-click="duplicate"
+              phx-value-id={@profil.id}
               class="inline-flex items-center justify-center gap-2 rounded-3xl border border-teal-300 bg-teal-50 px-5 py-3 text-sm font-semibold text-teal-700 transition hover:bg-teal-100"
             >
               Dupliquer
-            </.link>
+            </button>
             <button
               type="button"
               phx-click="confirm_delete"

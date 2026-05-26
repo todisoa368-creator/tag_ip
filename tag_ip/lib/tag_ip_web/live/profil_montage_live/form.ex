@@ -126,13 +126,38 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   defp apply_action(socket, :new, %{"duplicate_from" => source_id}) do
     source = Ash.get!(ProfilMontage, source_id, domain: TagIp.TagIp)
 
-    params = source_params(source, "#{source.name} (copie)")
-    compatibilities = compute_compatibilities(params, socket.assigns.modeles)
+    params = %{
+      "name" => "#{source.name} (copie)",
+      "description" => source.description,
+      "reporting_interval" => source.reporting_interval,
+      "object_type" => source.object_type,
+      "voltage_min" => source.voltage_min,
+      "voltage_max" => source.voltage_max,
+      "buzzer" => source.buzzer,
+      "fuel_probe_type" => source.fuel_probe_type,
+      "geofence_enabled" => source.geofence_enabled,
+      "driver_id_type" => source.driver_id_type,
+      "can_bus_requis" => source.can_bus_requis,
+      "one_wire_requis" => source.one_wire_requis,
+      "rs232_requis" => source.rs232_requis,
+      "rs485_requis" => source.rs485_requis,
+      "inputs_requis" => source.inputs_requis,
+      "analog_inputs_requis" => source.analog_inputs_requis,
+      "outputs_requis" => source.outputs_requis,
+      "ip_rating" => source.ip_rating,
+      "montage_exterieur" => source.montage_exterieur,
+      "antenne_deportee" => source.antenne_deportee,
+      "accelerometre_requis" => source.accelerometre_requis,
+      "buffer_requis" => source.buffer_requis,
+      "ultra_low_power_requis" => source.ultra_low_power_requis
+    }
 
     form =
       Form.for_create(ProfilMontage, :create, as: "profil_montage", domain: TagIp.TagIp)
       |> Form.validate(params)
       |> to_form()
+
+    compatibilities = compute_compatibilities(params, socket.assigns.modeles)
 
     socket
     |> assign(:page_title, "Dupliquer le profil #{source.name}")
@@ -150,6 +175,7 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     |> assign(:page_title, "Nouveau profil de montage")
     |> assign(:form, form)
     |> assign(:profil, nil)
+    |> assign(:compatibilities, [])
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
@@ -188,34 +214,6 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     |> assign(:form, form)
     |> assign(:profil, profil)
     |> assign(:compatibilities, compatibilities)
-  end
-
-  defp source_params(profil, name) do
-    %{
-      "name" => name,
-      "description" => profil.description,
-      "reporting_interval" => profil.reporting_interval,
-      "driver_id_type" => profil.driver_id_type,
-      "object_type" => profil.object_type,
-      "voltage_min" => profil.voltage_min,
-      "voltage_max" => profil.voltage_max,
-      "buzzer" => profil.buzzer,
-      "fuel_probe_type" => profil.fuel_probe_type,
-      "geofence_enabled" => profil.geofence_enabled,
-      "can_bus_requis" => profil.can_bus_requis,
-      "one_wire_requis" => profil.one_wire_requis,
-      "rs232_requis" => profil.rs232_requis,
-      "rs485_requis" => profil.rs485_requis,
-      "inputs_requis" => profil.inputs_requis,
-      "analog_inputs_requis" => profil.analog_inputs_requis,
-      "outputs_requis" => profil.outputs_requis,
-      "ip_rating" => profil.ip_rating,
-      "montage_exterieur" => profil.montage_exterieur,
-      "antenne_deportee" => profil.antenne_deportee,
-      "accelerometre_requis" => profil.accelerometre_requis,
-      "buffer_requis" => profil.buffer_requis,
-      "ultra_low_power_requis" => profil.ultra_low_power_requis
-    }
   end
 
   defp compute_compatibilities(params, modeles) do

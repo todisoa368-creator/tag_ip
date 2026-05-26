@@ -46,7 +46,7 @@ defmodule TagIpWeb.ProfilMontageLive.IndexTest do
   end
 
   describe "duplicate profile" do
-    test "duplicate button navigates to form with pre-filled data", %{conn: conn} do
+    test "duplicate creates a copy inline without redirecting", %{conn: conn} do
       seed_trackable_types()
 
       profil =
@@ -63,14 +63,13 @@ defmodule TagIpWeb.ProfilMontageLive.IndexTest do
 
       {:ok, lv, _html} = live(conn, ~p"/profils")
 
-      {:ok, _form_lv, form_html} =
-        lv
-        |> element("#profil-#{profil.id} button", "Dupliquer")
-        |> render_click()
-        |> follow_redirect(conn, ~p"/profils/new?duplicate_from=#{profil.id}")
+      lv
+      |> element("#profil-#{profil.id} button", "Dupliquer")
+      |> render_click()
 
-      assert form_html =~ "Dupliquer le profil"
-      assert form_html =~ "Profil Original"
+      html = render(lv)
+      assert html =~ "Profil Original (copie)"
+      assert html =~ "Profil dupliqué"
     end
 
     test "duplicate button is present for each profile", %{conn: conn} do

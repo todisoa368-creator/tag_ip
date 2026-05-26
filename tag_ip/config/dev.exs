@@ -1,6 +1,5 @@
 import Config
 
-# Configure your database
 config :tag_ip, TagIp.Repo,
   username: "fitahiana",
   password: "1234",
@@ -8,6 +7,7 @@ config :tag_ip, TagIp.Repo,
   database: "tag_ip_dev",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
