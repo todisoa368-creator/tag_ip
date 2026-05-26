@@ -21,14 +21,12 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
   def handle_params(%{"id" => id}, _url, socket) do
     profil = Ash.get!(TagIp.Resources.ProfilMontage, id)
     compatibilites = list_compatibilites(id)
-    inserted_at_formatted = format_datetime(profil.inserted_at)
 
     {:noreply,
      socket
      |> assign(:page_title, "Profil: #{profil.name}")
      |> assign(:profil, profil)
-     |> assign(:compatibilites, compatibilites)
-     |> assign(:inserted_at_formatted, inserted_at_formatted)}
+     |> assign(:compatibilites, compatibilites)}
   end
 
   defp list_compatibilites(profil_id) do
@@ -38,12 +36,6 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
     |> Ash.Query.do_filter(profil_montage_id: profil_id)
     |> Ash.Query.load([:modele_traceur])
     |> Ash.read!()
-  end
-
-  defp format_datetime(nil), do: ""
-
-  defp format_datetime(datetime) do
-    Calendar.strftime(datetime, "%d/%m/%Y %H:%M")
   end
 
   @impl true

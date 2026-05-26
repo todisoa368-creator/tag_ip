@@ -93,6 +93,9 @@ defmodule TagIpWeb do
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())
+
+      # Datetime helpers
+      import TagIpWeb.Helpers.DatetimeHelper
     end
   end
 

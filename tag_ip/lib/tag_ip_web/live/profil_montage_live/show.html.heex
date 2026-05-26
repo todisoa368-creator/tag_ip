@@ -34,7 +34,9 @@
             </div>
             <div class="rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
               <dt class="text-xs uppercase tracking-[0.2em] text-slate-400">Créé le</dt>
-              <dd class="mt-2 text-base font-medium text-slate-200">{@inserted_at_formatted}</dd>
+              <dd class="mt-2 text-base font-medium text-slate-200">
+                {format_datetime(@profil.inserted_at)}
+              </dd>
             </div>
           </div>
 

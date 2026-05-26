@@ -70,7 +70,8 @@ defmodule TagIp.MixProject do
       {:ash, "~> 3.0"},
       {:ash_phoenix, "~> 2.0"},
       {:ash_postgres, "~> 2.0"},
-      {:picosat_elixir, "~> 0.2"}
+      {:picosat_elixir, "~> 0.2"},
+      {:tz, "~> 0.27"}
     ]
   end
 

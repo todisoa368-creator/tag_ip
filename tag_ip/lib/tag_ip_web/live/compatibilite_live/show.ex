@@ -18,11 +18,4 @@ defmodule TagIpWeb.CompatibiliteLive.Show do
      |> assign(:page_title, "Détails Compatibilité")
      |> assign(:compatibilite, compatibilite)}
   end
-
-  # Cette fonction est utilisée dans ton template .heex
-  defp format_datetime(nil), do: ""
-
-  defp format_datetime(datetime) do
-    Calendar.strftime(datetime, "%d/%m/%Y à %H:%M")
-  end
 end

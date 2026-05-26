@@ -114,10 +114,4 @@ defmodule TagIpWeb.ModeleTraceurLive.Show do
     |> Ash.Query.load([:profil_montage])
     |> Ash.read!()
   end
-
-  defp format_datetime(nil), do: ""
-
-  defp format_datetime(datetime) do
-    Calendar.strftime(datetime, "%d/%m/%Y %H:%M")
-  end
 end
