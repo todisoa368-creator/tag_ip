@@ -9,6 +9,8 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    if connected?(socket), do: TagIp.Notification.subscribe()
+
     results = list_profils("", 1)
     trackable_types = Ash.read!(TagIp.Resources.TrackableType)
     type_labels = Enum.into(trackable_types, %{}, fn t -> {t.slug, t.label} end)
@@ -29,6 +31,16 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
   @impl true
   def handle_params(_params, url, socket) do
     {:noreply, socket |> assign(:current_path, URI.parse(url).path)}
+  end
+
+  @impl true
+  def handle_info({:notification, _, _}, socket) do
+    results = list_profils(socket.assigns.search, socket.assigns.page)
+
+    {:noreply,
+     socket
+     |> assign(:profils, results.results)
+     |> assign(:total_count, results.count)}
   end
 
   @impl true
@@ -120,7 +132,7 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
     case ProfilMontage |> Ash.get(id) do
       {:ok, source} ->
         attrs = %{
-          name: "#{source.name} (copie)",
+          name: source.name,
           description: source.description,
           reporting_interval: source.reporting_interval,
           object_type: source.object_type,

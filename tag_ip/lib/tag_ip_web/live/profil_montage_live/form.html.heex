@@ -210,7 +210,7 @@
                     name={@form[:can_bus_requis].name}
                     id={@form[:can_bus_requis].id}
                     value="true"
-                    checked={@form[:can_bus_requis].value}
+                    checked={@form[:can_bus_requis].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span class="text-sm font-medium text-gray-800">CAN-Bus</span>
@@ -222,7 +222,7 @@
                     name={@form[:one_wire_requis].name}
                     id={@form[:one_wire_requis].id}
                     value="true"
-                    checked={@form[:one_wire_requis].value}
+                    checked={@form[:one_wire_requis].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span class="text-sm font-medium text-gray-800">1-Wire</span>
@@ -234,7 +234,7 @@
                     name={@form[:rs232_requis].name}
                     id={@form[:rs232_requis].id}
                     value="true"
-                    checked={@form[:rs232_requis].value}
+                    checked={@form[:rs232_requis].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span class="text-sm font-medium text-gray-800">RS232</span>
@@ -246,7 +246,7 @@
                     name={@form[:rs485_requis].name}
                     id={@form[:rs485_requis].id}
                     value="true"
-                    checked={@form[:rs485_requis].value}
+                    checked={@form[:rs485_requis].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span class="text-sm font-medium text-gray-800">RS485</span>
@@ -346,7 +346,7 @@
                     name={@form[:buzzer].name}
                     id={@form[:buzzer].id}
                     value="true"
-                    checked={@form[:buzzer].value}
+                    checked={@form[:buzzer].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <div>
@@ -363,7 +363,7 @@
                     name={@form[:geofence_enabled].name}
                     id={@form[:geofence_enabled].id}
                     value="true"
-                    checked={@form[:geofence_enabled].value}
+                    checked={@form[:geofence_enabled].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <div>
@@ -384,7 +384,7 @@
                     name={@form[:montage_exterieur].name}
                     id={@form[:montage_exterieur].id}
                     value="true"
-                    checked={@form[:montage_exterieur].value}
+                    checked={@form[:montage_exterieur].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <div>
@@ -401,7 +401,7 @@
                     name={@form[:antenne_deportee].name}
                     id={@form[:antenne_deportee].id}
                     value="true"
-                    checked={@form[:antenne_deportee].value}
+                    checked={@form[:antenne_deportee].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <div>
@@ -439,7 +439,7 @@
                     name={@form[:accelerometre_requis].name}
                     id={@form[:accelerometre_requis].id}
                     value="true"
-                    checked={@form[:accelerometre_requis].value}
+                    checked={@form[:accelerometre_requis].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <div>
@@ -456,7 +456,7 @@
                     name={@form[:ultra_low_power_requis].name}
                     id={@form[:ultra_low_power_requis].id}
                     value="true"
-                    checked={@form[:ultra_low_power_requis].value}
+                    checked={@form[:ultra_low_power_requis].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <div>

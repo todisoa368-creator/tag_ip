@@ -1,8 +1,7 @@
 defmodule TagIp.Resources.ProfilMontage do
   use Ash.Resource,
-    domain: TagIp.Resources,
-    data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    domain: TagIp.TagIp,
+    data_layer: AshPostgres.DataLayer
 
   attributes do
     uuid_primary_key(:id)
@@ -45,7 +44,12 @@ defmodule TagIp.Resources.ProfilMontage do
     timestamps()
   end
 
+  relationships do
+    has_many :compatibilites, TagIp.Resources.Compatibilite
+  end
+
   actions do
+    default_accept(:*)
     defaults([:read, :destroy, :update])
 
     create :create do
@@ -92,13 +96,6 @@ defmodule TagIp.Resources.ProfilMontage do
     define(:update)
     define(:destroy)
     define(:get_by_id, args: [:id])
-  end
-
-  policies do
-    # Remplaçons l'importation par la condition la plus simple possible
-    policy always() do
-      authorize_if(always())
-    end
   end
 
   postgres do

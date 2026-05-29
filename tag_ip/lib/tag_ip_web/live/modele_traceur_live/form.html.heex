@@ -49,30 +49,84 @@
             </div>
 
             <div class="sm:col-span-1">
-              <.input
-                field={@form[:types_vehicule_compatibles]}
-                type="text"
-                label="Véhicules compatibles"
-                placeholder="Voiture, Camion..."
-              />
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Véhicules compatibles
+              </label>
+              <div class="grid grid-cols-1 gap-1.5 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-lg border border-gray-200">
+                <label
+                  :for={tv <- @types_vehicule}
+                  class={[
+                    "flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition-colors text-sm",
+                    if(MapSet.member?(@selected_type_vehicule_ids, tv.id),
+                      do: "bg-blue-50 text-blue-800",
+                      else: "hover:bg-gray-100"
+                    )
+                  ]}
+                >
+                  <input
+                    type="checkbox"
+                    checked={MapSet.member?(@selected_type_vehicule_ids, tv.id)}
+                    phx-click="toggle_type_vehicule"
+                    phx-value-id={tv.id}
+                    class="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  {tv.label}
+                </label>
+              </div>
             </div>
 
             <div class="sm:col-span-1">
-              <.input
-                field={@form[:alimentations_compatibles]}
-                type="text"
-                label="Alimentations (V)"
-                placeholder="12V, 24V"
-              />
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Alimentations
+              </label>
+              <div class="grid grid-cols-1 gap-1.5 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-lg border border-gray-200">
+                <label
+                  :for={alim <- @alimentations}
+                  class={[
+                    "flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition-colors text-sm",
+                    if(MapSet.member?(@selected_alimentation_ids, alim.id),
+                      do: "bg-amber-50 text-amber-800",
+                      else: "hover:bg-gray-100"
+                    )
+                  ]}
+                >
+                  <input
+                    type="checkbox"
+                    checked={MapSet.member?(@selected_alimentation_ids, alim.id)}
+                    phx-click="toggle_alimentation"
+                    phx-value-id={alim.id}
+                    class="w-3.5 h-3.5 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
+                  />
+                  {alim.label}
+                </label>
+              </div>
             </div>
 
             <div class="sm:col-span-1">
-              <.input
-                field={@form[:capteurs_supportes]}
-                type="text"
-                label="Capteurs supportés"
-                placeholder="Fuel, Temp, SOS"
-              />
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Capteurs supportés
+              </label>
+              <div class="grid grid-cols-1 gap-1.5 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-lg border border-gray-200">
+                <label
+                  :for={cap <- @capteurs}
+                  class={[
+                    "flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition-colors text-sm",
+                    if(MapSet.member?(@selected_capteur_ids, cap.id),
+                      do: "bg-sky-50 text-sky-800",
+                      else: "hover:bg-gray-100"
+                    )
+                  ]}
+                >
+                  <input
+                    type="checkbox"
+                    checked={MapSet.member?(@selected_capteur_ids, cap.id)}
+                    phx-click="toggle_capteur"
+                    phx-value-id={cap.id}
+                    class="w-3.5 h-3.5 text-sky-600 border-gray-300 rounded focus:ring-sky-500"
+                  />
+                  {cap.label}
+                </label>
+              </div>
             </div>
 
             <div class="sm:col-span-2">
@@ -96,7 +150,7 @@
                     name={@form[:can_bus].name}
                     id={@form[:can_bus].id}
                     value="true"
-                    checked={@form[:can_bus].value}
+                    checked={@form[:can_bus].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span class="text-sm font-medium text-gray-800">CAN-Bus</span>
@@ -108,7 +162,7 @@
                     name={@form[:one_wire].name}
                     id={@form[:one_wire].id}
                     value="true"
-                    checked={@form[:one_wire].value}
+                    checked={@form[:one_wire].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span class="text-sm font-medium text-gray-800">1-Wire</span>
@@ -120,7 +174,7 @@
                     name={@form[:rs232].name}
                     id={@form[:rs232].id}
                     value="true"
-                    checked={@form[:rs232].value}
+                    checked={@form[:rs232].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span class="text-sm font-medium text-gray-800">RS232</span>
@@ -132,7 +186,7 @@
                     name={@form[:rs485].name}
                     id={@form[:rs485].id}
                     value="true"
-                    checked={@form[:rs485].value}
+                    checked={@form[:rs485].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span class="text-sm font-medium text-gray-800">RS485</span>
@@ -194,7 +248,7 @@
                     name={@form[:antennes_externes].name}
                     id={@form[:antennes_externes].id}
                     value="true"
-                    checked={@form[:antennes_externes].value}
+                    checked={@form[:antennes_externes].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span class="text-sm font-medium text-gray-800">Antennes externes</span>
@@ -206,7 +260,7 @@
                     name={@form[:ultra_low_power].name}
                     id={@form[:ultra_low_power].id}
                     value="true"
-                    checked={@form[:ultra_low_power].value}
+                    checked={@form[:ultra_low_power].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span class="text-sm font-medium text-gray-800">Ultra-Low Power</span>
@@ -218,7 +272,7 @@
                     name={@form[:accelerometer].name}
                     id={@form[:accelerometer].id}
                     value="true"
-                    checked={@form[:accelerometer].value}
+                    checked={@form[:accelerometer].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span class="text-sm font-medium text-gray-800">Accéléromètre 3 axes</span>

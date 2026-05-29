@@ -53,6 +53,30 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   end
 
   @impl true
+  def handle_event("next-step", %{"profil_montage" => params}, socket) do
+    step = socket.assigns.step
+    total = socket.assigns.total_steps
+
+    if step < total do
+      params = normalize_params(params)
+
+      form =
+        socket.assigns.form.source
+        |> Form.validate(params)
+        |> to_form()
+
+      compatibilities = compute_compatibilities(params, socket.assigns.modeles)
+
+      {:noreply,
+       socket
+       |> assign(:step, step + 1)
+       |> assign(:form, form)
+       |> assign(:compatibilities, compatibilities)}
+    else
+      {:noreply, socket}
+    end
+  end
+
   def handle_event("next-step", _params, socket) do
     step = socket.assigns.step
     total = socket.assigns.total_steps
@@ -65,6 +89,29 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   end
 
   @impl true
+  def handle_event("prev-step", %{"profil_montage" => params}, socket) do
+    step = socket.assigns.step
+
+    if step > 1 do
+      params = normalize_params(params)
+
+      form =
+        socket.assigns.form.source
+        |> Form.validate(params)
+        |> to_form()
+
+      compatibilities = compute_compatibilities(params, socket.assigns.modeles)
+
+      {:noreply,
+       socket
+       |> assign(:step, step - 1)
+       |> assign(:form, form)
+       |> assign(:compatibilities, compatibilities)}
+    else
+      {:noreply, socket}
+    end
+  end
+
   def handle_event("prev-step", _params, socket) do
     step = socket.assigns.step
 
@@ -77,6 +124,8 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
 
   @impl true
   def handle_event("validate", %{"profil_montage" => params}, socket) do
+    params = normalize_params(params)
+
     form =
       socket.assigns.form.source
       |> Form.validate(params)
@@ -89,6 +138,8 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
 
   @impl true
   def handle_event("save", %{"profil_montage" => params}, socket) do
+    params = normalize_params(params)
+
     case AshPhoenix.Form.submit(socket.assigns.form.source, params: params) do
       {:ok, profil} ->
         for compat <- socket.assigns.compatibilities, compat.compatible do
@@ -127,7 +178,7 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     source = Ash.get!(ProfilMontage, source_id, domain: TagIp.TagIp)
 
     params = %{
-      "name" => "#{source.name} (copie)",
+      "name" => source.name,
       "description" => source.description,
       "reporting_interval" => source.reporting_interval,
       "object_type" => source.object_type,
@@ -230,4 +281,14 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     end)
     |> Enum.sort_by(fn c -> -c.score end)
   end
+
+  defp normalize_params(params) when is_map(params) do
+    Map.new(params, fn
+      {key, val} when is_list(val) -> {key, List.last(val)}
+      {key, val} when is_map(val) -> {key, normalize_params(val)}
+      {key, val} -> {key, val}
+    end)
+  end
+
+  defp normalize_params(val), do: val
 end

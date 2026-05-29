@@ -35,8 +35,7 @@ config :tag_ip, :scopes,
 config :tag_ip,
   ecto_repos: [TagIp.Repo],
   generators: [timestamp_type: :utc_datetime],
-  # Ajout de TagIp.Resources ici
-  ash_domains: [TagIp.TagIp, TagIp.Resources]
+  ash_domains: [TagIp.TagIp]
 
 # Configure the endpoint
 config :tag_ip, TagIpWeb.Endpoint,

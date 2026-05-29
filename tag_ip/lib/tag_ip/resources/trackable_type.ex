@@ -1,6 +1,6 @@
 defmodule TagIp.Resources.TrackableType do
   use Ash.Resource,
-    domain: TagIp.Resources,
+    domain: TagIp.TagIp,
     data_layer: AshPostgres.DataLayer
 
   postgres do

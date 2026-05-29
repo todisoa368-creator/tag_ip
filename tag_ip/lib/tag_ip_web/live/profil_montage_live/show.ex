@@ -43,7 +43,7 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
     case ProfilMontage |> Ash.get(id) do
       {:ok, source} ->
         attrs = %{
-          name: "#{source.name} (copie)",
+          name: source.name,
           description: source.description,
           reporting_interval: source.reporting_interval,
           object_type: source.object_type,

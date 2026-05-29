@@ -132,12 +132,14 @@ defmodule TagIp.Resources.ModeleTraceur do
   end
 
   actions do
+    default_accept(:*)
     defaults([:read, :destroy, :update])
 
     # C'est cette action qui manquait !
     read :get_by_id do
       argument(:id, :uuid, allow_nil?: false)
       filter(expr(id == ^arg(:id)))
+      get?(true)
     end
 
     create :create do

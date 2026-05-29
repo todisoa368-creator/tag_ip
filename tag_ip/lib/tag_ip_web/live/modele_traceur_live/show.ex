@@ -13,7 +13,7 @@ defmodule TagIpWeb.ModeleTraceurLive.Show do
 
   @impl true
   def handle_params(%{"id" => id}, _url, socket) do
-    [modele] = ModeleTraceur.get_by_id!(id)
+    modele = ModeleTraceur.get_by_id!(id)
 
     modele =
       Ash.load!(modele, [:types_vehicule, :alimentations, :capteurs, :features, :model_ports])
@@ -38,17 +38,14 @@ defmodule TagIpWeb.ModeleTraceurLive.Show do
   @impl true
   def handle_event("confirm_delete", %{"id" => id}, socket) do
     case ModeleTraceur.get_by_id(id) do
-      {:ok, [modele]} ->
+      {:ok, modele} ->
         {:noreply,
          socket
          |> assign(:pending_delete_id, id)
          |> assign(:pending_delete_label, modele.nom)}
 
-      {:ok, []} ->
-        {:noreply, put_flash(socket, :error, "Modèle introuvable.")}
-
       {:error, _reason} ->
-        {:noreply, put_flash(socket, :error, "Erreur lors de la récupération du modèle.")}
+        {:noreply, put_flash(socket, :error, "Modèle introuvable.")}
     end
   end
 
@@ -65,7 +62,7 @@ defmodule TagIpWeb.ModeleTraceurLive.Show do
     id = socket.assigns.pending_delete_id
 
     case ModeleTraceur.get_by_id(id) do
-      {:ok, [modele]} ->
+      {:ok, modele} ->
         nom = modele.nom
 
         case ModeleTraceur.destroy(modele) do
@@ -89,13 +86,6 @@ defmodule TagIpWeb.ModeleTraceurLive.Show do
              |> assign(:pending_delete_id, nil)
              |> assign(:pending_delete_label, nil)}
         end
-
-      {:ok, []} ->
-        {:noreply,
-         socket
-         |> put_flash(:error, "Modèle introuvable.")
-         |> assign(:pending_delete_id, nil)
-         |> assign(:pending_delete_label, nil)}
 
       {:error, _reason} ->
         {:noreply,

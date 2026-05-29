@@ -201,7 +201,11 @@ defmodule TagIpWeb.CoreComponents do
         ]}
         {@rest}
       >
-        <option :for={opt <- @options} value={elem(opt, 1)}>
+        <option
+          :for={opt <- @options}
+          value={elem(opt, 1)}
+          selected={@value != nil && to_string(elem(opt, 1)) == to_string(@value)}
+        >
           {elem(opt, 0)}
         </option>
       </select>

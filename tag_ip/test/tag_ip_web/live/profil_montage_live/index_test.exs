@@ -46,7 +46,7 @@ defmodule TagIpWeb.ProfilMontageLive.IndexTest do
   end
 
   describe "duplicate profile" do
-    test "duplicate creates a copy inline without redirecting", %{conn: conn} do
+    test "duplicate creates a copy inline with original name", %{conn: conn} do
       seed_trackable_types()
 
       profil =
@@ -68,7 +68,8 @@ defmodule TagIpWeb.ProfilMontageLive.IndexTest do
       |> render_click()
 
       html = render(lv)
-      assert html =~ "Profil Original (copie)"
+      assert html =~ "Profil Original"
+      refute html =~ "Profil Original (copie)"
       assert html =~ "Profil dupliqué"
     end
 

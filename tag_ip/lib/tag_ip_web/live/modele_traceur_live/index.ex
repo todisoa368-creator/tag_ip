@@ -7,6 +7,8 @@ defmodule TagIpWeb.ModeleTraceurLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    if connected?(socket), do: TagIp.Notification.subscribe()
+
     results = list_modeles("", 1)
 
     {:ok,
@@ -27,6 +29,16 @@ defmodule TagIpWeb.ModeleTraceurLive.Index do
      socket
      |> assign(:page_title, "Modèles de traceurs")
      |> assign(:current_path, URI.parse(url).path)}
+  end
+
+  @impl true
+  def handle_info({:notification, _, _}, socket) do
+    results = list_modeles(socket.assigns.search, socket.assigns.page)
+
+    {:noreply,
+     socket
+     |> assign(:modeles, results.results)
+     |> assign(:total_count, results.count)}
   end
 
   @impl true
@@ -56,17 +68,14 @@ defmodule TagIpWeb.ModeleTraceurLive.Index do
   @impl true
   def handle_event("confirm_delete", %{"id" => id}, socket) do
     case ModeleTraceur.get_by_id(id) do
-      {:ok, [modele]} ->
+      {:ok, modele} ->
         {:noreply,
          socket
          |> assign(:pending_delete_id, id)
          |> assign(:pending_delete_label, modele.nom)}
 
-      {:ok, []} ->
-        {:noreply, put_flash(socket, :error, "Modèle introuvable.")}
-
       {:error, _reason} ->
-        {:noreply, put_flash(socket, :error, "Erreur lors de la récupération du modèle.")}
+        {:noreply, put_flash(socket, :error, "Modèle introuvable.")}
     end
   end
 
@@ -83,7 +92,7 @@ defmodule TagIpWeb.ModeleTraceurLive.Index do
     id = socket.assigns.pending_delete_id
 
     case ModeleTraceur.get_by_id(id) do
-      {:ok, [modele]} ->
+      {:ok, modele} ->
         nom = modele.nom
 
         case ModeleTraceur.destroy(modele) do
@@ -105,13 +114,6 @@ defmodule TagIpWeb.ModeleTraceurLive.Index do
              |> assign(:pending_delete_label, nil)}
         end
 
-      {:ok, []} ->
-        {:noreply,
-         socket
-         |> put_flash(:error, "Modèle introuvable.")
-         |> assign(:pending_delete_id, nil)
-         |> assign(:pending_delete_label, nil)}
-
       {:error, _reason} ->
         {:noreply,
          socket
@@ -124,13 +126,27 @@ defmodule TagIpWeb.ModeleTraceurLive.Index do
   @impl true
   def handle_event("duplicate", %{"id" => id} = _params, socket) do
     case ModeleTraceur.get_by_id(id) do
-      {:ok, [modele_source]} ->
+      {:ok, modele_source} ->
         modele_source = Ash.load!(modele_source, [:types_vehicule, :alimentations, :capteurs])
 
         attrs = %{
-          nom: "#{modele_source.nom} (copie)",
+          nom: modele_source.nom,
           reference: "#{modele_source.reference}-COPY",
-          description: modele_source.description
+          description: modele_source.description,
+          brand: modele_source.brand,
+          can_bus: modele_source.can_bus,
+          one_wire: modele_source.one_wire,
+          rs232: modele_source.rs232,
+          rs485: modele_source.rs485,
+          nb_digital_inputs: modele_source.nb_digital_inputs,
+          nb_analog_inputs: modele_source.nb_analog_inputs,
+          nb_outputs: modele_source.nb_outputs,
+          ip_rating: modele_source.ip_rating,
+          antennes_externes: modele_source.antennes_externes,
+          standby_current: modele_source.standby_current,
+          ultra_low_power: modele_source.ultra_low_power,
+          accelerometer: modele_source.accelerometer,
+          buffer_memory: modele_source.buffer_memory
         }
 
         case ModeleTraceur.create(attrs) do
