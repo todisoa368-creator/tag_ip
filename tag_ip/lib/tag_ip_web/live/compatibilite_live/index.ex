@@ -149,6 +149,30 @@ defmodule TagIpWeb.CompatibiliteLive.Index do
   end
 
   @impl true
+  def handle_event("clear_all", _params, socket) do
+    input = Ash.ActionInput.for_action(Compatibilite, :clear_all, %{})
+
+    case Ash.run_action(input) do
+      {:ok, count} ->
+        TagIp.Notification.broadcast(
+          {:notification, :info, "Historique vidé (#{count} entrées supprimées)."}
+        )
+
+        {:noreply,
+         socket
+         |> put_flash(
+           :info,
+           "Historique des compatibilités vidé avec succès (#{count} entrées supprimées)."
+         )
+         |> assign(:compatibilites, [])
+         |> assign(:total_count, 0)}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Erreur lors du nettoyage de l'historique")}
+    end
+  end
+
+  @impl true
   def handle_event("calculer", %{"profil_id" => profil_id, "modele_id" => modele_id}, socket) do
     if profil_id == "" or modele_id == "" do
       {:noreply, put_flash(socket, :error, "Veuillez sélectionner un profil et un modèle.")}

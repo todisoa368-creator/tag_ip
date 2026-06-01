@@ -106,7 +106,6 @@
           name={@form[:outputs_requis].name}
           value={@form[:outputs_requis].value}
         />
-        <input type="hidden" name={@form[:ip_rating].name} value={@form[:ip_rating].value} />
         <input
           type="hidden"
           name={@form[:montage_exterieur].name}
@@ -121,11 +120,6 @@
           type="hidden"
           name={@form[:accelerometre_requis].name}
           value={@form[:accelerometre_requis].value}
-        />
-        <input
-          type="hidden"
-          name={@form[:buffer_requis].name}
-          value={@form[:buffer_requis].value}
         />
         <input
           type="hidden"
@@ -265,7 +259,7 @@
               <div>
                 <h2 class="text-lg font-semibold text-gray-900">Seuils de tension</h2>
                 <p class="text-sm text-gray-500">
-                  Définissez les seuils électriques en millivolts (mV)
+                  Définissez les seuils électriques en Volts (V)
                 </p>
               </div>
             </div>
@@ -294,6 +288,53 @@
                 placeholder="ex: 32000"
               />
             </div>
+
+            <%!-- Avertissement intelligent : compatibilité tension en direct --%>
+            <%= unless is_nil(@voltage_compatible_count) do %>
+              <div class={[
+                "mt-4 p-4 rounded-lg border flex items-start gap-3 transition-all duration-300",
+                if(@voltage_compatible_count == 0,
+                  do: "bg-red-50 border-red-200",
+                  else: "bg-emerald-50 border-emerald-200"
+                )
+              ]}>
+                <.icon
+                  name={
+                    if(@voltage_compatible_count == 0,
+                      do: "hero-exclamation-triangle",
+                      else: "hero-check-circle"
+                    )
+                  }
+                  class={[
+                    "w-5 h-5 mt-0.5 shrink-0",
+                    if(@voltage_compatible_count == 0,
+                      do: "text-red-500",
+                      else: "text-emerald-500"
+                    )
+                  ]}
+                />
+                <div>
+                  <%= if @voltage_compatible_count == 0 do %>
+                    <p class="text-sm font-semibold text-red-800">
+                      Aucun modèle compatible avec cette plage de tension
+                    </p>
+                    <p class="mt-1 text-xs text-red-600">
+                      Ajustez les valeurs — aucun traceur de votre catalogue ne supporte {round(
+                        parse_float(@form[:voltage_min].value) / 1000
+                      )}V – {round(parse_float(@form[:voltage_max].value) / 1000)}V.
+                      Consultez la page des modèles pour les plages disponibles.
+                    </p>
+                  <% else %>
+                    <p class="text-sm font-semibold text-emerald-800">
+                      {@voltage_compatible_count} modèle(s) compatible(s) détecté(s)
+                    </p>
+                    <p class="mt-1 text-xs text-emerald-600">
+                      La plage de tension saisie est supportée par {@voltage_compatible_count} traceur(s) du catalogue.
+                    </p>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
           </div>
         </div>
 
@@ -304,168 +345,184 @@
                 4
               </div>
               <div>
-                <h2 class="text-lg font-semibold text-gray-900">Équipements et Options</h2>
+                <h2 class="text-lg font-semibold text-gray-900">Capteurs et Options</h2>
                 <p class="text-sm text-gray-500">
-                  Configurez les capteurs et équipements supplémentaires
+                  Équipements, capteurs et fonctionnalités embarquées
                 </p>
               </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <.input
-                field={@form[:fuel_probe_type]}
-                type="select"
-                label="Sonde de carburant"
-                options={[
-                  {"Aucune", :none},
-                  {"Analogique (0-5V)", :analog},
-                  {"Impulsions digitales", :digital_pulse},
-                  {"CAN Bus", :can_bus},
-                  {"RS232", :rs232}
-                ]}
-              />
-              <.input
-                field={@form[:driver_id_type]}
-                type="select"
-                label="Identification chauffeur"
-                options={[
-                  {"Aucune", :none},
-                  {"RFID", :rfid},
-                  {"NFC", :nfc},
-                  {"iButton (Dallas)", :ibutton},
-                  {"Code PIN", :pin}
-                ]}
-              />
-            </div>
-            <div class="border-t border-blue-200 pt-6">
-              <p class="text-sm font-medium text-gray-700 mb-4">Options supplémentaires</p>
-              <div class="flex flex-col gap-4">
-                <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                  <input type="hidden" name={@form[:buzzer].name} value="false" />
-                  <input
-                    type="checkbox"
-                    name={@form[:buzzer].name}
-                    id={@form[:buzzer].id}
-                    value="true"
-                    checked={@form[:buzzer].value in [true, "true"]}
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <div>
-                    <span class="text-sm font-medium text-gray-800">
-                      Câblage du Buzzer présent
-                    </span>
-                    <p class="text-xs text-gray-500">Alerte sonore en cas d'événement</p>
-                  </div>
-                </label>
-                <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                  <input type="hidden" name={@form[:geofence_enabled].name} value="false" />
-                  <input
-                    type="checkbox"
-                    name={@form[:geofence_enabled].name}
-                    id={@form[:geofence_enabled].id}
-                    value="true"
-                    checked={@form[:geofence_enabled].value in [true, "true"]}
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <div>
-                    <span class="text-sm font-medium text-gray-800">Activer les Geofences</span>
-                    <p class="text-xs text-gray-500">Délimitation de zones virtuelles</p>
-                  </div>
-                </label>
-              </div>
-            </div>
 
-            <div class="border-t border-blue-200 pt-6 mt-4">
-              <p class="text-sm font-medium text-gray-700 mb-4">Environnement et protection</p>
-              <div class="flex flex-col gap-4">
-                <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                  <input type="hidden" name={@form[:montage_exterieur].name} value="false" />
-                  <input
-                    type="checkbox"
-                    name={@form[:montage_exterieur].name}
-                    id={@form[:montage_exterieur].id}
-                    value="true"
-                    checked={@form[:montage_exterieur].value in [true, "true"]}
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <div>
-                    <span class="text-sm font-medium text-gray-800">Montage extérieur</span>
-                    <p class="text-xs text-gray-500">
-                      Nécessite un boîtier étanche (IP67 minimum)
-                    </p>
-                  </div>
-                </label>
-                <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                  <input type="hidden" name={@form[:antenne_deportee].name} value="false" />
-                  <input
-                    type="checkbox"
-                    name={@form[:antenne_deportee].name}
-                    id={@form[:antenne_deportee].id}
-                    value="true"
-                    checked={@form[:antenne_deportee].value in [true, "true"]}
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <div>
-                    <span class="text-sm font-medium text-gray-800">Antennes déportées</span>
-                    <p class="text-xs text-gray-500">
-                      Connecteurs pour antennes GPS/GSM externes
-                    </p>
-                  </div>
-                </label>
-              </div>
-              <.input
-                field={@form[:ip_rating]}
-                type="text"
-                label="Indice IP requis (optionnel)"
-                placeholder="ex: IP67"
-                class="mt-4"
-              />
-            </div>
-
-            <div class="border-t border-blue-200 pt-6 mt-4">
-              <p class="text-sm font-medium text-gray-700 mb-4">Intelligence embarquée</p>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <.input
-                  field={@form[:buffer_requis]}
-                  type="number"
-                  label="Mémoire tampon requise (MB)"
-                  placeholder="ex: 256"
+            <div class="flex flex-col gap-4">
+              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
+                <input type="hidden" name={@form[:montage_exterieur].name} value="false" />
+                <input
+                  type="checkbox"
+                  name={@form[:montage_exterieur].name}
+                  id={@form[:montage_exterieur].id}
+                  value="true"
+                  checked={@form[:montage_exterieur].value in [true, "true"]}
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-              </div>
-              <div class="flex flex-col gap-4 mt-4">
-                <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                  <input type="hidden" name={@form[:accelerometre_requis].name} value="false" />
-                  <input
-                    type="checkbox"
-                    name={@form[:accelerometre_requis].name}
-                    id={@form[:accelerometre_requis].id}
-                    value="true"
-                    checked={@form[:accelerometre_requis].value in [true, "true"]}
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <div>
-                    <span class="text-sm font-medium text-gray-800">Accéléromètre 3 axes</span>
-                    <p class="text-xs text-gray-500">
-                      Analyse d'éco-conduite (freinages, accélérations, virages)
-                    </p>
-                  </div>
-                </label>
-                <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                  <input type="hidden" name={@form[:ultra_low_power_requis].name} value="false" />
-                  <input
-                    type="checkbox"
-                    name={@form[:ultra_low_power_requis].name}
-                    id={@form[:ultra_low_power_requis].id}
-                    value="true"
-                    checked={@form[:ultra_low_power_requis].value in [true, "true"]}
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <div>
-                    <span class="text-sm font-medium text-gray-800">Ultra-Low Power</span>
-                    <p class="text-xs text-gray-500">
-                      Mode veille à très faible consommation pour batteries limitées
-                    </p>
-                  </div>
-                </label>
+                <div>
+                  <span class="text-sm font-medium text-gray-800">Montage extérieur</span>
+                  <p class="text-xs text-gray-500">
+                    Protection IP67 automatique — filtre les traceurs étanches
+                  </p>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
+                <input type="hidden" name={@form[:fuel_probe_type].name} value="none" />
+                <input
+                  type="checkbox"
+                  name={@form[:fuel_probe_type].name}
+                  id={@form[:fuel_probe_type].id}
+                  value="analog"
+                  checked={@form[:fuel_probe_type].value == "analog"}
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <div>
+                  <span class="text-sm font-medium text-gray-800">Sonde de carburant</span>
+                  <p class="text-xs text-gray-500">Mesure du niveau de carburant (analogique)</p>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
+                <input type="hidden" name={@form[:driver_id_type].name} value="none" />
+                <input
+                  type="checkbox"
+                  name={@form[:driver_id_type].name}
+                  id={@form[:driver_id_type].id}
+                  value="rfid"
+                  checked={@form[:driver_id_type].value == "rfid"}
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <div>
+                  <span class="text-sm font-medium text-gray-800">Identification chauffeur</span>
+                  <p class="text-xs text-gray-500">
+                    Lecteur RFID pour identification du conducteur
+                  </p>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
+                <input type="hidden" name={@form[:buzzer].name} value="false" />
+                <input
+                  type="checkbox"
+                  name={@form[:buzzer].name}
+                  id={@form[:buzzer].id}
+                  value="true"
+                  checked={@form[:buzzer].value in [true, "true"]}
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <div>
+                  <span class="text-sm font-medium text-gray-800">Câblage du Buzzer présent</span>
+                  <p class="text-xs text-gray-500">Alerte sonore en cas d'événement</p>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
+                <input type="hidden" name={@form[:geofence_enabled].name} value="false" />
+                <input
+                  type="checkbox"
+                  name={@form[:geofence_enabled].name}
+                  id={@form[:geofence_enabled].id}
+                  value="true"
+                  checked={@form[:geofence_enabled].value in [true, "true"]}
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <div>
+                  <span class="text-sm font-medium text-gray-800">Activer les Geofences</span>
+                  <p class="text-xs text-gray-500">Délimitation de zones virtuelles</p>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
+                <input type="hidden" name={@form[:antenne_deportee].name} value="false" />
+                <input
+                  type="checkbox"
+                  name={@form[:antenne_deportee].name}
+                  id={@form[:antenne_deportee].id}
+                  value="true"
+                  checked={@form[:antenne_deportee].value in [true, "true"]}
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <div>
+                  <span class="text-sm font-medium text-gray-800">Antennes déportées</span>
+                  <p class="text-xs text-gray-500">
+                    Connecteurs pour antennes GPS/GSM externes
+                  </p>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
+                <input type="hidden" name={@form[:accelerometre_requis].name} value="false" />
+                <input
+                  type="checkbox"
+                  name={@form[:accelerometre_requis].name}
+                  id={@form[:accelerometre_requis].id}
+                  value="true"
+                  checked={@form[:accelerometre_requis].value in [true, "true"]}
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <div>
+                  <span class="text-sm font-medium text-gray-800">Accéléromètre 3 axes</span>
+                  <p class="text-xs text-gray-500">
+                    Analyse d'éco-conduite (freinages, accélérations, virages)
+                  </p>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
+                <input type="hidden" name={@form[:ultra_low_power_requis].name} value="false" />
+                <input
+                  type="checkbox"
+                  name={@form[:ultra_low_power_requis].name}
+                  id={@form[:ultra_low_power_requis].id}
+                  value="true"
+                  checked={@form[:ultra_low_power_requis].value in [true, "true"]}
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <div>
+                  <span class="text-sm font-medium text-gray-800">Ultra-Low Power</span>
+                  <p class="text-xs text-gray-500">
+                    Mode veille à très faible consommation pour batteries limitées
+                  </p>
+                </div>
+              </label>
+            </div>
+
+            <div class="border-t border-blue-200 pt-6 mt-6">
+              <p class="text-sm font-medium text-gray-700 mb-4">Capteurs requis</p>
+              <p class="text-xs text-gray-500 mb-4">
+                Cochez les capteurs que ce profil doit embarquer
+              </p>
+              <div :for={category <- @capteur_categories} class="mb-4 last:mb-0">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                  {capteur_category_label(category)}
+                </p>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  <label
+                    :for={c <- Enum.filter(@capteurs, &(&1.category == category))}
+                    class={[
+                      "flex items-center gap-2 p-2.5 bg-white rounded-lg border cursor-pointer transition-colors",
+                      if(MapSet.member?(@selected_capteur_ids, c.id),
+                        do: "border-blue-400 bg-blue-50",
+                        else: "border-gray-200 hover:border-blue-300"
+                      )
+                    ]}
+                  >
+                    <input
+                      type="checkbox"
+                      value={c.id}
+                      checked={MapSet.member?(@selected_capteur_ids, c.id)}
+                      phx-click="toggle_capteur"
+                      phx-value-id={c.id}
+                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span class="text-sm text-gray-800">{c.label}</span>
+                  </label>
+                </div>
               </div>
             </div>
           </div>

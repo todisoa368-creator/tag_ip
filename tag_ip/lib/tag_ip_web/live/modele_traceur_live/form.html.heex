@@ -48,84 +48,318 @@
               />
             </div>
 
-            <div class="sm:col-span-1">
+            <%!-- === Types de véhicules : Dropdown multiselect avec recherche === --%>
+            <div class="sm:col-span-2">
               <label class="block text-sm font-semibold text-gray-700 mb-2">
                 Véhicules compatibles
               </label>
-              <div class="grid grid-cols-1 gap-1.5 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-lg border border-gray-200">
-                <label
-                  :for={tv <- @types_vehicule}
-                  class={[
-                    "flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition-colors text-sm",
-                    if(MapSet.member?(@selected_type_vehicule_ids, tv.id),
-                      do: "bg-blue-50 text-blue-800",
-                      else: "hover:bg-gray-100"
-                    )
-                  ]}
+
+              <%!-- Selected tags --%>
+              <div class="flex flex-wrap gap-1.5 mb-3 min-h-[2rem]">
+                <%= if Enum.empty?(@selected_type_vehicule_ids) do %>
+                  <span class="text-xs text-gray-400 italic">Aucun véhicule sélectionné</span>
+                <% end %>
+                <span
+                  :for={
+                    tv <-
+                      Enum.filter(
+                        @types_vehicule,
+                        &MapSet.member?(@selected_type_vehicule_ids, &1.id)
+                      )
+                  }
+                  phx-click="toggle_type_vehicule"
+                  phx-value-id={tv.id}
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-semibold cursor-pointer hover:bg-blue-200 transition-colors"
                 >
-                  <input
-                    type="checkbox"
-                    checked={MapSet.member?(@selected_type_vehicule_ids, tv.id)}
-                    phx-click="toggle_type_vehicule"
-                    phx-value-id={tv.id}
-                    class="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
                   {tv.label}
-                </label>
+                  <span class="text-blue-500 hover:text-blue-700 ml-0.5">&times;</span>
+                </span>
               </div>
-            </div>
 
-            <div class="sm:col-span-1">
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                Alimentations
-              </label>
-              <div class="grid grid-cols-1 gap-1.5 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-lg border border-gray-200">
-                <label
-                  :for={alim <- @alimentations}
+              <%!-- Dropdown trigger --%>
+              <div class="relative" phx-click-away="close_type_vehicule_dropdown">
+                <button
+                  type="button"
+                  phx-click="toggle_type_vehicule_dropdown"
                   class={[
-                    "flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition-colors text-sm",
-                    if(MapSet.member?(@selected_alimentation_ids, alim.id),
-                      do: "bg-amber-50 text-amber-800",
-                      else: "hover:bg-gray-100"
+                    "w-full flex items-center justify-between px-3 py-2 text-sm border rounded-lg transition-all duration-150",
+                    if(@show_type_vehicule_dropdown,
+                      do: "border-blue-400 ring-2 ring-blue-200",
+                      else: "border-gray-300 hover:border-gray-400"
                     )
                   ]}
                 >
-                  <input
-                    type="checkbox"
-                    checked={MapSet.member?(@selected_alimentation_ids, alim.id)}
-                    phx-click="toggle_alimentation"
-                    phx-value-id={alim.id}
-                    class="w-3.5 h-3.5 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
-                  />
-                  {alim.label}
-                </label>
+                  <span class={
+                    if Enum.empty?(@selected_type_vehicule_ids),
+                      do: "text-gray-400",
+                      else: "text-gray-700"
+                  }>
+                    <%= if Enum.empty?(@selected_type_vehicule_ids) do %>
+                      Sélectionner des véhicules...
+                    <% else %>
+                      {Enum.count(@selected_type_vehicule_ids)} sélectionné(s)
+                    <% end %>
+                  </span>
+                  <svg
+                    class={[
+                      "w-4 h-4 text-gray-500 transition-transform duration-200",
+                      @show_type_vehicule_dropdown && "rotate-180"
+                    ]}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <%!-- Dropdown panel --%>
+                <div
+                  :if={@show_type_vehicule_dropdown}
+                  class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden"
+                >
+                  <%!-- Search inside dropdown --%>
+                  <div class="p-2 border-b border-gray-100">
+                    <input
+                      type="text"
+                      value={@type_vehicule_search}
+                      phx-keyup="search_type_vehicule"
+                      placeholder="Rechercher un type..."
+                      class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+
+                  <%!-- Options list --%>
+                  <div class="max-h-60 overflow-y-auto py-1">
+                    <%= if Enum.empty?(filtered_types_vehicule(@types_vehicule, MapSet.new(), @type_vehicule_search)) do %>
+                      <div class="px-3 py-2 text-sm text-gray-400 italic">Aucun résultat</div>
+                    <% end %>
+                    <label
+                      :for={
+                        tv <-
+                          filtered_types_vehicule(
+                            @types_vehicule,
+                            MapSet.new(),
+                            @type_vehicule_search
+                          )
+                      }
+                      phx-click="toggle_type_vehicule"
+                      phx-value-id={tv.id}
+                      class={[
+                        "flex items-center gap-2 px-3 py-2 text-sm cursor-pointer transition-colors",
+                        if(MapSet.member?(@selected_type_vehicule_ids, tv.id),
+                          do: "bg-blue-50 text-blue-800",
+                          else: "text-gray-700 hover:bg-gray-50"
+                        )
+                      ]}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={MapSet.member?(@selected_type_vehicule_ids, tv.id)}
+                        class="w-4 h-4 text-blue-600 border-gray-300 rounded pointer-events-none"
+                        readonly
+                      />
+                      {tv.label}
+                    </label>
+                  </div>
+
+                  <%!-- Footer --%>
+                  <div class="p-2 border-t border-gray-100 bg-gray-50 flex justify-between text-xs text-gray-500">
+                    <span>{Enum.count(@selected_type_vehicule_ids)} sélectionné(s)</span>
+                    <span>{length(@types_vehicule)} disponible(s)</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="sm:col-span-1">
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                Capteurs supportés
-              </label>
-              <div class="grid grid-cols-1 gap-1.5 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-lg border border-gray-200">
-                <label
-                  :for={cap <- @capteurs}
-                  class={[
-                    "flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition-colors text-sm",
-                    if(MapSet.member?(@selected_capteur_ids, cap.id),
-                      do: "bg-sky-50 text-sky-800",
-                      else: "hover:bg-gray-100"
-                    )
-                  ]}
-                >
-                  <input
-                    type="checkbox"
-                    checked={MapSet.member?(@selected_capteur_ids, cap.id)}
-                    phx-click="toggle_capteur"
-                    phx-value-id={cap.id}
-                    class="w-3.5 h-3.5 text-sky-600 border-gray-300 rounded focus:ring-sky-500"
+            <%!-- === Alimentation : Tension (structurée : min/max) + Type (dropdown catalogue) === --%>
+            <div class="sm:col-span-2">
+              <div class="border-t border-gray-100 pt-6 mt-2">
+                <h4 class="text-sm font-semibold text-gray-700 mb-4">Alimentation</h4>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <.input
+                    field={@form[:voltage_min]}
+                    type="number"
+                    label="Tension minimale (V)"
+                    placeholder="Ex: 9"
                   />
-                  {cap.label}
-                </label>
+                  <.input
+                    field={@form[:voltage_max]}
+                    type="number"
+                    label="Tension maximale (V)"
+                    placeholder="Ex: 36"
+                  />
+                </div>
+
+                <div class="mb-4">
+                  <.input
+                    field={@form[:standby_current]}
+                    type="number"
+                    label="Consommation veille (mA)"
+                    placeholder="Ex: 5"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    Type d'alimentation
+                  </label>
+                  <div class="relative" phx-click-away="close_power_alim_dropdown">
+                    <button
+                      type="button"
+                      phx-click="toggle_power_alim_dropdown"
+                      class={[
+                        "w-full flex items-center justify-between px-3 py-2 text-sm border rounded-lg transition-all duration-150 bg-white",
+                        if(@show_power_alim_dropdown,
+                          do: "border-amber-400 ring-2 ring-amber-200",
+                          else: "border-gray-300 hover:border-gray-400"
+                        )
+                      ]}
+                    >
+                      <span class={
+                        if Enum.empty?(@selected_power_alimentation_ids),
+                          do: "text-gray-400",
+                          else: "text-gray-700"
+                      }>
+                        {selected_power_alim_label(
+                          @power_alimentations,
+                          @selected_power_alimentation_ids
+                        )}
+                      </span>
+                      <svg
+                        class={[
+                          "w-4 h-4 text-gray-500 transition-transform duration-200",
+                          @show_power_alim_dropdown && "rotate-180"
+                        ]}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    <div
+                      :if={@show_power_alim_dropdown}
+                      class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden"
+                    >
+                      <div class="max-h-48 overflow-y-auto py-1">
+                        <label
+                          phx-click="change_power_alimentation"
+                          class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-amber-50 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="radio"
+                            name="type_alimentation"
+                            checked={Enum.empty?(@selected_power_alimentation_ids)}
+                            class="w-4 h-4 text-amber-600 border-gray-300"
+                          /> Aucun
+                        </label>
+                        <label
+                          :for={alim <- @power_alimentations}
+                          phx-click="change_power_alimentation"
+                          phx-value-id={alim.id}
+                          class={[
+                            "flex items-center gap-2 px-3 py-2 text-sm cursor-pointer transition-colors",
+                            if(MapSet.member?(@selected_power_alimentation_ids, alim.id),
+                              do: "bg-amber-50 text-amber-800",
+                              else: "text-gray-700 hover:bg-amber-50"
+                            )
+                          ]}
+                        >
+                          <input
+                            type="radio"
+                            name="type_alimentation"
+                            checked={MapSet.member?(@selected_power_alimentation_ids, alim.id)}
+                            class="w-4 h-4 text-amber-600 border-gray-300"
+                            readonly
+                          />
+                          {alim.label}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <%!-- === Capteurs : Groupés par catégorie (Checkbox Group) === --%>
+            <div class="sm:col-span-2">
+              <div class="border-t border-gray-100 pt-6 mt-2">
+                <h4 class="text-sm font-semibold text-gray-700 mb-4">Capteurs supportés</h4>
+
+                <div class="space-y-4">
+                  <div :for={category <- @capteur_categories}>
+                    <%= if category do %>
+                      <div class="mb-2">
+                        <h5 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+                          {capteur_category_label(category)}
+                        </h5>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                          <label
+                            :for={cap <- Enum.filter(@capteurs, &(&1.category == category))}
+                            class={[
+                              "flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all duration-150",
+                              if(MapSet.member?(@selected_capteur_ids, cap.id),
+                                do: "bg-sky-50 border-sky-300",
+                                else:
+                                  "bg-white border-gray-200 hover:border-sky-300 hover:bg-sky-50/50"
+                              )
+                            ]}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={MapSet.member?(@selected_capteur_ids, cap.id)}
+                              phx-click="toggle_capteur"
+                              phx-value-id={cap.id}
+                              class="w-4 h-4 text-sky-600 border-gray-300 rounded"
+                            />
+                            <span class="text-sm font-medium text-gray-700">{cap.label}</span>
+                          </label>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+
+                  <%!-- Capteurs sans catégorie --%>
+                  <%= if Enum.any?(@capteurs, &is_nil(&1.category)) do %>
+                    <div class="mb-2">
+                      <h5 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+                        Autres
+                      </h5>
+                      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                        <label
+                          :for={cap <- Enum.filter(@capteurs, &is_nil(&1.category))}
+                          class={[
+                            "flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all duration-150",
+                            if(MapSet.member?(@selected_capteur_ids, cap.id),
+                              do: "bg-sky-50 border-sky-300",
+                              else:
+                                "bg-white border-gray-200 hover:border-sky-300 hover:bg-sky-50/50"
+                            )
+                          ]}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={MapSet.member?(@selected_capteur_ids, cap.id)}
+                            phx-click="toggle_capteur"
+                            phx-value-id={cap.id}
+                            class="w-4 h-4 text-sky-600 border-gray-300 rounded"
+                          />
+                          <span class="text-sm font-medium text-gray-700">{cap.label}</span>
+                        </label>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+
+                <%!-- Compteur de sélection --%>
+                <div class="mt-3 text-xs text-gray-400">
+                  {Enum.count(@selected_capteur_ids)} capteur(s) sélectionné(s)
+                </div>
               </div>
             </div>
 
@@ -232,12 +466,6 @@
                   type="text"
                   label="Indice de protection IP"
                   placeholder="Ex: IP65, IP67"
-                />
-                <.input
-                  field={@form[:standby_current]}
-                  type="number"
-                  label="Consommation veille (mA)"
-                  placeholder="Ex: 5"
                 />
               </div>
               <div class="flex flex-wrap gap-4 mt-4">

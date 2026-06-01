@@ -25,6 +25,15 @@ defmodule TagIp.Resources.Alimentation do
       public?(true)
     end
 
+    attribute :description, :string do
+      public?(true)
+    end
+
+    attribute :category, :string do
+      default("voltage")
+      public?(true)
+    end
+
     timestamps()
   end
 
@@ -33,7 +42,7 @@ defmodule TagIp.Resources.Alimentation do
 
     create :create do
       primary?(true)
-      accept([:slug, :label])
+      accept([:slug, :label, :description, :category])
       upsert?(true)
       upsert_identity(:unique_slug)
     end

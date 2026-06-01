@@ -62,12 +62,22 @@
       <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <h3 class="text-lg font-bold text-gray-900">Historique des compatibilités</h3>
-          <.search_input
-            value={@search}
-            placeholder="Rechercher..."
-            class="flex-1 max-w-xs ml-4"
-            input_class="w-full md:w-full"
-          />
+          <div class="flex items-center gap-3">
+            <.search_input
+              value={@search}
+              placeholder="Rechercher..."
+              class="flex-1 max-w-xs"
+              input_class="w-full md:w-full"
+            />
+            <%= if not Enum.empty?(@compatibilites) do %>
+              <button
+                phx-click="clear_all"
+                class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg border border-red-300 text-red-700 hover:bg-red-50 transition-colors"
+              >
+                <.icon name="hero-trash" class="size-4" /> Tout effacer
+              </button>
+            <% end %>
+          </div>
         </div>
 
         <%= if Enum.empty?(@compatibilites) do %>

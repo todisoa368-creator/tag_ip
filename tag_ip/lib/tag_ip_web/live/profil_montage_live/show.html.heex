@@ -137,10 +137,21 @@
                 {@profil.driver_id_type || "Aucun"}
               </dd>
             </div>
-            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
-              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Indice IP</dt>
-              <dd class="mt-2 text-sm font-semibold text-slate-900">
-                {@profil.ip_rating || "Non spécifié"}
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60 sm:col-span-2">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Capteurs requis</dt>
+              <dd class="mt-2">
+                <%= if @profil.capteurs && @profil.capteurs != [] do %>
+                  <div class="flex flex-wrap gap-2">
+                    <span
+                      :for={capteur <- @profil.capteurs}
+                      class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800"
+                    >
+                      {capteur.label}
+                    </span>
+                  </div>
+                <% else %>
+                  <span class="text-sm text-slate-500">Aucun capteur spécifique requis</span>
+                <% end %>
               </dd>
             </div>
           </dl>

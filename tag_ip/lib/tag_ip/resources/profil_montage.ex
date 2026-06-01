@@ -8,7 +8,7 @@ defmodule TagIp.Resources.ProfilMontage do
 
     attribute(:name, :string, allow_nil?: false, public?: true)
     attribute(:description, :string, public?: true)
-    attribute(:reporting_interval, :string, public?: true)
+    attribute(:reporting_interval, :string, default: "interval_30s", public?: true)
     attribute(:object_type, :string, public?: true)
     attribute(:voltage_min, :float, public?: true)
     attribute(:voltage_max, :float, public?: true)
@@ -33,19 +33,23 @@ defmodule TagIp.Resources.ProfilMontage do
     attribute(:outputs_requis, :integer, public?: true)
 
     # Compatibilité élargie — Environnement et Protection Physique
-    attribute(:ip_rating, :string, public?: true)
     attribute(:montage_exterieur, :boolean, default: false, public?: true)
     attribute(:antenne_deportee, :boolean, default: false, public?: true)
 
     # Compatibilité élargie — Intelligence Embarquée
     attribute(:accelerometre_requis, :boolean, default: false, public?: true)
-    attribute(:buffer_requis, :integer, public?: true)
 
     timestamps()
   end
 
   relationships do
     has_many :compatibilites, TagIp.Resources.Compatibilite
+
+    many_to_many :capteurs, TagIp.Resources.Capteur do
+      through(TagIp.Resources.ProfilMontageCapteur)
+      source_attribute_on_join_resource(:profil_montage_id)
+      destination_attribute_on_join_resource(:capteur_id)
+    end
   end
 
   actions do
@@ -70,13 +74,11 @@ defmodule TagIp.Resources.ProfilMontage do
         :inputs_requis,
         :analog_inputs_requis,
         :outputs_requis,
-        :ip_rating,
         :can_bus_requis,
         :one_wire_requis,
         :rs232_requis,
         :rs485_requis,
         :accelerometre_requis,
-        :buffer_requis,
         :montage_exterieur,
         :antenne_deportee,
         :ultra_low_power_requis

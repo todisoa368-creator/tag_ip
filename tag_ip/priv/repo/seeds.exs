@@ -8,6 +8,21 @@ defmodule Csv do
     |> Enum.map(&parse_line/1)
   end
 
+  @doc """
+  Prend une chaîne brute PostgreSQL/CSV du type "{ignition,engine}"
+  et la transforme en une liste propre de chaînes Elixir : ["ignition", "engine"]
+  """
+  def clean_monitors(nil), do: []
+  def clean_monitors(""), do: []
+
+  def clean_monitors(monitors_string) do
+    monitors_string
+    |> String.replace("{", "")
+    |> String.replace("}", "")
+    |> String.split(",", trim: true)
+    |> Enum.map(&String.trim/1)
+  end
+
   defp parse_line(line) do
     line
     |> String.trim()
@@ -44,13 +59,19 @@ alias TagIp.Resources.ModelFeature
 alias TagIp.Resources.ModelPort
 alias TagIp.Resources.Peripheral
 alias TagIp.Resources.Alimentation
+alias TagIp.Resources.TypeVehicule
+alias TagIp.Resources.Capteur
 alias TagIp.Resources.ModeleTraceurAlimentation
+alias TagIp.Resources.ModeleTraceurTypeVehicule
+alias TagIp.Resources.ModeleTraceurCapteur
 alias TagIp.Accounts.User
 alias TagIp.Repo
 
 IO.puts("--- Début du peuplement de la base de données ---")
 
+# =========================================================
 # 1. Utilisateur par défaut
+# =========================================================
 admin_email = "admin@tag-ip.com"
 admin_password = "password1234"
 
@@ -88,72 +109,139 @@ case Repo.get_by(User, email: admin_email) do
     end
 end
 
+# =========================================================
 # 2. Profils de montage
+# =========================================================
 profils = [
   %{
-    name: "Véhicule utilitaire léger",
-    description: "Profil pour les véhicules utilitaires légers",
-    object_type: "car",
-    voltage_min: 10800,
-    voltage_max: 32000,
+    name: "Véhicule ferroviaire",
+    description: "Profil pour les véhicules ferroviaires",
+    object_type: "railway-vehicle",
+    voltage_min: 24,
+    voltage_max: 48,
     buzzer: true,
-    geofence_enabled: true,
-    inputs_requis: 1,
-    outputs_requis: 1,
-    ip_rating: "IP54",
-    accelerometre_requis: true
-  },
-  %{
-    name: "Camion transport longue distance",
-    description: "Profil pour les camions longue distance avec FMS",
-    object_type: "truck",
-    voltage_min: 18000,
-    voltage_max: 32000,
-    buzzer: true,
-    fuel_probe_type: "can_bus",
     geofence_enabled: true,
     can_bus_requis: true,
-    inputs_requis: 2,
-    analog_inputs_requis: 1,
-    outputs_requis: 1,
-    ip_rating: "IP65",
     accelerometre_requis: true,
-    buffer_requis: 256,
-    antenne_deportee: true
-  },
-  %{
-    name: "Voiture tourisme",
-    description: "Profil standard pour voitures de tourisme",
-    object_type: "car",
-    voltage_min: 10800,
-    voltage_max: 16000,
-    buzzer: false,
-    geofence_enabled: true,
-    inputs_requis: 1
-  },
-  %{
-    name: "Moto",
-    description: "Profil pour motos et scooters",
-    object_type: "moto",
-    voltage_min: 10800,
-    voltage_max: 16000,
-    geofence_enabled: true,
-    ultra_low_power_requis: true,
-    inputs_requis: 1
+    inputs_requis: 4,
+    outputs_requis: 2
   },
   %{
     name: "Engin de chantier",
-    description: "Profil pour engins de chantier et conteneurs",
+    description: "Profil pour engins de chantier",
     object_type: "construction_machine",
-    voltage_min: 18000,
-    voltage_max: 36000,
-    geofence_enabled: true,
+    voltage_min: 12,
+    voltage_max: 36,
     montage_exterieur: true,
-    ip_rating: "IP67",
+    geofence_enabled: true,
     accelerometre_requis: true,
-    buffer_requis: 512,
     inputs_requis: 2,
+    outputs_requis: 0
+  },
+  %{
+    name: "Camion transport",
+    description: "Profil pour camions de transport",
+    object_type: "truck",
+    voltage_min: 12,
+    voltage_max: 36,
+    can_bus_requis: true,
+    buzzer: true,
+    geofence_enabled: true,
+    accelerometre_requis: true,
+    antenne_deportee: true,
+    inputs_requis: 2,
+    outputs_requis: 0
+  },
+  %{
+    name: "Cadenas intelligent",
+    description: "Profil pour cadenas connecté intelligent",
+    object_type: "smart_lock",
+    voltage_min: 3.7,
+    voltage_max: 5,
+    ultra_low_power_requis: true,
+    antenne_deportee: true,
+    inputs_requis: 0,
     outputs_requis: 1
+  },
+  %{
+    name: "Moto / Scooter",
+    description: "Profil pour motos et scooters",
+    object_type: "moto",
+    voltage_min: 12,
+    voltage_max: 15,
+    geofence_enabled: true,
+    ultra_low_power_requis: true,
+    accelerometre_requis: true,
+    inputs_requis: 1,
+    outputs_requis: 0
+  },
+  %{
+    name: "Chariot élévateur",
+    description: "Profil pour chariots élévateurs",
+    object_type: "forklift",
+    voltage_min: 12,
+    voltage_max: 48,
+    geofence_enabled: true,
+    accelerometre_requis: true,
+    inputs_requis: 2,
+    outputs_requis: 0
+  },
+  %{
+    name: "Personne",
+    description: "Profil pour suivi de personne",
+    object_type: "person",
+    voltage_min: 3.7,
+    voltage_max: 5,
+    ultra_low_power_requis: true,
+    inputs_requis: 0,
+    outputs_requis: 0
+  },
+  %{
+    name: "Voiture tourisme",
+    description: "Profil pour voitures de tourisme",
+    object_type: "car",
+    voltage_min: 12,
+    voltage_max: 15,
+    geofence_enabled: true,
+    accelerometre_requis: true,
+    inputs_requis: 1,
+    outputs_requis: 0
+  },
+  %{
+    name: "Bus / Taxibe",
+    description: "Profil pour bus et taxis",
+    object_type: "bus",
+    voltage_min: 12,
+    voltage_max: 36,
+    can_bus_requis: true,
+    buzzer: true,
+    geofence_enabled: true,
+    accelerometre_requis: true,
+    inputs_requis: 2,
+    outputs_requis: 0
+  },
+  %{
+    name: "Objet",
+    description: "Profil pour suivi d'objet générique",
+    object_type: "object",
+    voltage_min: 3.7,
+    voltage_max: 12,
+    ultra_low_power_requis: true,
+    antenne_deportee: true,
+    inputs_requis: 0,
+    outputs_requis: 0
+  },
+  %{
+    name: "Bateau",
+    description: "Profil pour embarcations motorisées",
+    object_type: "boat",
+    voltage_min: 12,
+    voltage_max: 24,
+    geofence_enabled: true,
+    accelerometre_requis: true,
+    antenne_deportee: true,
+    inputs_requis: 1,
+    outputs_requis: 2
   }
 ]
 
@@ -167,419 +255,285 @@ Enum.each(profils, fn attrs ->
   end
 end)
 
-# 3. Modèles de traceurs
-modeles = [
+# =========================================================
+# 3. Types de véhicules, Alimentations, Capteurs (données de référence)
+# =========================================================
+IO.puts("Insertion des types de véhicules...")
+
+types_vehicule_data = [
   %{
-    nom: "Teltonika FMB920",
-    reference: "TLT-FMB920",
-    types_vehicule_compatibles: ["car", "moto", "bus", "truck"],
-    alimentations_compatibles: ["12V", "24V"],
-    capteurs_supportes: [
-      "buzzer",
-      "geofence",
-      "fuel_probe_rs232",
-      "fuel_probe_analog",
-      "immobilizer"
-    ],
-    description:
-      "Traceur GPS compact polyvalent 2G avec entrées numériques/analogiques, idéal pour véhicules légers et poids lourds.",
-    nb_digital_inputs: 2,
-    nb_analog_inputs: 1,
-    nb_outputs: 1,
-    ip_rating: "IP54",
-    accelerometer: true,
-    buffer_memory: 128
+    slug: "truck",
+    label: "Camion",
+    description: "Véhicule motorisé destiné au transport de marchandises",
+    voltage_min: 12,
+    voltage_max: 36,
+    inputs_requis: 2,
+    outputs_requis: 0
   },
   %{
-    nom: "Teltonika FMB125",
-    reference: "TLT-FMB125",
-    types_vehicule_compatibles: ["car", "moto"],
-    alimentations_compatibles: ["12V", "24V"],
-    capteurs_supportes: ["buzzer", "geofence", "immobilizer"],
-    description: "Traceur GPS 2G entrée de gamme pour véhicules légers, compatible 12/24V.",
-    nb_digital_inputs: 1,
-    nb_outputs: 1,
-    ip_rating: "IP54",
-    buffer_memory: 64
+    slug: "bus",
+    label: "Bus / Taxibe",
+    description: "Véhicule motorisé pour le transport de passagers",
+    voltage_min: 12,
+    voltage_max: 36,
+    inputs_requis: 2,
+    outputs_requis: 0
   },
   %{
-    nom: "Teltonika FMC650",
-    reference: "TLT-FMC650",
-    types_vehicule_compatibles: ["truck", "bus", "construction_machine"],
-    alimentations_compatibles: ["12V", "24V", "9-36V"],
-    capteurs_supportes: [
-      "buzzer",
-      "geofence",
-      "fuel_probe_rs232",
-      "fuel_probe_can_bus",
-      "temp",
-      "rfid"
-    ],
-    description:
-      "Traceur GPS 4G robuste pour flottes professionnelles et engins de chantier, alimentation large plage.",
-    can_bus: true,
-    nb_digital_inputs: 3,
-    nb_analog_inputs: 1,
-    nb_outputs: 2,
-    ip_rating: "IP65",
-    accelerometer: true,
-    buffer_memory: 256,
-    antennes_externes: true
+    slug: "construction_machine",
+    label: "Engin de chantier",
+    description: "Engins utilisés dans le bâtiment et les travaux publics",
+    voltage_min: 12,
+    voltage_max: 36,
+    inputs_requis: 2,
+    outputs_requis: 0
   },
   %{
-    nom: "Teltonika FMM130",
-    reference: "TLT-FMM130",
-    types_vehicule_compatibles: ["car", "truck", "bus", "boat", "construction_machine"],
-    alimentations_compatibles: ["12V", "24V", "9-36V"],
-    capteurs_supportes: [
-      "buzzer",
-      "geofence",
-      "fuel_probe_rs232",
-      "fuel_probe_can_bus",
-      "immobilizer",
-      "acceleration"
-    ],
-    description:
-      "Traceur GPS 4G tout-terrain avec GNSS, accéléromètre et large plage de tension.",
-    can_bus: true,
-    nb_digital_inputs: 2,
-    nb_analog_inputs: 1,
-    nb_outputs: 1,
-    ip_rating: "IP65",
-    accelerometer: true,
-    buffer_memory: 256,
-    antennes_externes: true
+    slug: "car",
+    label: "Voiture",
+    description: "Véhicule motorisé à quatre roues",
+    voltage_min: 12,
+    voltage_max: 15,
+    inputs_requis: 1,
+    outputs_requis: 0
   },
   %{
-    nom: "Teltonika FMB003",
-    reference: "TLT-FMB003",
-    types_vehicule_compatibles: ["car", "moto"],
-    alimentations_compatibles: ["12V"],
-    capteurs_supportes: ["buzzer", "geofence"],
-    description: "Mini traceur GPS 2G économique pour véhicules légers 12V.",
-    nb_digital_inputs: 1,
-    ip_rating: "IP54"
+    slug: "van",
+    label: "Van / Utilitaire",
+    description: "Véhicule utilitaire léger",
+    voltage_min: 12,
+    voltage_max: 15,
+    inputs_requis: 1,
+    outputs_requis: 0
   },
   %{
-    nom: "Queclink GV350",
-    reference: "QCL-GV350",
-    types_vehicule_compatibles: ["car", "moto", "truck"],
-    alimentations_compatibles: ["12V", "24V"],
-    capteurs_supportes: ["buzzer", "geofence", "fuel_probe_rs232", "immobilizer", "sos"],
-    description: "Traceur GPS 2G avec batterie de secours, conçu pour la gestion de flotte.",
-    nb_digital_inputs: 2,
-    nb_outputs: 1,
-    ip_rating: "IP54",
-    buffer_memory: 128
+    slug: "moto",
+    label: "Moto",
+    description: "Véhicule à deux roues motorisé",
+    voltage_min: 12,
+    voltage_max: 15,
+    inputs_requis: 1,
+    outputs_requis: 0
   },
   %{
-    nom: "Queclink GV55",
-    reference: "QCL-GV55",
-    types_vehicule_compatibles: ["truck", "construction_machine"],
-    alimentations_compatibles: ["12V", "24V", "9-36V"],
-    capteurs_supportes: [
-      "buzzer",
-      "geofence",
-      "fuel_probe_rs232",
-      "fuel_probe_can_bus",
-      "temp",
-      "rfid",
-      "sos"
-    ],
-    description: "Traceur GPS 4G renforcé IP65 pour véhicules lourds et engins de chantier.",
-    can_bus: true,
-    nb_digital_inputs: 3,
-    nb_analog_inputs: 1,
-    nb_outputs: 2,
-    ip_rating: "IP65",
-    accelerometer: true,
-    buffer_memory: 256,
-    antennes_externes: true
+    slug: "forklift",
+    label: "Chariot élévateur",
+    description: "Engin motorisé de manutention",
+    voltage_min: 12,
+    voltage_max: 48,
+    inputs_requis: 2,
+    outputs_requis: 0
   },
   %{
-    nom: "Queclink GL300",
-    reference: "QCL-GL300",
-    types_vehicule_compatibles: ["asset", "person"],
-    alimentations_compatibles: ["battery"],
-    capteurs_supportes: ["geofence", "sos", "acceleration"],
-    description:
-      "Mini traceur GPS portable à batterie rechargeable pour suivi de personnes et d'objets.",
-    accelerometer: true,
-    ultra_low_power: true,
-    ip_rating: "IP65"
+    slug: "boat",
+    label: "Bateau",
+    description: "Embarcation motorisée",
+    voltage_min: 12,
+    voltage_max: 24,
+    inputs_requis: 1,
+    outputs_requis: 2
   },
   %{
-    nom: "Queclink GL310",
-    reference: "QCL-GL310",
-    types_vehicule_compatibles: ["asset", "person", "padlock"],
-    alimentations_compatibles: ["battery"],
-    capteurs_supportes: ["geofence", "sos", "acceleration", "gyro"],
-    description: "Traceur GPS compact à batterie avec gyroscope, idéal pour cadenas connectés.",
-    accelerometer: true,
-    ultra_low_power: true,
-    ip_rating: "IP65",
-    buffer_memory: 64
+    slug: "railway-vehicle",
+    label: "Véhicule ferroviaire",
+    description: "Matériel mobile roulant sur rails",
+    voltage_min: 24,
+    voltage_max: 48,
+    inputs_requis: 4,
+    outputs_requis: 2
   },
   %{
-    nom: "Concox GT06N",
-    reference: "CNC-GT06N",
-    types_vehicule_compatibles: ["car", "truck", "moto"],
-    alimentations_compatibles: ["12V", "24V"],
-    capteurs_supportes: ["buzzer", "geofence", "fuel_probe_analog", "immobilizer", "sos"],
-    description: "Traceur GPS 2G avec coupe-circuit et entrée jauge carburant analogique.",
-    nb_digital_inputs: 1,
-    nb_outputs: 1,
-    ip_rating: "IP54"
+    slug: "person",
+    label: "Personne",
+    description: "Suivi de personne",
+    voltage_min: 3.7,
+    voltage_max: 5,
+    inputs_requis: 0,
+    outputs_requis: 0
   },
   %{
-    nom: "Concox TR06",
-    reference: "CNC-TR06",
-    types_vehicule_compatibles: ["car", "truck"],
-    alimentations_compatibles: ["12V", "24V"],
-    capteurs_supportes: ["buzzer", "geofence", "fuel_probe_rs232", "temp", "immobilizer"],
-    description: "Traceur GPS 4G robuste avec 2 entrées numériques et 1 entrée analogique.",
-    nb_digital_inputs: 2,
-    nb_analog_inputs: 1,
-    nb_outputs: 1,
-    ip_rating: "IP65",
-    rs232: true,
-    buffer_memory: 128
+    slug: "smart_lock",
+    label: "Cadenas intelligent",
+    description: "Cadenas connecté intelligent",
+    voltage_min: 3.7,
+    voltage_max: 5,
+    inputs_requis: 0,
+    outputs_requis: 1
   },
   %{
-    nom: "Concox GL300W",
-    reference: "CNC-GL300W",
-    types_vehicule_compatibles: ["asset", "person", "padlock"],
-    alimentations_compatibles: ["battery"],
-    capteurs_supportes: ["geofence", "sos", "acceleration"],
-    description: "Mini traceur GPS portable à batterie avec aimant intégré.",
-    accelerometer: true,
-    ultra_low_power: true,
-    ip_rating: "IP65"
-  },
-  %{
-    nom: "Meitrack MVT380",
-    reference: "MTK-MVT380",
-    types_vehicule_compatibles: ["truck", "bus", "construction_machine"],
-    alimentations_compatibles: ["12V", "24V", "9-36V"],
-    capteurs_supportes: [
-      "buzzer",
-      "geofence",
-      "fuel_probe_rs232",
-      "fuel_probe_can_bus",
-      "temp",
-      "rfid",
-      "immobilizer"
-    ],
-    description: "Traceur GPS 4G professionnel pour poids lourds avec interface CAN bus et RFID.",
-    can_bus: true,
-    nb_digital_inputs: 3,
-    nb_analog_inputs: 1,
-    nb_outputs: 2,
-    ip_rating: "IP65",
-    rs232: true,
-    accelerometer: true,
-    buffer_memory: 256,
-    antennes_externes: true
-  },
-  %{
-    nom: "Meitrack MVT600",
-    reference: "MTK-MVT600",
-    types_vehicule_compatibles: ["car", "truck", "bus", "railway-vehicle", "construction_machine"],
-    alimentations_compatibles: ["12V", "24V", "9-36V"],
-    capteurs_supportes: [
-      "buzzer",
-      "geofence",
-      "fuel_probe_rs232",
-      "fuel_probe_can_bus",
-      "temp",
-      "rfid",
-      "nfc",
-      "acceleration"
-    ],
-    description: "Traceur GPS 4G haut de gamme avec NFC, RS232, CAN bus et accéléromètre 3 axes.",
-    can_bus: true,
-    rs232: true,
-    nb_digital_inputs: 4,
-    nb_analog_inputs: 2,
-    nb_outputs: 2,
-    ip_rating: "IP65",
-    accelerometer: true,
-    buffer_memory: 512,
-    antennes_externes: true,
-    ultra_low_power: true
-  },
-  %{
-    nom: "TK103",
-    reference: "TK103-B",
-    types_vehicule_compatibles: ["car", "truck", "moto"],
-    alimentations_compatibles: ["12V", "24V"],
-    capteurs_supportes: ["buzzer", "geofence", "immobilizer", "sos"],
-    description: "Traceur GPS 2G économique avec microphone et coupe-moteur intégré.",
-    nb_digital_inputs: 1,
-    nb_outputs: 1,
-    ip_rating: "IP54"
-  },
-  %{
-    nom: "TKSTAR TK905",
-    reference: "TKS-TK905",
-    types_vehicule_compatibles: ["car", "moto", "truck", "asset"],
-    alimentations_compatibles: ["12V", "24V", "battery"],
-    capteurs_supportes: ["buzzer", "geofence", "sos", "acceleration"],
-    description:
-      "Traceur GPS magnétique à batterie pour véhicules et objets, installation sans fil.",
-    accelerometer: true,
-    ultra_low_power: true,
-    ip_rating: "IP67",
-    buffer_memory: 128
-  },
-  %{
-    nom: "Suntech ST90",
-    reference: "SUN-ST90",
-    types_vehicule_compatibles: ["car", "truck"],
-    alimentations_compatibles: ["12V", "24V"],
-    capteurs_supportes: ["buzzer", "geofence", "fuel_probe_rs232", "immobilizer", "temp"],
-    description: "Traceur GPS 4G avec 2 entrées numériques, 1 sortie et entrée analogique.",
-    nb_digital_inputs: 2,
-    nb_analog_inputs: 1,
-    nb_outputs: 1,
-    ip_rating: "IP54",
-    rs232: true,
-    buffer_memory: 128
-  },
-  %{
-    nom: "iStartek GM02",
-    reference: "IST-GM02",
-    types_vehicule_compatibles: ["car", "truck", "moto", "bus"],
-    alimentations_compatibles: ["12V", "24V"],
-    capteurs_supportes: ["buzzer", "geofence", "fuel_probe_analog", "rfid", "immobilizer", "sos"],
-    description: "Traceur GPS 4G avec lecteur RFID et entrée jauge carburant.",
-    nb_digital_inputs: 2,
-    nb_outputs: 1,
-    ip_rating: "IP54",
-    buffer_memory: 128
-  },
-  %{
-    nom: "Jimiiot JT701",
-    reference: "JIM-JT701",
-    types_vehicule_compatibles: ["truck", "construction_machine", "bus"],
-    alimentations_compatibles: ["12V", "24V", "9-36V"],
-    capteurs_supportes: [
-      "buzzer",
-      "geofence",
-      "fuel_probe_rs232",
-      "fuel_probe_can_bus",
-      "temp",
-      "acceleration"
-    ],
-    description:
-      "Traceur GPS 4G robuste IP67 pour environnements difficiles et véhicules lourds.",
-    can_bus: true,
-    nb_digital_inputs: 3,
-    nb_analog_inputs: 1,
-    nb_outputs: 2,
-    ip_rating: "IP67",
-    rs232: true,
-    accelerometer: true,
-    buffer_memory: 256,
-    antennes_externes: true
-  },
-  %{
-    nom: "Jimiiot JT700",
-    reference: "JIM-JT700",
-    types_vehicule_compatibles: ["car", "moto", "truck"],
-    alimentations_compatibles: ["12V", "24V"],
-    capteurs_supportes: ["buzzer", "geofence", "fuel_probe_rs232", "immobilizer"],
-    description: "Traceur GPS 4G compact pour véhicules standards avec sortie coupe-circuit.",
-    nb_digital_inputs: 2,
-    nb_outputs: 1,
-    ip_rating: "IP54",
-    buffer_memory: 128
-  },
-  %{
-    nom: "Eelink CDMA",
-    reference: "EEL-CDMA",
-    types_vehicule_compatibles: ["asset", "car", "moto"],
-    alimentations_compatibles: ["12V", "24V", "battery"],
-    capteurs_supportes: ["geofence", "acceleration"],
-    description: "Traceur GPS 2G CDMA, modèle entrée de gamme pour usage polyvalent.",
-    accelerometer: true,
-    ultra_low_power: true,
-    ip_rating: "IP54"
-  },
-  %{
-    nom: "Eelink LTE Cat 1",
-    reference: "EEL-LTE",
-    types_vehicule_compatibles: ["car", "moto", "truck", "bus", "boat"],
-    alimentations_compatibles: ["12V", "24V", "9-36V"],
-    capteurs_supportes: [
-      "buzzer",
-      "geofence",
-      "fuel_probe_rs232",
-      "fuel_probe_analog",
-      "immobilizer"
-    ],
-    description:
-      "Traceur GPS 4G LTE Cat 1 avec batterie de secours, large compatibilité véhicules.",
-    nb_digital_inputs: 2,
-    nb_analog_inputs: 1,
-    nb_outputs: 1,
-    ip_rating: "IP54",
-    buffer_memory: 128
-  },
-  %{
-    nom: "Trackimo TRK002",
-    reference: "TRK-TRK002",
-    types_vehicule_compatibles: ["asset", "person", "padlock"],
-    alimentations_compatibles: ["battery"],
-    capteurs_supportes: ["geofence", "sos", "acceleration", "gyro"],
-    description:
-      "Traceur GPS mondial portable à batterie, idéal pour bagages, animaux et personnes.",
-    accelerometer: true,
-    ultra_low_power: true,
-    ip_rating: "IP65",
-    buffer_memory: 64
-  },
-  %{
-    nom: "Bofan M95",
-    reference: "BOF-M95",
-    types_vehicule_compatibles: ["car", "moto", "truck"],
-    alimentations_compatibles: ["12V", "24V"],
-    capteurs_supportes: ["buzzer", "geofence", "immobilizer", "sos"],
-    description: "Traceur GPS 2G économique avec sortie de relais pour coupe-circuit.",
-    nb_digital_inputs: 1,
-    nb_outputs: 1,
-    ip_rating: "IP54"
-  },
-  %{
-    nom: "SpyTec STI_GL300",
-    reference: "SPY-GL300",
-    types_vehicule_compatibles: ["car", "asset", "person"],
-    alimentations_compatibles: ["battery"],
-    capteurs_supportes: ["geofence", "sos", "acceleration"],
-    description: "Mini traceur GPS magnétique à batterie rechargeable pour véhicules et objets.",
-    accelerometer: true,
-    ultra_low_power: true,
-    ip_rating: "IP65"
+    slug: "object",
+    label: "Objet",
+    description: "Suivi d'objet générique",
+    voltage_min: 3.7,
+    voltage_max: 12,
+    inputs_requis: 0,
+    outputs_requis: 0
   }
 ]
 
-IO.puts("Insertion des modèles...")
+tv_by_slug =
+  Enum.map(types_vehicule_data, fn attrs ->
+    {:ok, tv} = TypeVehicule.create(attrs, action: :create)
+    {tv.slug, tv.id}
+  end)
+  |> Map.new()
 
-Enum.each(modeles, fn attrs ->
-  try do
-    ModeleTraceur.create!(attrs, action: :create)
-  rescue
-    _ -> :ok
-  end
-end)
+IO.puts("Insertion des alimentations...")
 
+alimentations_data = [
+  # Alimentations par plage de tension (rétrocompatibilité)
+  %{
+    slug: "12V",
+    label: "12V",
+    description: "Alimentation 12V (batterie voiture)",
+    category: "voltage"
+  },
+  %{
+    slug: "24V",
+    label: "24V",
+    description: "Alimentation 24V (poids lourds)",
+    category: "voltage"
+  },
+  %{
+    slug: "9-36V",
+    label: "9-36V (Large Plage)",
+    description: "Alimentation large plage 9V à 36V",
+    category: "voltage"
+  },
+  # Modes d'alimentation
+  %{
+    slug: "filaire",
+    label: "Filaire",
+    description: "Alimentation directe sur batterie véhicule",
+    category: "power_type"
+  },
+  %{slug: "obd", label: "OBD", description: "Alimentation via prise OBD", category: "power_type"},
+  %{
+    slug: "batterie",
+    label: "Batterie interne",
+    description: "Alimentation sur batterie interne rechargeable",
+    category: "power_type"
+  },
+  %{
+    slug: "solaire",
+    label: "Solaire",
+    description: "Alimentation par panneau solaire",
+    category: "power_type"
+  }
+]
+
+alim_by_slug =
+  Enum.map(alimentations_data, fn attrs ->
+    {:ok, alim} = Alimentation.create(attrs, action: :create)
+    {alim.slug, alim.id}
+  end)
+  |> Map.new()
+
+IO.puts("Insertion des capteurs...")
+
+capteurs_data = [
+  # === Énergie ===
+  %{slug: "engine", label: "Moteur", description: "Surveillance état moteur", category: "energy"},
+  %{
+    slug: "engine_speed",
+    label: "Régime moteur",
+    description: "Mesure du régime moteur (RPM)",
+    category: "energy"
+  },
+  %{
+    slug: "fuel_level_monitor",
+    label: "Niveau carburant",
+    description: "Surveillance niveau carburant",
+    category: "energy"
+  },
+  %{
+    slug: "fuel_cap_monitor",
+    label: "Bouchon carburant",
+    description: "Détection ouverture bouchon réservoir",
+    category: "energy"
+  },
+  %{
+    slug: "fuel_probe_analog",
+    label: "Jauge carburant (Analogique)",
+    description: "Sonde carburant analogique",
+    category: "energy"
+  },
+  %{
+    slug: "fuel_probe_digital",
+    label: "Jauge carburant (Numérique)",
+    description: "Sonde carburant numérique",
+    category: "energy"
+  },
+  %{
+    slug: "fuel_probe_can_bus",
+    label: "Jauge carburant (CAN-Bus)",
+    description: "Sonde carburant sur bus CAN",
+    category: "energy"
+  },
+  # === Sécurité ===
+  %{
+    slug: "ignition",
+    label: "Contact (Ignition)",
+    description: "Détection allumage moteur",
+    category: "safety"
+  },
+  %{
+    slug: "buzzer",
+    label: "Buzzer",
+    description: "Avertisseur sonore intégré",
+    category: "safety"
+  },
+  %{
+    slug: "geofence",
+    label: "Géofence",
+    description: "Gestion de zones géographiques",
+    category: "safety"
+  },
+  # === Environnement ===
+  # === Conducteur ===
+  %{
+    slug: "driver_identification_monitor",
+    label: "Identification conducteur",
+    description: "Lecteur d'identification conducteur",
+    category: "driver"
+  },
+  # === État du véhicule ===
+  %{
+    slug: "movement_monitor",
+    label: "Mouvement",
+    description: "Détection de mouvement",
+    category: "vehicle_status"
+  },
+  %{
+    slug: "odometer_monitor",
+    label: "Odomètre",
+    description: "Compteur kilométrique",
+    category: "vehicle_status"
+  },
+  # === Connectivité ===
+  %{
+    slug: "connectivity_monitor",
+    label: "Connectivité",
+    description: "Surveillance de la connexion réseau",
+    category: "connectivity"
+  }
+]
+
+cap_by_slug =
+  Enum.map(capteurs_data, fn attrs ->
+    {:ok, cap} = Capteur.create(attrs, action: :create)
+    {cap.slug, cap.id}
+  end)
+  |> Map.new()
+
+# =========================================================
 # 4. Import CSV
+# =========================================================
 to_nil = fn
   "" -> nil
   val -> String.trim(val)
 end
 
-# --- Types ---
 types_path = Path.join(__DIR__, "trackable_types.csv")
 
 if File.exists?(types_path) do
@@ -607,7 +561,7 @@ if File.exists?(types_path) do
 end
 
 # =========================================================
-# 5. Port Types (Data Initialization & Reference Guide)
+# 5. Port Types
 # =========================================================
 IO.puts("Insertion des types de ports...")
 
@@ -663,7 +617,7 @@ port_type_ids =
   |> Map.new()
 
 # =========================================================
-# 6. Features (Data Initialization & Reference Guide)
+# 6. Features
 # =========================================================
 IO.puts("Insertion des fonctionnalités...")
 
@@ -727,10 +681,6 @@ feature_ids =
 # =========================================================
 IO.puts("Insertion des modèles du guide de référence...")
 
-# Helper for alimentations
-new_alims = Alimentation.read!()
-alim_by_slug = Map.new(new_alims, &{&1.slug, &1.id})
-
 new_tracker_models = [
   %{
     nom: "FMC120 (FMx120)",
@@ -747,9 +697,15 @@ new_tracker_models = [
     accelerometer: true,
     buffer_memory: 128,
     ip_rating: "IP54",
+    voltage_min: 3,
+    voltage_max: 50,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs:
+      ~w(ignition connectivity_monitor movement_monitor odometer_monitor driver_identification_monitor),
+    type_vehicule_slugs:
+      ~w(railway-vehicle construction_machine truck smart_lock moto forklift person car bus object boat),
     feature_slugs:
-      ~w(real_time_tracking eco_driving crash_detection geofencing fuel_monitoring driver_id cold_chain engine_immobilization),
-    alimentation_slugs: []
+      ~w(real_time_tracking eco_driving crash_detection geofencing fuel_monitoring driver_id cold_chain engine_immobilization)
   },
   %{
     nom: "FMC130 (FMx130)",
@@ -766,9 +722,15 @@ new_tracker_models = [
     accelerometer: true,
     buffer_memory: 256,
     ip_rating: "IP54",
+    voltage_min: 3,
+    voltage_max: 50,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs:
+      ~w(ignition connectivity_monitor movement_monitor odometer_monitor driver_identification_monitor engine),
+    type_vehicule_slugs:
+      ~w(railway-vehicle construction_machine truck smart_lock moto forklift person car bus object boat),
     feature_slugs:
-      ~w(real_time_tracking eco_driving crash_detection geofencing fuel_monitoring driver_id cold_chain engine_immobilization),
-    alimentation_slugs: []
+      ~w(real_time_tracking eco_driving crash_detection geofencing fuel_monitoring driver_id cold_chain engine_immobilization)
   },
   %{
     nom: "FMC640 (FMx640)",
@@ -785,9 +747,15 @@ new_tracker_models = [
     accelerometer: true,
     buffer_memory: 512,
     ip_rating: "IP65",
+    voltage_min: 3,
+    voltage_max: 50,
+    alimentation_slugs: ~w(12V 24V 9-36V),
+    capteur_slugs:
+      ~w(ignition engine engine_speed connectivity_monitor movement_monitor odometer_monitor fuel_level_monitor fuel_cap_monitor driver_identification_monitor buzzer geofence fuel_probe_can_bus),
+    type_vehicule_slugs:
+      ~w(railway-vehicle construction_machine truck smart_lock moto forklift person car bus object boat),
     feature_slugs:
-      ~w(real_time_tracking eco_driving crash_detection geofencing fuel_monitoring driver_id cold_chain tacho_download engine_immobilization),
-    alimentation_slugs: []
+      ~w(real_time_tracking eco_driving crash_detection geofencing fuel_monitoring driver_id cold_chain tacho_download engine_immobilization)
   },
   %{
     nom: "CAREU U1",
@@ -804,9 +772,15 @@ new_tracker_models = [
     accelerometer: false,
     buffer_memory: 256,
     ip_rating: "IP54",
+    voltage_min: 3,
+    voltage_max: 50,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs:
+      ~w(ignition engine connectivity_monitor movement_monitor odometer_monitor fuel_level_monitor fuel_cap_monitor driver_identification_monitor geofence fuel_probe_can_bus),
+    type_vehicule_slugs:
+      ~w(railway-vehicle construction_machine truck smart_lock moto forklift person car bus object boat),
     feature_slugs:
-      ~w(real_time_tracking geofencing fuel_monitoring driver_id cold_chain engine_immobilization),
-    alimentation_slugs: []
+      ~w(real_time_tracking geofencing fuel_monitoring driver_id cold_chain engine_immobilization)
   },
   %{
     nom: "CAREU A1",
@@ -824,8 +798,13 @@ new_tracker_models = [
     accelerometer: false,
     buffer_memory: 64,
     ip_rating: "IP54",
-    feature_slugs: ~w(real_time_tracking geofencing fuel_monitoring engine_immobilization),
-    alimentation_slugs: []
+    voltage_min: 3,
+    voltage_max: 50,
+    alimentation_slugs: ~w(12V),
+    capteur_slugs: ~w(ignition connectivity_monitor movement_monitor geofence),
+    type_vehicule_slugs:
+      ~w(railway-vehicle construction_machine truck smart_lock moto forklift person car bus object boat),
+    feature_slugs: ~w(real_time_tracking geofencing fuel_monitoring engine_immobilization)
   },
   %{
     nom: "VT200",
@@ -842,20 +821,28 @@ new_tracker_models = [
     accelerometer: false,
     buffer_memory: 64,
     ip_rating: "IP54",
-    feature_slugs: ~w(real_time_tracking geofencing engine_immobilization),
-    alimentation_slugs: []
+    voltage_min: 3,
+    voltage_max: 50,
+    alimentation_slugs: ~w(12V),
+    capteur_slugs: ~w(ignition connectivity_monitor movement_monitor geofence),
+    type_vehicule_slugs:
+      ~w(railway-vehicle construction_machine truck smart_lock moto forklift person car bus object boat),
+    feature_slugs: ~w(real_time_tracking geofencing engine_immobilization)
   }
 ]
 
 new_model_ids =
   Enum.map(new_tracker_models, fn attrs ->
     feature_slugs = attrs[:feature_slugs]
-    alim_slugs = attrs[:alimentation_slugs]
-    attrs = Map.drop(attrs, [:feature_slugs, :alimentation_slugs])
+    alim_slugs = attrs[:alimentation_slugs] || []
+    cap_slugs = attrs[:capteur_slugs] || []
+    tv_slugs = attrs[:type_vehicule_slugs] || []
+
+    attrs =
+      Map.drop(attrs, [:feature_slugs, :alimentation_slugs, :capteur_slugs, :type_vehicule_slugs])
 
     case ModeleTraceur.create(attrs, action: :create) do
       {:ok, modele} ->
-        # Link features
         Enum.each(feature_slugs, fn slug ->
           if fid = feature_ids[slug] do
             ModelFeature.create(%{
@@ -865,12 +852,29 @@ new_model_ids =
           end
         end)
 
-        # Link alimentations
         Enum.each(alim_slugs, fn slug ->
           if aid = alim_by_slug[slug] do
             ModeleTraceurAlimentation.create(%{
               modele_traceur_id: modele.id,
               alimentation_id: aid
+            })
+          end
+        end)
+
+        Enum.each(cap_slugs, fn slug ->
+          if cid = cap_by_slug[slug] do
+            ModeleTraceurCapteur.create(%{
+              modele_traceur_id: modele.id,
+              capteur_id: cid
+            })
+          end
+        end)
+
+        Enum.each(tv_slugs, fn slug ->
+          if tvid = tv_by_slug[slug] do
+            ModeleTraceurTypeVehicule.create(%{
+              modele_traceur_id: modele.id,
+              type_vehicule_id: tvid
             })
           end
         end)
@@ -886,11 +890,10 @@ new_model_ids =
 IO.puts("Modèles de référence insérés: #{length(new_model_ids)}")
 
 # =========================================================
-# 8. Model Ports (Cartographie Physique des Broches)
+# 8. Model Ports (Broches Physiques)
 # =========================================================
 IO.puts("Insertion des ports physiques...")
 
-# Lookup models by reference
 all_modeles = ModeleTraceur.read!()
 model_by_ref = Map.new(all_modeles, &{&1.reference, &1.id})
 
@@ -971,7 +974,7 @@ end)
 IO.puts("Ports physiques insérés: #{length(pin_defs)}")
 
 # =========================================================
-# 9. Peripherals (Exemples de périphériques catalogués)
+# 9. Peripherals
 # =========================================================
 IO.puts("Insertion des périphériques...")
 

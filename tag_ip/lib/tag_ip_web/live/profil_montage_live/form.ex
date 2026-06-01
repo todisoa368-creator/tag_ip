@@ -5,6 +5,7 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   alias TagIp.Resources.ProfilMontage
   alias TagIp.Resources.ModeleTraceur
   alias TagIp.Resources.Compatibilite
+  alias TagIp.Resources.Capteur
   alias TagIp.Resources.TrackableType
 
   @steps [
@@ -30,6 +31,9 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
         load: [:types_vehicule, :alimentations, :capteurs]
       )
 
+    capteurs = Capteur.read!() |> Enum.sort_by(& &1.label)
+    capteur_categories = capteurs |> Enum.map(& &1.category) |> Enum.uniq() |> Enum.sort()
+
     {:ok,
      socket
      |> assign(:step, 1)
@@ -37,7 +41,11 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
      |> assign(:steps, @steps)
      |> assign(:object_type_options, object_type_options)
      |> assign(:modeles, modeles.results)
-     |> assign(:compatibilities, [])}
+     |> assign(:voltage_compatible_count, nil)
+     |> assign(:compatibilities, [])
+     |> assign(:capteurs, capteurs)
+     |> assign(:capteur_categories, capteur_categories)
+     |> assign(:selected_capteur_ids, MapSet.new())}
   end
 
   @impl true
@@ -65,13 +73,24 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
         |> Form.validate(params)
         |> to_form()
 
-      compatibilities = compute_compatibilities(params, socket.assigns.modeles)
+      capteur_slugs =
+        resolve_capteur_slugs(socket.assigns.capteurs, socket.assigns.selected_capteur_ids)
+
+      compatibilities = compute_compatibilities(params, socket.assigns.modeles, capteur_slugs)
+
+      voltage_compatible_count =
+        count_voltage_compatible(
+          socket.assigns.modeles,
+          params["voltage_min"],
+          params["voltage_max"]
+        )
 
       {:noreply,
        socket
        |> assign(:step, step + 1)
        |> assign(:form, form)
-       |> assign(:compatibilities, compatibilities)}
+       |> assign(:compatibilities, compatibilities)
+       |> assign(:voltage_compatible_count, voltage_compatible_count)}
     else
       {:noreply, socket}
     end
@@ -100,13 +119,24 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
         |> Form.validate(params)
         |> to_form()
 
-      compatibilities = compute_compatibilities(params, socket.assigns.modeles)
+      capteur_slugs =
+        resolve_capteur_slugs(socket.assigns.capteurs, socket.assigns.selected_capteur_ids)
+
+      compatibilities = compute_compatibilities(params, socket.assigns.modeles, capteur_slugs)
+
+      voltage_compatible_count =
+        count_voltage_compatible(
+          socket.assigns.modeles,
+          params["voltage_min"],
+          params["voltage_max"]
+        )
 
       {:noreply,
        socket
        |> assign(:step, step - 1)
        |> assign(:form, form)
-       |> assign(:compatibilities, compatibilities)}
+       |> assign(:compatibilities, compatibilities)
+       |> assign(:voltage_compatible_count, voltage_compatible_count)}
     else
       {:noreply, socket}
     end
@@ -131,9 +161,23 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
       |> Form.validate(params)
       |> to_form()
 
-    compatibilities = compute_compatibilities(params, socket.assigns.modeles)
+    capteur_slugs =
+      resolve_capteur_slugs(socket.assigns.capteurs, socket.assigns.selected_capteur_ids)
 
-    {:noreply, assign(socket, :form, form) |> assign(:compatibilities, compatibilities)}
+    compatibilities = compute_compatibilities(params, socket.assigns.modeles, capteur_slugs)
+
+    voltage_compatible_count =
+      count_voltage_compatible(
+        socket.assigns.modeles,
+        params["voltage_min"],
+        params["voltage_max"]
+      )
+
+    {:noreply,
+     socket
+     |> assign(:form, form)
+     |> assign(:compatibilities, compatibilities)
+     |> assign(:voltage_compatible_count, voltage_compatible_count)}
   end
 
   @impl true
@@ -142,6 +186,8 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
 
     case AshPhoenix.Form.submit(socket.assigns.form.source, params: params) do
       {:ok, profil} ->
+        sync_capteurs(profil.id, socket.assigns.selected_capteur_ids)
+
         for compat <- socket.assigns.compatibilities, compat.compatible do
           Compatibilite
           |> Ash.ActionInput.for_action(:calculer_compatibilite, %{
@@ -174,8 +220,25 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     end
   end
 
+  @impl true
+  def handle_event("toggle_capteur", %{"id" => id}, socket) do
+    selected = socket.assigns.selected_capteur_ids
+
+    updated =
+      if MapSet.member?(selected, id) do
+        MapSet.delete(selected, id)
+      else
+        MapSet.put(selected, id)
+      end
+
+    {:noreply, assign(socket, :selected_capteur_ids, updated)}
+  end
+
   defp apply_action(socket, :new, %{"duplicate_from" => source_id}) do
     source = Ash.get!(ProfilMontage, source_id, domain: TagIp.TagIp)
+    source = Ash.load!(source, [:capteurs])
+
+    source_capteur_ids = MapSet.new(source.capteurs || [], & &1.id)
 
     params = %{
       "name" => source.name,
@@ -195,11 +258,9 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
       "inputs_requis" => source.inputs_requis,
       "analog_inputs_requis" => source.analog_inputs_requis,
       "outputs_requis" => source.outputs_requis,
-      "ip_rating" => source.ip_rating,
       "montage_exterieur" => source.montage_exterieur,
       "antenne_deportee" => source.antenne_deportee,
       "accelerometre_requis" => source.accelerometre_requis,
-      "buffer_requis" => source.buffer_requis,
       "ultra_low_power_requis" => source.ultra_low_power_requis
     }
 
@@ -210,11 +271,20 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
 
     compatibilities = compute_compatibilities(params, socket.assigns.modeles)
 
+    voltage_compatible_count =
+      count_voltage_compatible(
+        socket.assigns.modeles,
+        params["voltage_min"],
+        params["voltage_max"]
+      )
+
     socket
     |> assign(:page_title, "Dupliquer le profil #{source.name}")
     |> assign(:form, form)
     |> assign(:profil, nil)
     |> assign(:compatibilities, compatibilities)
+    |> assign(:voltage_compatible_count, voltage_compatible_count)
+    |> assign(:selected_capteur_ids, source_capteur_ids)
   end
 
   defp apply_action(socket, :new, _params) do
@@ -226,11 +296,15 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     |> assign(:page_title, "Nouveau profil de montage")
     |> assign(:form, form)
     |> assign(:profil, nil)
+    |> assign(:voltage_compatible_count, nil)
     |> assign(:compatibilities, [])
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     profil = Ash.get!(ProfilMontage, id, domain: TagIp.TagIp)
+    profil = Ash.load!(profil, [:capteurs])
+
+    source_capteur_ids = MapSet.new(profil.capteurs || [], & &1.id)
 
     form =
       Form.for_update(profil, :update, as: "profil_montage")
@@ -250,27 +324,34 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
       "inputs_requis" => profil.inputs_requis,
       "analog_inputs_requis" => profil.analog_inputs_requis,
       "outputs_requis" => profil.outputs_requis,
-      "ip_rating" => profil.ip_rating,
       "montage_exterieur" => profil.montage_exterieur,
       "antenne_deportee" => profil.antenne_deportee,
       "accelerometre_requis" => profil.accelerometre_requis,
-      "buffer_requis" => profil.buffer_requis,
       "ultra_low_power_requis" => profil.ultra_low_power_requis
     }
 
     compatibilities = compute_compatibilities(params, socket.assigns.modeles)
+
+    voltage_compatible_count =
+      count_voltage_compatible(
+        socket.assigns.modeles,
+        params["voltage_min"],
+        params["voltage_max"]
+      )
 
     socket
     |> assign(:page_title, "Modifier le profil #{profil.name}")
     |> assign(:form, form)
     |> assign(:profil, profil)
     |> assign(:compatibilities, compatibilities)
+    |> assign(:voltage_compatible_count, voltage_compatible_count)
+    |> assign(:selected_capteur_ids, source_capteur_ids)
   end
 
-  defp compute_compatibilities(params, modeles) do
+  defp compute_compatibilities(params, modeles, capteur_slugs \\ []) do
     modeles
     |> Enum.map(fn modele ->
-      result = Compatibilite.calculer_depuis_params(params, modele)
+      result = Compatibilite.calculer_depuis_params(params, modele, capteur_slugs)
 
       %{
         modele: modele,
@@ -282,6 +363,38 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     |> Enum.sort_by(fn c -> -c.score end)
   end
 
+  defp count_voltage_compatible(_modeles, nil, _), do: nil
+  defp count_voltage_compatible(_modeles, _, nil), do: nil
+  defp count_voltage_compatible(_modeles, "", _), do: nil
+  defp count_voltage_compatible(_modeles, _, ""), do: nil
+
+  defp count_voltage_compatible(modeles, voltage_min, voltage_max) do
+    v_min = parse_float(voltage_min)
+    v_max = parse_float(voltage_max)
+
+    if is_nil(v_min) or is_nil(v_max) do
+      nil
+    else
+      modeles
+      |> Enum.count(fn modele ->
+        modele.voltage_min && modele.voltage_max &&
+          v_min >= modele.voltage_min &&
+          v_max <= modele.voltage_max
+      end)
+    end
+  end
+
+  defp parse_float(nil), do: nil
+  defp parse_float(""), do: nil
+  defp parse_float(val) when is_number(val), do: val * 1.0
+
+  defp parse_float(val) when is_binary(val) do
+    case Float.parse(val) do
+      {f, _} -> f
+      :error -> nil
+    end
+  end
+
   defp normalize_params(params) when is_map(params) do
     Map.new(params, fn
       {key, val} when is_list(val) -> {key, List.last(val)}
@@ -291,4 +404,34 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   end
 
   defp normalize_params(val), do: val
+
+  defp sync_capteurs(profil_id, selected_ids) do
+    existing =
+      TagIp.Resources.ProfilMontageCapteur.read!()
+      |> Enum.filter(&(&1.profil_montage_id == profil_id))
+
+    Enum.each(existing, &TagIp.Resources.ProfilMontageCapteur.destroy(&1))
+
+    Enum.each(selected_ids, fn id ->
+      TagIp.Resources.ProfilMontageCapteur.create(%{
+        profil_montage_id: profil_id,
+        capteur_id: id
+      })
+    end)
+  end
+
+  defp resolve_capteur_slugs(capteurs, selected_ids) do
+    capteurs
+    |> Enum.filter(&MapSet.member?(selected_ids, &1.id))
+    |> Enum.map(& &1.slug)
+  end
+
+  defp capteur_category_label(nil), do: "Non catégorisé"
+  defp capteur_category_label("energy"), do: "Énergie"
+  defp capteur_category_label("safety"), do: "Sécurité"
+  defp capteur_category_label("environment"), do: "Environnement"
+  defp capteur_category_label("driver"), do: "Conducteur"
+  defp capteur_category_label("vehicle_status"), do: "État du véhicule"
+  defp capteur_category_label("connectivity"), do: "Connectivité"
+  defp capteur_category_label(category), do: category |> String.capitalize()
 end

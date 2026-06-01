@@ -4,6 +4,7 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
   alias TagIp.Resources.Compatibilite
   alias TagIp.Resources.ModeleTraceur
   alias TagIp.Resources.ProfilMontage
+  alias TagIp.Resources.ProfilMontageCapteur
 
   @impl true
   def mount(_params, _session, socket) do
@@ -19,7 +20,7 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
 
   @impl true
   def handle_params(%{"id" => id}, _url, socket) do
-    profil = Ash.get!(TagIp.Resources.ProfilMontage, id)
+    profil = Ash.get!(TagIp.Resources.ProfilMontage, id) |> Ash.load!(:capteurs)
     compatibilites = list_compatibilites(id)
 
     {:noreply,
@@ -42,6 +43,8 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
   def handle_event("duplicate", %{"id" => id}, socket) do
     case ProfilMontage |> Ash.get(id) do
       {:ok, source} ->
+        source = Ash.load!(source, [:capteurs])
+
         attrs = %{
           name: source.name,
           description: source.description,
@@ -60,16 +63,18 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
           inputs_requis: source.inputs_requis,
           analog_inputs_requis: source.analog_inputs_requis,
           outputs_requis: source.outputs_requis,
-          ip_rating: source.ip_rating,
           montage_exterieur: source.montage_exterieur,
           antenne_deportee: source.antenne_deportee,
           accelerometre_requis: source.accelerometre_requis,
-          buffer_requis: source.buffer_requis,
           ultra_low_power_requis: source.ultra_low_power_requis
         }
 
+        source_capteur_ids = Enum.map(source.capteurs || [], & &1.id)
+
         case ProfilMontage.create(attrs) do
           {:ok, profil} ->
+            sync_capteurs(profil.id, source_capteur_ids)
+
             modeles =
               Ash.read!(ModeleTraceur,
                 page: [limit: 50],
@@ -175,5 +180,20 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
          |> assign(:pending_delete_id, nil)
          |> assign(:pending_delete_label, nil)}
     end
+  end
+
+  defp sync_capteurs(profil_id, selected_ids) do
+    existing =
+      ProfilMontageCapteur.read!()
+      |> Enum.filter(&(&1.profil_montage_id == profil_id))
+
+    Enum.each(existing, &ProfilMontageCapteur.destroy(&1))
+
+    Enum.each(selected_ids, fn id ->
+      ProfilMontageCapteur.create(%{
+        profil_montage_id: profil_id,
+        capteur_id: id
+      })
+    end)
   end
 end

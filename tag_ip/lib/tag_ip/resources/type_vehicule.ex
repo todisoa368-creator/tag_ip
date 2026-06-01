@@ -25,6 +25,26 @@ defmodule TagIp.Resources.TypeVehicule do
       public?(true)
     end
 
+    attribute :description, :string do
+      public?(true)
+    end
+
+    attribute :voltage_min, :float do
+      public?(true)
+    end
+
+    attribute :voltage_max, :float do
+      public?(true)
+    end
+
+    attribute :inputs_requis, :integer do
+      public?(true)
+    end
+
+    attribute :outputs_requis, :integer do
+      public?(true)
+    end
+
     timestamps()
   end
 
@@ -33,7 +53,17 @@ defmodule TagIp.Resources.TypeVehicule do
 
     create :create do
       primary?(true)
-      accept([:slug, :label])
+
+      accept([
+        :slug,
+        :label,
+        :description,
+        :voltage_min,
+        :voltage_max,
+        :inputs_requis,
+        :outputs_requis
+      ])
+
       upsert?(true)
       upsert_identity(:unique_slug)
     end

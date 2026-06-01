@@ -53,6 +53,15 @@ defmodule TagIp.Resources.Compatibilite do
       filter(expr(id == ^arg(:id)))
     end
 
+    action :clear_all do
+      returns(:integer)
+
+      run(fn _input, _ ->
+        {count, _} = TagIp.Repo.delete_all({"compatibilites", nil})
+        {:ok, count}
+      end)
+    end
+
     action :calculer_compatibilite do
       argument(:profil_id, :uuid, allow_nil?: false)
       argument(:modele_id, :uuid, allow_nil?: false)
@@ -88,7 +97,7 @@ defmodule TagIp.Resources.Compatibilite do
     end
   end
 
-  def calculer(profil, modele) do
+  def calculer(profil, modele, capteur_slugs \\ nil) do
     checks = [
       &check_type_vehicule/2,
       &check_alimentation/2,
@@ -111,6 +120,22 @@ defmodule TagIp.Resources.Compatibilite do
 
     results = Enum.map(checks, fn check -> check.(profil, modele) end)
 
+    capteur_result =
+      if capteur_slugs in [nil, []] do
+        profil_capteurs =
+          if is_list(profil.capteurs), do: Enum.map(profil.capteurs, & &1.slug), else: []
+
+        if profil_capteurs == [] do
+          {5, nil}
+        else
+          check_capteurs(profil, modele, profil_capteurs)
+        end
+      else
+        check_capteurs(profil, modele, capteur_slugs)
+      end
+
+    results = results ++ [capteur_result]
+
     reasons =
       results |> Enum.map(&elem(&1, 1)) |> Enum.reject(&is_nil/1)
 
@@ -120,8 +145,10 @@ defmodule TagIp.Resources.Compatibilite do
     {score, compatible, reasons}
   end
 
-  def calculer_depuis_params(profil_params, modele) do
+  def calculer_depuis_params(profil_params, modele, capteur_slugs \\ []) do
     profil_params = Map.new(profil_params, fn {k, v} -> {to_string(k), v} end)
+
+    capteur_slugs = Enum.map(capteur_slugs || [], &to_string(&1))
 
     profil = %TagIp.Resources.ProfilMontage{
       object_type: profil_params["object_type"],
@@ -137,15 +164,13 @@ defmodule TagIp.Resources.Compatibilite do
       inputs_requis: parse_int(profil_params["inputs_requis"]),
       analog_inputs_requis: parse_int(profil_params["analog_inputs_requis"]),
       outputs_requis: parse_int(profil_params["outputs_requis"]),
-      ip_rating: profil_params["ip_rating"],
       montage_exterieur: profil_params["montage_exterieur"] in [true, "true"],
       antenne_deportee: profil_params["antenne_deportee"] in [true, "true"],
       accelerometre_requis: profil_params["accelerometre_requis"] in [true, "true"],
-      buffer_requis: parse_int(profil_params["buffer_requis"]),
       ultra_low_power_requis: profil_params["ultra_low_power_requis"] in [true, "true"]
     }
 
-    {score, compatible, reasons} = calculer(profil, modele)
+    {score, compatible, reasons} = calculer(profil, modele, capteur_slugs)
     %{score: score, compatible: compatible, details: reasons}
   end
 
@@ -186,24 +211,45 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
-  # 2. Alimentation / Plage de Tension (10 pts)
+  # 2. Alimentation / Plage de Tension (10 pts) - CORRIGÉ ⚡
   # ---------------------------------------------------------------------------
   defp check_alimentation(profil, modele) do
-    alims = Enum.map(modele.alimentations || [], & &1.slug)
-
     if is_nil(profil.voltage_min) or is_nil(profil.voltage_max) do
       {10, nil}
     else
+      # Check 1 : comparer directement en Volts
+      direct_match? =
+        !is_nil(modele.voltage_min) && !is_nil(modele.voltage_max) &&
+          profil.voltage_min >= modele.voltage_min &&
+          profil.voltage_max <= modele.voltage_max
+
+      # Check 2 : fallback sur les slugs d'alimentation (rétrocompatibilité)
+      alims = Enum.map(modele.alimentations || [], & &1.slug)
       ranges = parse_voltage_ranges(alims)
 
-      if Enum.any?(ranges, fn {min, max} ->
-           profil.voltage_min >= min and profil.voltage_max <= max
-         end) do
+      slug_match? =
+        Enum.any?(ranges, fn {min, max} ->
+          profil.voltage_min >= min and profil.voltage_max <= max
+        end)
+
+      dispo_str =
+        cond do
+          modele.voltage_min && modele.voltage_max ->
+            "plage #{modele.voltage_min}V-#{modele.voltage_max}V"
+
+          alims != [] ->
+            Enum.join(alims, ", ")
+
+          true ->
+            "aucune"
+        end
+
+      if direct_match? or slug_match? do
         {10,
-         "✓ Alimentation #{profil.voltage_min}-#{profil.voltage_max}V compatible (#{Enum.join(alims, ", ")})"}
+         "✓ Alimentation #{profil.voltage_min}V-#{profil.voltage_max}V compatible (#{dispo_str})"}
       else
         {0,
-         "✗ Alimentation #{profil.voltage_min}-#{profil.voltage_max}V non supportée (disponibles: #{Enum.join(alims, ", ")})"}
+         "✗ Alimentation #{profil.voltage_min}V-#{profil.voltage_max}V non supportée (disponibles: #{dispo_str})"}
       end
     end
   end
@@ -338,27 +384,15 @@ defmodule TagIp.Resources.Compatibilite do
   # 10. Indice de Protection IP (10 pts)
   # ---------------------------------------------------------------------------
   defp check_ip_rating(profil, modele) do
-    cond do
-      profil.montage_exterieur ->
-        required_ip = profil.ip_rating || "IP67"
-
-        if modele.ip_rating && ip_rating_ge?(modele.ip_rating, required_ip) do
-          {10, "✓ Indice de protection #{modele.ip_rating} ≥ #{required_ip} (montage extérieur)"}
-        else
-          {0,
-           "✗ Indice de protection insuffisant: #{modele.ip_rating || "non spécifié"} requis: #{required_ip} pour montage extérieur"}
-        end
-
-      not is_nil(profil.ip_rating) and profil.ip_rating != "" ->
-        if modele.ip_rating && ip_rating_ge?(modele.ip_rating, profil.ip_rating) do
-          {10, "✓ Indice de protection #{modele.ip_rating} ≥ #{profil.ip_rating} requis"}
-        else
-          {0,
-           "✗ Indice de protection #{modele.ip_rating || "non spécifié"} < #{profil.ip_rating} requis"}
-        end
-
-      true ->
-        {10, nil}
+    if profil.montage_exterieur do
+      if modele.ip_rating && ip_rating_ge?(modele.ip_rating, "IP67") do
+        {10, "✓ Indice de protection #{modele.ip_rating} ≥ IP67 (montage extérieur)"}
+      else
+        {0,
+         "✗ Indice de protection insuffisant: #{modele.ip_rating || "non spécifié"} requis: IP67 pour montage extérieur"}
+      end
+    else
+      {10, nil}
     end
   end
 
@@ -395,23 +429,8 @@ defmodule TagIp.Resources.Compatibilite do
   # ---------------------------------------------------------------------------
   # 13. Mémoire tampon / Buffer (5 pts)
   # ---------------------------------------------------------------------------
-  defp check_buffer_memory(profil, modele) do
-    requis = profil.buffer_requis
-    dispo = modele.buffer_memory
-
-    cond do
-      is_nil(requis) or requis == 0 ->
-        {5, nil}
-
-      is_nil(dispo) ->
-        {0, "✗ Mémoire tampon requise: #{requis} MB, mais le modèle ne la déclare pas"}
-
-      dispo >= requis ->
-        {5, "✓ Mémoire tampon: #{dispo} MB (≥ #{requis} MB requis)"}
-
-      true ->
-        {0, "✗ Mémoire tampon insuffisante: #{dispo} MB disponibles, #{requis} MB requis"}
-    end
+  defp check_buffer_memory(_profil, _modele) do
+    {5, nil}
   end
 
   # ---------------------------------------------------------------------------
@@ -447,7 +466,7 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
-  # 16. Sonde carburant (5 pts)
+  # 16. Sonde carburant (5 pts) - CORRIGÉ ⛽
   # ---------------------------------------------------------------------------
   defp check_fuel_probe(profil, modele) do
     capteurs = Enum.map(modele.capteurs || [], & &1.slug)
@@ -457,12 +476,13 @@ defmodule TagIp.Resources.Compatibilite do
       {5, nil}
     else
       probe_key = "fuel_probe_#{profil.fuel_probe_type}"
+      capteurs_str = if capteurs == [], do: "aucun", else: Enum.join(capteurs, ", ")
 
       if probe_key in capteurs or profil.fuel_probe_type in capteurs do
         {5, "✓ Sonde carburant '#{profil.fuel_probe_type}' supportée"}
       else
         {0,
-         "✗ Sonde carburant '#{profil.fuel_probe_type}' non supportée (capteurs: #{Enum.join(capteurs, ", ")})"}
+         "✗ Sonde carburant '#{profil.fuel_probe_type}' non supportée (disponibles: #{capteurs_str})"}
       end
     end
   end
@@ -485,10 +505,26 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
+  # 18. Capteurs génériques (5 pts)
+  # ---------------------------------------------------------------------------
+  defp check_capteurs(_profil, modele, capteur_slugs)
+       when is_list(capteur_slugs) and capteur_slugs != [] do
+    modele_capteurs = Enum.map(modele.capteurs || [], & &1.slug)
+    missing = Enum.reject(capteur_slugs, &(&1 in modele_capteurs))
+
+    if missing == [] do
+      {5, "✓ Capteurs requis supportés (#{Enum.join(capteur_slugs, ", ")})"}
+    else
+      {0, "✗ Capteurs manquants sur le traceur: #{Enum.join(missing, ", ")}"}
+    end
+  end
+
+  defp check_capteurs(_profil, _modele, []), do: {5, nil}
+
+  # ---------------------------------------------------------------------------
   # Helpers
   # ---------------------------------------------------------------------------
 
-  # Compare deux indices IP. ex: ip_rating_ge?("IP67", "IP65") => true
   defp ip_rating_ge?(a, b) do
     level_a = parse_ip_level(a)
     level_b = parse_ip_level(b)
@@ -505,9 +541,6 @@ defmodule TagIp.Resources.Compatibilite do
     end
   end
 
-  # Parse les chaînes d'alimentation en plages de tension
-  # Ex: "12V" -> {9, 16}, "24V" -> {18, 32}, "12/24V" -> [{9,16}, {18,32}]
-  # "9-36V" -> {9, 36}
   defp parse_voltage_ranges(alimentations) do
     alimentations
     |> Enum.flat_map(fn str ->

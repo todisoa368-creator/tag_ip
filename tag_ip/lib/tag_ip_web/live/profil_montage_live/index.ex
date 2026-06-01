@@ -4,6 +4,11 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
   alias TagIp.Resources.Compatibilite
   alias TagIp.Resources.ModeleTraceur
   alias TagIp.Resources.ProfilMontage
+  alias TagIp.Resources.ProfilMontageCapteur
+
+  # Si ton module Csv est bien dans lib/tag_ip/csv.ex, l'alias global suffit.
+  # Si tu as besoin d'expliciter le module global, tu peux faire :
+  # alias Csv
 
   @page_size 10
 
@@ -131,6 +136,9 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
   def handle_event("duplicate", %{"id" => id}, socket) do
     case ProfilMontage |> Ash.get(id) do
       {:ok, source} ->
+        source = Ash.load!(source, [:capteurs])
+        source_capteur_ids = Enum.map(source.capteurs || [], & &1.id)
+
         attrs = %{
           name: source.name,
           description: source.description,
@@ -149,16 +157,16 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
           inputs_requis: source.inputs_requis,
           analog_inputs_requis: source.analog_inputs_requis,
           outputs_requis: source.outputs_requis,
-          ip_rating: source.ip_rating,
           montage_exterieur: source.montage_exterieur,
           antenne_deportee: source.antenne_deportee,
           accelerometre_requis: source.accelerometre_requis,
-          buffer_requis: source.buffer_requis,
           ultra_low_power_requis: source.ultra_low_power_requis
         }
 
         case ProfilMontage.create(attrs) do
           {:ok, profil} ->
+            sync_capteurs(profil.id, source_capteur_ids)
+
             modeles =
               Ash.read!(ModeleTraceur,
                 page: [limit: 50],
@@ -219,5 +227,20 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
       end
 
     Ash.read!(query, page: [limit: @page_size, offset: (page - 1) * @page_size, count: true])
+  end
+
+  defp sync_capteurs(profil_id, selected_ids) do
+    existing =
+      ProfilMontageCapteur.read!()
+      |> Enum.filter(&(&1.profil_montage_id == profil_id))
+
+    Enum.each(existing, &ProfilMontageCapteur.destroy(&1))
+
+    Enum.each(selected_ids, fn id ->
+      ProfilMontageCapteur.create(%{
+        profil_montage_id: profil_id,
+        capteur_id: id
+      })
+    end)
   end
 end

@@ -25,6 +25,14 @@ defmodule TagIp.Resources.Capteur do
       public?(true)
     end
 
+    attribute :description, :string do
+      public?(true)
+    end
+
+    attribute :category, :string do
+      public?(true)
+    end
+
     timestamps()
   end
 
@@ -33,7 +41,7 @@ defmodule TagIp.Resources.Capteur do
 
     create :create do
       primary?(true)
-      accept([:slug, :label])
+      accept([:slug, :label, :description, :category])
       upsert?(true)
       upsert_identity(:unique_slug)
     end

@@ -16,6 +16,7 @@ defmodule TagIp.TagIp do
     resource(TagIp.Resources.ModelFeature)
     resource(TagIp.Resources.ModelPort)
     resource(TagIp.Resources.Peripheral)
+    resource(TagIp.Resources.ProfilMontageCapteur)
     resource(TagIp.Resources.TrackableType)
   end
 end

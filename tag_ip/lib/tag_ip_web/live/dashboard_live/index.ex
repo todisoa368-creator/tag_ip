@@ -10,7 +10,7 @@ defmodule TagIpWeb.DashboardLive.Index do
 
     {:ok,
      socket
-     |> assign(page_title: "Dashboard · TAG-Monitor")
+     |> assign(page_title: "Dashboard · profile de montage ")
      |> assign(:stats, fetch_stats())
      |> stream(:notifications, [], reset: true)}
   end
@@ -58,7 +58,9 @@ defmodule TagIpWeb.DashboardLive.Index do
               Tableau de bord
             </span>
           </div>
-          <h1 class="text-3xl sm:text-4xl font-bold text-white">Bienvenue sur TAG-Monitor</h1>
+          <h1 class="text-3xl sm:text-4xl font-bold text-white">
+            Bienvenue sur TAG-Gestion de Profils
+          </h1>
           <p class="mt-3 text-blue-100 text-lg max-w-2xl">
             Interface de supervision des profils de montage et équipements Tag-IP.
           </p>
@@ -220,7 +222,7 @@ defmodule TagIpWeb.DashboardLive.Index do
             <.icon name="hero-information-circle" class="size-5 text-blue-600" />
           </div>
           <div>
-            <h3 class="font-semibold text-gray-900">À propos de TAG-Monitor</h3>
+            <h3 class="font-semibold text-gray-900">À propos de TAG-Gestion de Profils</h3>
             <p class="mt-1 text-sm text-gray-600 leading-relaxed">
               Projet de gestion des profils de montage pour traceurs GPS. Utilisez le menu supérieur ou les accès rapides ci-dessus pour gérer les profils, modèles de traceurs, compatibilités et référentiels.
             </p>

@@ -32,6 +32,9 @@
           <tr>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              Spécifications
+            </th>
             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
               Actions
             </th>
@@ -43,6 +46,33 @@
             <td class="px-6 py-4 text-sm text-gray-500 italic">
               {Map.get(@type_labels, profil.object_type, profil.object_type)}
             </td>
+
+            <td class="px-6 py-4 text-sm text-gray-500">
+              <div class="flex flex-wrap gap-1.5 max-w-md">
+                <%= if profil.can_bus_requis do %>
+                  <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                    CAN Bus
+                  </span>
+                <% end %>
+
+                <%= if profil.accelerometre_requis do %>
+                  <span class="inline-flex items-center rounded-md bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-700 ring-1 ring-inset ring-teal-700/10">
+                    Accéléromètre
+                  </span>
+                <% end %>
+
+                <%= if not is_nil(profil.fuel_probe_type) and profil.fuel_probe_type != "" do %>
+                  <span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10">
+                    Carburant: {String.upcase(profil.fuel_probe_type)}
+                  </span>
+                <% end %>
+
+                <%= if !profil.can_bus_requis and !profil.accelerometre_requis and (is_nil(profil.fuel_probe_type) or profil.fuel_probe_type == "") do %>
+                  <span class="text-xs italic text-gray-400">Standard</span>
+                <% end %>
+              </div>
+            </td>
+
             <td class="px-6 py-4 text-right text-sm font-medium">
               <div class="flex items-center justify-end gap-2">
                 <.link

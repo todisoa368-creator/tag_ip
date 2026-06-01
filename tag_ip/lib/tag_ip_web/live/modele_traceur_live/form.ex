@@ -15,18 +15,28 @@ defmodule TagIpWeb.ModeleTraceurLive.Form do
     feature_list = Enum.map(features, &%{id: &1.id, label: &1.label, selected: false})
 
     types_vehicule = TypeVehicule.read!() |> Enum.sort_by(& &1.label)
-    alimentations = Alimentation.read!() |> Enum.sort_by(& &1.label)
+
+    {power_alimentations, _voltage_alimentations} =
+      Alimentation.read!()
+      |> Enum.sort_by(& &1.label)
+      |> Enum.split_with(&(&1.category == "power_type"))
+
     capteurs = Capteur.read!() |> Enum.sort_by(& &1.label)
+    capteur_categories = capteurs |> Enum.map(& &1.category) |> Enum.uniq() |> Enum.sort()
 
     {:ok,
      socket
      |> assign(:features, feature_list)
      |> assign(:selected_feature_ids, MapSet.new())
      |> assign(:types_vehicule, types_vehicule)
-     |> assign(:alimentations, alimentations)
+     |> assign(:type_vehicule_search, "")
+     |> assign(:show_type_vehicule_dropdown, false)
+     |> assign(:show_power_alim_dropdown, false)
+     |> assign(:power_alimentations, power_alimentations)
      |> assign(:capteurs, capteurs)
+     |> assign(:capteur_categories, capteur_categories)
      |> assign(:selected_type_vehicule_ids, MapSet.new())
-     |> assign(:selected_alimentation_ids, MapSet.new())
+     |> assign(:selected_power_alimentation_ids, MapSet.new())
      |> assign(:selected_capteur_ids, MapSet.new())}
   end
 
@@ -52,7 +62,12 @@ defmodule TagIpWeb.ModeleTraceurLive.Form do
       end)
 
     source_type_vehicule_ids = MapSet.new(source.types_vehicule || [], & &1.id)
-    source_alimentation_ids = MapSet.new(source.alimentations || [], & &1.id)
+
+    source_power_alim_ids =
+      source.alimentations
+      |> Enum.filter(&(&1.category == "power_type"))
+      |> MapSet.new(& &1.id)
+
     source_capteur_ids = MapSet.new(source.capteurs || [], & &1.id)
 
     params = %{
@@ -60,6 +75,8 @@ defmodule TagIpWeb.ModeleTraceurLive.Form do
       "reference" => "#{source.reference}-COPY",
       "description" => source.description,
       "brand" => source.brand,
+      "voltage_min" => source.voltage_min,
+      "voltage_max" => source.voltage_max,
       "can_bus" => source.can_bus,
       "one_wire" => source.one_wire,
       "rs232" => source.rs232,
@@ -84,10 +101,12 @@ defmodule TagIpWeb.ModeleTraceurLive.Form do
     |> assign(:page_title, "Dupliquer le modèle #{source.nom}")
     |> assign(:form, form)
     |> assign(:modele, nil)
+    |> assign(:show_type_vehicule_dropdown, false)
+    |> assign(:show_power_alim_dropdown, false)
     |> assign(:features, feature_list)
     |> assign(:selected_feature_ids, source_feature_ids)
     |> assign(:selected_type_vehicule_ids, source_type_vehicule_ids)
-    |> assign(:selected_alimentation_ids, source_alimentation_ids)
+    |> assign(:selected_power_alimentation_ids, source_power_alim_ids)
     |> assign(:selected_capteur_ids, source_capteur_ids)
   end
 
@@ -100,9 +119,11 @@ defmodule TagIpWeb.ModeleTraceurLive.Form do
     |> assign(:page_title, "Nouveau modèle de traceur")
     |> assign(:form, form)
     |> assign(:modele, nil)
+    |> assign(:show_type_vehicule_dropdown, false)
+    |> assign(:show_power_alim_dropdown, false)
     |> assign(:selected_feature_ids, MapSet.new())
     |> assign(:selected_type_vehicule_ids, MapSet.new())
-    |> assign(:selected_alimentation_ids, MapSet.new())
+    |> assign(:selected_power_alimentation_ids, MapSet.new())
     |> assign(:selected_capteur_ids, MapSet.new())
   end
 
@@ -118,7 +139,12 @@ defmodule TagIpWeb.ModeleTraceurLive.Form do
       end)
 
     source_type_vehicule_ids = MapSet.new(modele.types_vehicule || [], & &1.id)
-    source_alimentation_ids = MapSet.new(modele.alimentations || [], & &1.id)
+
+    source_power_alim_ids =
+      modele.alimentations
+      |> Enum.filter(&(&1.category == "power_type"))
+      |> MapSet.new(& &1.id)
+
     source_capteur_ids = MapSet.new(modele.capteurs || [], & &1.id)
 
     form =
@@ -129,10 +155,12 @@ defmodule TagIpWeb.ModeleTraceurLive.Form do
     |> assign(:page_title, "Modifier le modèle #{modele.nom}")
     |> assign(:form, form)
     |> assign(:modele, modele)
+    |> assign(:show_type_vehicule_dropdown, false)
+    |> assign(:show_power_alim_dropdown, false)
     |> assign(:features, feature_list)
     |> assign(:selected_feature_ids, modele_feature_ids)
     |> assign(:selected_type_vehicule_ids, source_type_vehicule_ids)
-    |> assign(:selected_alimentation_ids, source_alimentation_ids)
+    |> assign(:selected_power_alimentation_ids, source_power_alim_ids)
     |> assign(:selected_capteur_ids, source_capteur_ids)
   end
 
@@ -177,8 +205,12 @@ defmodule TagIpWeb.ModeleTraceurLive.Form do
   end
 
   @impl true
-  def handle_event("toggle_alimentation", %{"id" => id}, socket) do
-    {:noreply, toggle_map_set(socket, :selected_alimentation_ids, id)}
+  def handle_event("change_power_alimentation", %{"id" => id}, socket) do
+    {:noreply, assign(socket, :selected_power_alimentation_ids, MapSet.new([id]))}
+  end
+
+  def handle_event("change_power_alimentation", _params, socket) do
+    {:noreply, assign(socket, :selected_power_alimentation_ids, MapSet.new())}
   end
 
   @impl true
@@ -187,16 +219,39 @@ defmodule TagIpWeb.ModeleTraceurLive.Form do
   end
 
   @impl true
+  def handle_event("search_type_vehicule", %{"value" => search}, socket) do
+    {:noreply, assign(socket, :type_vehicule_search, search)}
+  end
+
+  @impl true
+  def handle_event("toggle_type_vehicule_dropdown", _, socket) do
+    {:noreply,
+     assign(socket, :show_type_vehicule_dropdown, !socket.assigns.show_type_vehicule_dropdown)}
+  end
+
+  @impl true
+  def handle_event("close_type_vehicule_dropdown", _, socket) do
+    {:noreply, assign(socket, :show_type_vehicule_dropdown, false)}
+  end
+
+  @impl true
+  def handle_event("toggle_power_alim_dropdown", _, socket) do
+    {:noreply,
+     assign(socket, :show_power_alim_dropdown, !socket.assigns.show_power_alim_dropdown)}
+  end
+
+  @impl true
+  def handle_event("close_power_alim_dropdown", _, socket) do
+    {:noreply, assign(socket, :show_power_alim_dropdown, false)}
+  end
+
+  @impl true
   def handle_event("save", %{"modele_traceur" => params}, socket) do
     params = normalize_params(params)
 
     sanitized_params =
       params
-      |> Map.drop([
-        "alimentations_compatibles",
-        "types_vehicule_compatibles",
-        "capteurs_supportes"
-      ])
+      |> Map.drop(["types_vehicule_compatibles", "power_alimentations", "capteurs_supportes"])
 
     case Form.submit(socket.assigns.form.source,
            params: sanitized_params
@@ -204,7 +259,41 @@ defmodule TagIpWeb.ModeleTraceurLive.Form do
       {:ok, modele} ->
         sync_features(modele.id, socket.assigns.selected_feature_ids)
         sync_relations(modele.id, socket.assigns.selected_type_vehicule_ids, :type_vehicule)
-        sync_relations(modele.id, socket.assigns.selected_alimentation_ids, :alimentation)
+
+        sync_relations(
+          modele.id,
+          socket.assigns.selected_power_alimentation_ids,
+          :alimentation
+        )
+
+        sync_relations(modele.id, socket.assigns.selected_capteur_ids, :capteur)
+
+        message =
+          if socket.assigns.modele,
+            do: "Modèle de traceur modifié avec succès.",
+            else: "Modèle de traceur créé avec succès."
+
+        TagIp.Notification.broadcast({:notification, :info, message})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, message)
+         |> push_navigate(to: ~p"/modeles")}
+
+      {:error, form} ->
+        {:noreply, assign(socket, form: to_form(form))}
+    end
+  end
+
+  def handle_event("save", _params, socket) do
+    # Handle case where params don't match expected structure
+    form = socket.assigns.form.source
+
+    case Form.submit(form) do
+      {:ok, modele} ->
+        sync_features(modele.id, socket.assigns.selected_feature_ids)
+        sync_relations(modele.id, socket.assigns.selected_type_vehicule_ids, :type_vehicule)
+        sync_relations(modele.id, socket.assigns.selected_power_alimentation_ids, :alimentation)
         sync_relations(modele.id, socket.assigns.selected_capteur_ids, :capteur)
 
         message =
@@ -296,6 +385,38 @@ defmodule TagIpWeb.ModeleTraceurLive.Form do
 
     assign(socket, assign_key, updated)
   end
+
+  defp selected_power_alim_label(power_alimentations, selected_ids) do
+    if Enum.empty?(selected_ids) do
+      "Sélectionner un type d'alimentation..."
+    else
+      selected_id = Enum.at(MapSet.to_list(selected_ids), 0)
+      match = Enum.find(power_alimentations, &(&1.id == selected_id))
+      (match && match.label) || "Sélectionner un type d'alimentation..."
+    end
+  end
+
+  defp filtered_types_vehicule(types, selected_ids, search) do
+    types
+    |> Enum.reject(&MapSet.member?(selected_ids, &1.id))
+    |> then(fn list ->
+      if search == "" do
+        list
+      else
+        term = String.downcase(search)
+        Enum.filter(list, &String.contains?(String.downcase(&1.label), term))
+      end
+    end)
+  end
+
+  defp capteur_category_label(nil), do: "Non catégorisé"
+  defp capteur_category_label("energy"), do: "⚡ Énergie"
+  defp capteur_category_label("safety"), do: "🛡️ Sécurité"
+  defp capteur_category_label("environment"), do: "🌡️ Environnement"
+  defp capteur_category_label("driver"), do: "👤 Conducteur"
+  defp capteur_category_label("vehicle_status"), do: "🚗 État du véhicule"
+  defp capteur_category_label("connectivity"), do: "📡 Connectivité"
+  defp capteur_category_label(category), do: category |> String.capitalize()
 
   defp normalize_params(params) when is_map(params) do
     Map.new(params, fn

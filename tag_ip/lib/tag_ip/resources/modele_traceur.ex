@@ -33,6 +33,14 @@ defmodule TagIp.Resources.ModeleTraceur do
     end
 
     # Compatibilité élargie — Électrique
+    attribute :voltage_min, :float do
+      public?(true)
+    end
+
+    attribute :voltage_max, :float do
+      public?(true)
+    end
+
     attribute :standby_current, :float do
       public?(true)
     end
@@ -99,6 +107,10 @@ defmodule TagIp.Resources.ModeleTraceur do
     timestamps()
   end
 
+  identities do
+    identity(:unique_reference, [:reference])
+  end
+
   relationships do
     has_many :compatibilites, TagIp.Resources.Compatibilite
 
@@ -144,12 +156,16 @@ defmodule TagIp.Resources.ModeleTraceur do
 
     create :create do
       primary?(true)
+      upsert?(true)
+      upsert_identity(:unique_reference)
 
       accept([
         :nom,
         :brand,
         :reference,
         :description,
+        :voltage_min,
+        :voltage_max,
         :nb_digital_inputs,
         :nb_analog_inputs,
         :nb_outputs,

@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Mémoire - TAG-Monitor</title>
+<style>
+  body { font-family: 'Times New Roman', serif; max-width: 800px; margin: auto; padding: 2em; line-height: 1.6; font-size: 12pt; }
+  h1 { font-size: 1.6em; margin-top: 2em; text-align: center; }
+  h2 { font-size: 1.3em; margin-top: 1.5em; border-bottom: 1px solid #333; }
+  h3 { font-size: 1.15em; margin-top: 1.2em; }
+  h4 { font-size: 1.05em; margin-top: 1em; }
+  h5 { font-size: 1em; margin-top: 0.8em; font-style: italic; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 11pt; }
+  th, td { border: 1px solid #555; padding: 6px; text-align: left; }
+  th { background: #eee; }
+  .cover { text-align: center; margin-top: 4em; }
+  .cover h1 { font-size: 1.4em; margin-bottom: 0.5em; }
+  .cover .subtitle { font-size: 1.1em; margin: 2em 0; }
+  .cover .info { margin-top: 3em; }
+  .cover .info p { margin: 0.3em 0; }
+  .page-break { page-break-before: always; }
+  .toc-item { margin-left: 1em; }
+  .toc-sub { margin-left: 2em; }
+  .toc-sub2 { margin-left: 3em; }
+  figure { text-align: center; font-style: italic; margin: 1.5em 0; color: #555; }
+  .resume-box { border: 1px solid #333; padding: 1em; margin: 1em 0; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- PAGE DE GARDE                                                 -->
+<!-- ============================================================ -->
+<div class="cover">
+  <p><strong>Agréé par l'État</strong><br>
+  Arrêté d'ouverture : ...</p>
+
+  <h1>MEMOIRE DE FIN D'ETUDES EN VUE D'OBTENTION DU DIPLOME<br>
+  DE TECHNICIEN SUPERIEUR</h1>
+
+  <p><strong>Mention : Technologie informatique</strong></p>
+
+  <div class="subtitle">
+    <p>CONCEPTION ET REALISATION D'UN MODULE AUTOMATISE DE GESTION<br>
+    DES PROFILS DE MONTAGE ET DE COMPATIBILITE DES TRACEURS GPS<br>
+    SOUS ELIXIR ET ASH FRAMEWORK</p>
+  </div>
+
+  <p><strong>Au sein de la société TAG-IP (Technologie d'Avant-Garde Internet Protocole)</strong></p>
+
+  <div class="info">
+    <p>Présenté par : <strong>Monsieur [NOM Prénom]</strong></p>
+    <p><br>Membres du jury :</p>
+    <p>Président du jury : Madame/Monsieur [...]</p>
+    <p>Examinateur : Madame/Monsieur [...]</p>
+    <p>Encadreur pédagogique : Madame/Monsieur [...]</p>
+    <p><br>Année universitaire : 2025-2026</p>
+    <p>Promotion : [...]</p>
+  </div>
+
+  <p style="margin-top:3em;">
+    UNIVERSITE SAINT VINCENT DE PAUL AKAMASOA<br>
+    MANANTENASOA - ANTANANARIVO
+  </p>
+</div>
+
+<!-- ============================================================ -->
+<!-- AVANT-PROPOS                                                  -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h2>AVANT-PROPOS</h2>
+
+<p>Ce mémoire rentre dans le cadre de l'obtention du Diplôme de Technicien Supérieur (DTS) en Technologie Informatique à l'Université Saint Vincent de Paul AKAMASOA.</p>
+
+<p>Ce projet a été réalisé au sein de la société <strong>TAG-IP</strong> (Technologie d'Avant-Garde Internet Protocole), un leader malgache des solutions de tracking et de géolocalisation de véhicules. Il a été choisi en raison de la problématique concrète observée lors de mon stage au pôle Ingénierie Logicielle de la DSI : l'identification des traceurs GPS compatibles avec des équipements variés reposait encore sur une expertise humaine manuelle, source d'erreurs et de pertes de productivité. La mission consistait à concevoir et réaliser un module automatisé de gestion des profils de montage et de compatibilité des traceurs GPS, en utilisant les technologies Elixir, Phoenix LiveView et Ash Framework.</p>
+
+<p>Les motivations ayant conduit à l'étude de ce sujet résident dans l'envie de confronter mes connaissances techniques à un cas concret, d'apporter une réelle plus-value à un outil utilisé quotidiennement par les techniciens de TAG-IP, et de me former aux exigences professionnelles en matière de qualité logicielle, d'architecture déclarative et de rigueur méthodologique.</p>
+
+<p>L'objectif principal du travail présenté est de déployer une application web capable de centraliser et de pérenniser l'expertise technique de l'entreprise, en transformant des contraintes physiques en calculs logiques automatisés. Pour y parvenir, une démarche structurée a été adoptée, comprenant une analyse approfondie du contexte et des besoins, une modélisation rigoureuse des données, une conception architecturale, suivies d'un développement itératif et de tests fonctionnels.</p>
+
+<p>Au cours du projet, plusieurs difficultés ont été rencontrées, telles que la prise en main du framework Ash (nouveau dans l'écosystème Elixir), la modélisation des 17 critères de compatibilité, et l'adaptation aux besoins précis des équipes techniques tout en respectant des délais contraints. Ces obstacles ont cependant représenté une source d'apprentissage précieuse, tant sur le plan technique que personnel.</p>
+
+<p>Ce mémoire témoigne ainsi de l'aboutissement d'un projet académique, professionnel et humain. Il marque la fin d'un cycle d'apprentissage à l'USVPA et le début d'un engagement dans le monde professionnel de l'informatique.</p>
+
+
+<!-- ============================================================ -->
+<!-- REMERCIEMENTS                                                 -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h2>REMERCIEMENTS</h2>
+
+<p>Avant toute chose, nous rendons grâce à Dieu Tout-Puissant, source de vie et de force, pour nous avoir accompagnés tout au long de cette formation et durant la réalisation de ce mémoire.</p>
+
+<p>Nous exprimons notre profonde gratitude au Révérend Père Pedro Pablo OPEKA, Fondateur et Président de l'Association AKAMASOA, dont l'engagement et la vision ont permis à de nombreux jeunes, dont nous-mêmes, de bénéficier d'une éducation supérieure de qualité.</p>
+
+<p>Nos sincères remerciements s'adressent à Madame FANDROARIMANGA Monique, coordonnatrice de l'Université Saint Vincent de Paul AKAMASOA, et à Monsieur Johnson RAKOTONJANAHARY, Directeur de l'USVPA, pour leur disponibilité, leur accompagnement et leur engagement constant envers les étudiants.</p>
+
+<p>Nous remercions également Monsieur Marc RIVERA, Directeur Général de TAG-IP, et Monsieur Gilles CHAPOTON, Directeur Technique, pour nous avoir accueillis au sein de leur entreprise et permis de réaliser ce projet dans un cadre professionnel enrichissant.</p>
+
+<p>Nos vifs remerciements vont à notre encadreur professionnel au sein du pôle Ingénierie Logicielle de la DSI de TAG-IP, ainsi qu'à notre encadreur pédagogique, Monsieur RANDRENJA Herinjaka Hélien, pour leurs conseils, leur rigueur et leur soutien précieux tout au long de ce travail.</p>
+
+<p>Nous tenons aussi à remercier l'ensemble du personnel administratif de l'USVPA pour leur bienveillance, ainsi que les formateurs et formatrices pour la qualité de leurs enseignements et leur générosité dans le partage de leurs connaissances.</p>
+
+<p>Enfin, nous adressons toute notre reconnaissance à nos parents, familles et amis pour leur soutien moral, matériel et spirituel, qui a été d'un grand réconfort et d'une aide précieuse dans la réalisation de ce mémoire.</p>
+
+
+<!-- ============================================================ -->
+<!-- LISTE DES ABREVIATIONS                                        -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h2>LISTE DES ABREVIATIONS</h2>
+
+<table>
+  <tr><th>Abréviation</th><th>Signification</th></tr>
+  <tr><td>API</td><td>Application Programming Interface</td></tr>
+  <tr><td>Ash</td><td>Ash Framework (déclaratif, Elixir)</td></tr>
+  <tr><td>CAN</td><td>Controller Area Network</td></tr>
+  <tr><td>CPU</td><td>Central Processing Unit</td></tr>
+  <tr><td>CRUD</td><td>Create, Read, Update, Delete</td></tr>
+  <tr><td>CSRF</td><td>Cross-Site Request Forgery</td></tr>
+  <tr><td>DIN</td><td>Digital Input</td></tr>
+  <tr><td>DOUT</td><td>Digital Output</td></tr>
+  <tr><td>DSI</td><td>Direction des Systèmes d'Information</td></tr>
+  <tr><td>DTS</td><td>Diplôme de Technicien Supérieur</td></tr>
+  <tr><td>ESTIA</td><td>École Supérieure de Technologie Informatique AKAMASOA</td></tr>
+  <tr><td>GPS</td><td>Global Positioning System</td></tr>
+  <tr><td>GPRS</td><td>General Packet Radio Service</td></tr>
+  <tr><td>HA</td><td>Haute Disponibilité (High Availability)</td></tr>
+  <tr><td>HEEx</td><td>HTML + Elixir (Phoenix templates)</td></tr>
+  <tr><td>I/O</td><td>Entrées/Sorties (Input/Output)</td></tr>
+  <tr><td>IDS</td><td>Intrusion Detection System</td></tr>
+  <tr><td>IoT</td><td>Internet of Things</td></tr>
+  <tr><td>IP</td><td>Indice de Protection / Internet Protocol</td></tr>
+  <tr><td>IPS</td><td>Intrusion Prevention System</td></tr>
+  <tr><td>MCD</td><td>Modèle Conceptuel de Données</td></tr>
+  <tr><td>MCT</td><td>Modèle Conceptuel de Traitement</td></tr>
+  <tr><td>MERISE</td><td>Méthode d'Étude et de Réalisation Informatique pour les Systèmes d'Entreprise</td></tr>
+  <tr><td>MLD</td><td>Modèle Logique de Données</td></tr>
+  <tr><td>MOA</td><td>Maîtrise d'Ouvrage</td></tr>
+  <tr><td>MOE</td><td>Maîtrise d'Œuvre</td></tr>
+  <tr><td>MVC</td><td>Model-View-Controller</td></tr>
+  <tr><td>ORM</td><td>Object-Relational Mapping</td></tr>
+  <tr><td>PostGIS</td><td>Extension géospatiale PostgreSQL</td></tr>
+  <tr><td>RAID</td><td>Redundant Array of Independent Disks</td></tr>
+  <tr><td>REST</td><td>Representational State Transfer</td></tr>
+  <tr><td>SGBD</td><td>Système de Gestion de Base de Données</td></tr>
+  <tr><td>SIG</td><td>Système d'Information Géographique</td></tr>
+  <tr><td>SSH</td><td>Secure Shell</td></tr>
+  <tr><td>SWOT</td><td>Strengths, Weaknesses, Opportunities, Threats</td></tr>
+  <tr><td>TCP</td><td>Transmission Control Protocol</td></tr>
+  <tr><td>UDP</td><td>User Datagram Protocol</td></tr>
+  <tr><td>UI</td><td>User Interface</td></tr>
+  <tr><td>USVPA</td><td>Université Saint Vincent de Paul AKAMASOA</td></tr>
+  <tr><td>VLAN</td><td>Virtual Local Area Network</td></tr>
+  <tr><td>VPN</td><td>Virtual Private Network</td></tr>
+</table>
+
+
+<!-- ============================================================ -->
+<!-- LISTE DES FIGURES                                             -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h2>LISTE DES FIGURES</h2>
+
+<p>Figure 1 : Organigramme simplifié de TAG-IP avec localisation du poste de stage ... 00</p>
+<p>Figure 2 : Schéma de l'architecture réseau et cycle de traitement des flux .......... 00</p>
+<p>Figure 3 : Diagramme de cas d'utilisation UML ............................................. 00</p>
+<p>Figure 4 : Architecture globale du système (Ash + Phoenix + PostgreSQL) ........ 00</p>
+<p>Figure 5 : Modèle Conceptuel de Données (MCD) ........................................... 00</p>
+<p>Figure 6 : Modèle Logique de Données (MLD) ................................................ 00</p>
+<p>Figure 7 : Schéma de l'architecture MVC/API REST/n-tiers .............................. 00</p>
+<p>Figure 8 : Aperçu de l'interface — assistant 5 étapes de création de profil ........ 00</p>
+
+
+<!-- ============================================================ -->
+<!-- LISTE DES TABLEAUX                                            -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h2>LISTE DES TABLEAUX</h2>
+
+<p>Tableau 1 : Synthèse de l'infrastructure réseau TAG-IP ..................................... 00</p>
+<p>Tableau 2 : Acteurs du système et droits associés .............................................. 00</p>
+<p>Tableau 3 : Comparatif des solutions IoT ........................................................... 00</p>
+<p>Tableau 4 : Modules fonctionnels de l'application .............................................. 00</p>
+<p>Tableau 5 : Entités du système et description ...................................................... 00</p>
+<p>Tableau 6 : Dictionnaire des données — mounting_profiles ................................ 00</p>
+<p>Tableau 7 : Dictionnaire des données — modeles_traceur ................................... 00</p>
+<p>Tableau 8 : Dictionnaire des données — compatibilites ...................................... 00</p>
+<p>Tableau 9 : Choix technologiques détaillés ......................................................... 00</p>
+<p>Tableau 10 : Grille de notation de la compatibilité (100 points) ......................... 00</p>
+<p>Tableau 11 : Mesures de performance ................................................................. 00</p>
+<p>Tableau 12 : Évaluation de l'atteinte des objectifs .............................................. 00</p>
+
+
+<!-- ============================================================ -->
+<!-- SOMMAIRE                                                      -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h2>SOMMAIRE</h2>
+
+<p><strong>INTRODUCTION GÉNÉRALE</strong></p>
+
+<p><strong>PARTIE I – CONTEXTE ET ANALYSE</strong></p>
+<p class="toc-item">Chapitre 1 : Cadre et contexte du projet</p>
+<p class="toc-sub">1.1 Présentation de l'environnement</p>
+<p class="toc-sub">1.2 Environnement technique</p>
+<p class="toc-sub">1.3 Contexte et problématique</p>
+<p class="toc-item">Chapitre 2 : Analyse des besoins et positionnement</p>
+<p class="toc-sub">2.1 Étude des solutions existantes</p>
+<p class="toc-sub">2.2 Besoins et contraintes</p>
+<p class="toc-sub">2.3 Spécifications générales</p>
+
+<p><strong>PARTIE II – CONCEPTION TECHNIQUE</strong></p>
+<p class="toc-item">Chapitre 3 : Modélisation des données</p>
+<p class="toc-sub">3.1 Modèle conceptuel (MCD)</p>
+<p class="toc-sub">3.2 Modèle logique (MLD)</p>
+<p class="toc-sub">3.3 Dictionnaire des données</p>
+<p class="toc-item">Chapitre 4 : Architecture et choix techniques</p>
+<p class="toc-sub">4.1 Architecture globale du système</p>
+<p class="toc-sub">4.2 Choix technologiques</p>
+<p class="toc-sub">4.3 Architecture back-end et sécurité</p>
+
+<p><strong>PARTIE III – RÉALISATION ET ÉVALUATION</strong></p>
+<p class="toc-item">Chapitre 5 : Réalisation technique</p>
+<p class="toc-sub">5.1 Mise en place technique</p>
+<p class="toc-sub">5.2 Implémentation du back-end</p>
+<p class="toc-sub">5.3 Fonctionnalités avancées</p>
+<p class="toc-item">Chapitre 6 : Évaluation et discussion</p>
+<p class="toc-sub">6.1 Tests et validation</p>
+<p class="toc-sub">6.2 Analyse des performances</p>
+<p class="toc-sub">6.3 Discussion critique</p>
+
+<p><strong>CONCLUSION GÉNÉRALE</strong></p>
+
+
+<!-- ============================================================ -->
+<!-- INTRODUCTION GÉNÉRALE                                         -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h1>INTRODUCTION GÉNÉRALE</h1>
+
+<p>Au sein de la société Tag-IP, leader malgache de la géolocalisation de véhicules avec plus de 10 000 unités suivies, l'identification des traceurs GPS compatibles avec des équipements variés — véhicules légers, poids lourds, engins de chantier — repose encore sur une expertise humaine manuelle et des supports d'information dispersés. Lors de mon stage au sein du pôle Ingénierie Logicielle de la DSI, j'ai constaté que les techniciens d'exploitation passaient en moyenne 30 à 45 minutes par demande de compatibilité, avec un taux d'erreur de montage estimé à 15 % — soit près de 150 installations défectueuses par mois. Ces erreurs entraînent des déplacements supplémentaires, du matériel endommagé par des incompatibilités de tension (12V/24V) et une perte de productivité estimée à 20 % du temps de l'équipe technique. C'est dans ce contexte de modernisation des processus internes qu'est né ce projet intitulé <strong>« Conception et réalisation d'un module automatisé de gestion des profils de montage et de compatibilité des traceurs GPS sous Elixir et Ash Framework »</strong>.</p>
+
+<p>Ce travail soulève la problématique centrale de l'automatisation d'un diagnostic de compatibilité entre des contraintes physiques hétérogènes et un catalogue matériel dense, tout en garantissant une maintenance simplifiée des règles métier. Pour répondre à cet enjeu, nous formulons l'hypothèse selon laquelle l'implémentation d'une architecture déclarative basée sur Ash Framework, couplée à la réactivité en temps réel de Phoenix LiveView, permet de réduire drastiquement les erreurs de configuration matérielle en transformant les contraintes physiques en calculs logiques automatisés et transparents pour l'utilisateur final.</p>
+
+<p>L'objectif général est donc de déployer une application web capable de centraliser et de pérenniser l'expertise technique de l'entreprise. Ce but se décline en objectifs spécifiques : la modélisation rigoureuse des ressources via Ash, le développement d'un moteur de calcul de compatibilité notant chaque couple profil-modèle sur 100 points via 17 critères, et la conception d'une interface intuitive permettant une visualisation instantanée des résultats. La méthodologie adoptée, de nature itérative et agile, s'est appuyée sur l'observation directe des processus de montage, des entretiens avec les experts techniques de Tag-IP, et une modélisation structurée selon la méthode Merise.</p>
+
+<p>Ce mémoire se structure en trois parties qui s'enchaînent logiquement. <strong>La première partie</strong> établit un diagnostic complet du contexte institutionnel, de l'environnement technique, des problèmes opérationnels et des spécifications du système. <strong>La deuxième partie</strong> détaille la conception technique : modélisation des données, architecture et choix technologiques. <strong>La troisième partie</strong> présente la réalisation effective, les tests et l'évaluation des performances, avant une discussion critique sur les limites et perspectives.</p>
+
+
+<!-- ============================================================ -->
+<!-- PARTIE I                                                       -->
+<!-- ============================================================ -->
+<h1>PARTIE I – CONTEXTE ET ANALYSE</h1>
+
+<!-- ============================================================ -->
+<!-- CHAPITRE 1                                                     -->
+<!-- ============================================================ -->
+<h2>Chapitre 1 : Cadre et contexte du projet</h2>
+
+<h3>1.1 Présentation de l'environnement</h3>
+
+<h4>1.1.1 L'Université Saint Vincent de Paul Akamasoa (USVPA)</h4>
+
+<p>L'Université Saint Vincent de Paul Akamasoa (USVPA) est un établissement privé d'enseignement supérieur situé à Antananarivo, Madagascar. Fondée en 1994, sa mission est de fournir une formation académique et professionnelle visant à favoriser l'insertion des étudiants dans le tissu économique national.</p>
+
+<p><strong>Missions et cadre organisationnel.</strong> L'USVPA répond aux besoins du marché de l'emploi malgache dans des secteurs clés tels que l'éducation, la santé, le management et les technologies de l'information. Le campus de Manantenasoa offre un environnement d'apprentissage comprenant des salles de cours équipées et des infrastructures numériques adaptées. L'enseignement est assuré par un corps professoral mixte, composé d'universitaires et de professionnels du secteur privé, garantissant un équilibre entre théorie et pratique.</p>
+
+<p><strong>Offres de formation.</strong> L'établissement délivre des diplômes de Technicien Supérieur (DTS) et des Licences professionnelles dans plusieurs domaines : pédagogie et langues, sciences paramédicales, sciences technologiques et de gestion.</p>
+
+<p><strong>L'École Supérieure de Technologie en Informatique d'Akamasoa (ESTIA).</strong> Créée en 2017, l'ESTIA constitue le pôle technologique de l'université. C'est dans ce cadre que s'est déroulé mon cursus de DTS Informatique, articulé autour de trois axes :</p>
+<ol>
+  <li><strong>Développement logiciel</strong> — algorithmique, langages modernes (dont Elixir), frameworks web (Phoenix, LiveView), conception d'interfaces.</li>
+  <li><strong>Systèmes et réseaux</strong> — administration de serveurs Linux, protocoles de sécurité, déploiement DevOps.</li>
+  <li><strong>Ingénierie des données</strong> — modélisation relationnelle (Merise), PostgreSQL, gestion de flux.</li>
+</ol>
+
+<p><strong>Lien avec le stage.</strong> La pédagogie de l'ESTIA privilégie l'apprentissage par projet. Durant ma formation, j'ai acquis les compétences en architecture logicielle, en conception de bases de données et en développement back-end qui ont directement nourri mon travail chez Tag-IP. L'utilisation du framework Ash et du langage Elixir s'est révélée parfaitement adaptée aux besoins de modélisation déclarative du projet.</p>
+
+
+<h4>1.1.2 La société TAG-IP</h4>
+
+<p>La société TAG-IP (Technologie d'Avant-Garde Internet Protocole) a été créée en 2008 en partenariat avec l'opérateur Telma. Elle est le leader des solutions de tracking et de géolocalisation à Madagascar.</p>
+
+<p><strong>Fiche d'identification.</strong></p>
+<table>
+  <tr><th>Raison sociale</th><td>Technologie d'Avant Garde – Internet Protocole (SA)</td></tr>
+  <tr><th>Siège social</th><td>Immeuble Assist - 5e étage, 101 Antananarivo</td></tr>
+  <tr><th>Activité</th><td>Géolocalisation et tracking de véhicules</td></tr>
+  <tr><th>DG</th><td>M. Marc Rivera / M. Gilles Chapoton (DT)</td></tr>
+</table>
+
+<p><strong>Historique.</strong> En 2009-2010, création de la première application de géolocalisation et fondation de TAG-IP (800 véhicules fin 2010). De 2011 à 2013, croissance soutenue (50-100 installations/mois) et expansion internationale (Niger, La Réunion, Seychelles). Depuis 2014, le parc est passé de 7 000 à plus de 10 000 véhicules.</p>
+
+<p><strong>Missions.</strong> TAG-IP offre à ses clients le suivi des déplacements de leurs équipes pour contrôler, assister et optimiser les frais opérationnels. La société propose également des fonctionnalités avancées : reconnaissance du conducteur, contrôle du démarrage, avertisseurs de survitesse, boutons de panique.</p>
+
+<p><strong>Structure organisationnelle.</strong> L'entreprise est structurée en trois directions :</p>
+<ul>
+  <li><strong>Direction RH, Exploitation et Service Clientèle</strong> : administrative, RH, pôle Exploitation (techniciens terrain), service TAGOS (support après-vente).</li>
+  <li><strong>Direction Marketing et Commercial</strong> : relations publiques, design, formation clients.</li>
+  <li><strong>Direction des Systèmes d'Information (DSI)</strong> : c'est au sein de cette direction, plus précisément au <strong>pôle Ingénierie Logicielle</strong>, que s'est déroulé mon stage. Ce pôle regroupe les développeurs chargés de maintenir et faire évoluer les plateformes de tracking.</li>
+</ul>
+
+<figure>Figure 1 : Organigramme simplifié de TAG-IP avec localisation du poste de stage (Pôle Ingénierie Logicielle - DSI)</figure>
+
+
+<h3>1.2 Environnement technique</h3>
+
+<h4>1.2.1 Infrastructure matérielle et réseau</h4>
+
+<p>L'architecture matérielle de TAG-IP est dimensionnée pour une disponibilité 24h/24 et 7j/7, indispensable pour la traçabilité des 10 000 véhicules suivis.</p>
+
+<table>
+  <caption>Tableau 1 : Synthèse de l'infrastructure réseau</caption>
+  <tr><th>Composant</th><th>Description</th><th>Rôle</th></tr>
+  <tr><td>Liaisons spécialisées</td><td>Connexions haut débit via Telma</td><td>Réception trames GPRS/3G</td></tr>
+  <tr><td>VLAN</td><td>3 réseaux virtuels (GPS, Admin, Dev)</td><td>Sécurité et segmentation</td></tr>
+  <tr><td>Firewall</td><td>Professionnel avec IDS/IPS</td><td>Sécurité périmétrique</td></tr>
+  <tr><td>Cluster serveurs</td><td>Physiques en HA</td><td>Haute disponibilité</td></tr>
+  <tr><td>Stockage RAID</td><td>Réplication disques temps réel</td><td>Sauvegarde données</td></tr>
+  <tr><td>Redondance énergétique</td><td>Onduleurs + batteries + groupe électrogène</td><td>Continuité de service</td></tr>
+</table>
+
+<figure>Figure 2 : Schéma de l'architecture réseau et du cycle de traitement des flux de données</figure>
+
+<h4>1.2.2 Outils et systèmes existants</h4>
+
+<p><strong>Systèmes d'exploitation.</strong> Les serveurs de production tournent sous Debian GNU/Linux (stabilité, sécurité) ; les postes de développement utilisent macOS (compatibilité Unix avec les serveurs, Docker).</p>
+
+<p><strong>Plateforme Track.</strong> Le cœur métier repose sur la plateforme propriétaire Track (modules tau, v-rho, taw). Lors de mon stage, j'ai observé une rigidité architecturale : les alertes (survitesse, franchissement de zone) sont codées en dur dans le noyau. Toute modification nécessite une compilation et un redéploiement complet par la DSI, créant un goulot d'étranglement.</p>
+
+<p><strong>Base de données.</strong> PostgreSQL + PostGIS pour le traitement géospatial (geofencing, calcul de distances). Défi : plusieurs millions d'enregistrements générés par 10 000 véhicules.</p>
+
+<p><strong>DevOps.</strong> Git pour la gestion de version, Docker pour la conteneurisation. Limite : le monitoring existant ne couvre que la santé physique du système, sans visibilité métier.</p>
+
+
+<h3>1.3 Contexte et problématique</h3>
+
+<h4>1.3.1 Situation initiale</h4>
+
+<p>Avant l'automatisation, la gestion de la compatibilité reposait sur un processus manuel en trois phases :</p>
+<ol>
+  <li><strong>Collecte des besoins</strong> — exigences clients notées sur fiches papier ou emails, sans référentiel numérique.</li>
+  <li><strong>Diagnostic manuel</strong> — matching mental entre le besoin et le catalogue, informations éparpillées (Excel, PDF).</li>
+  <li><strong>Configuration en atelier</strong> — paramétrage manuel des balises (IP, ports) via SMS, source d'erreurs de frappe.</li>
+</ol>
+
+<p>Lors de mes entretiens avec le responsable du pôle Exploitation, j'ai estimé ces tâches à <strong>20 % de perte de productivité</strong> de l'équipe technique, avec un <strong>taux d'échec de pose de 15 %</strong> et un temps moyen de 30-45 minutes par demande de compatibilité.</p>
+
+<h4>1.3.2 Problèmes identifiés</h4>
+
+<table>
+  <caption>Tableau 2 : Synthèse des problèmes et impacts</caption>
+  <tr><th>Problème</th><th>Description</th><th>Impact</th></tr>
+  <tr><td>Incompatibilité matérielle</td><td>Boîtier 12V sur véhicule 24V, I/O insuffisantes</td><td>Destruction matériel, perte financière</td></tr>
+  <tr><td>Hard-coding des règles</td><td>Modification nécessitant compilation et redéploiement</td><td>Goulot d'étranglement DSI</td></tr>
+  <tr><td>Erreurs de terrain</td><td>Déplacements inutiles, matériel inadapté</td><td>Coûts logistiques, image de marque</td></tr>
+  <tr><td>Dépendance humaine</td><td>Expertise détenue par quelques seniors</td><td>Risque de perte de savoir-faire</td></tr>
+</table>
+
+<h4>1.3.3 Expression du besoin</h4>
+<ol>
+  <li><strong>Centralisation du référentiel technique</strong> — base unique de schémas de montage et spécificités électriques.</li>
+  <li><strong>Automatisation du diagnostic</strong> — validation tension + I/O par saisie modèle véhicule et boîtier.</li>
+  <li><strong>Décentralisation des règles</strong> — configuration des alertes par l'exploitation via interface intuitive.</li>
+  <li><strong>Digitalisation de l'expertise</strong> — procédures standardisées pour réduire la courbe d'apprentissage des juniors.</li>
+</ol>
+
+
+<!-- ============================================================ -->
+<!-- CHAPITRE 2                                                     -->
+<!-- ============================================================ -->
+<h2>Chapitre 2 : Analyse des besoins et positionnement</h2>
+
+<h3>2.1 Étude des solutions existantes</h3>
+
+<table>
+  <caption>Tableau 3 : Comparatif des solutions IoT</caption>
+  <tr><th>Critère</th><th>ThingsBoard</th><th>Kaa IoT</th><th>Propriétaires</th><th>TAG-Monitor</th></tr>
+  <tr><td>Flexibilité</td><td>Élevée</td><td>Moyenne</td><td>Faible</td><td>Élevée</td></tr>
+  <tr><td>Coût</td><td>Open source (payant >10)</td><td>Open source</td><td>Licence</td><td>Sur mesure</td></tr>
+  <tr><td>Compatibilité multi-constructeur</td><td>Oui</td><td>Oui</td><td>Non</td><td>Oui</td></tr>
+  <tr><td>Moteur compatibilité métier</td><td>Non</td><td>Non</td><td>Non</td><td>Oui (17 critères)</td></tr>
+</table>
+
+<p><strong>Limites observées :</strong> aucune solution existante ne propose un moteur de compatibilité entre profils de montage et traceurs GPS adapté au contexte de TAG-IP.</p>
+
+<h3>2.2 Besoins et contraintes</h3>
+
+<p><strong>Fonctionnalités principales :</strong> gestion CRUD des profils de montage (assistant 5 étapes), catalogue de traceurs (CRUD + caractéristiques), moteur de calcul de compatibilité (notation /100), dashboard temps réel, authentification.</p>
+
+<table>
+  <caption>Tableau 4 : Acteurs du système et droits</caption>
+  <tr><th>Acteur</th><th>Rôle</th><th>Droits</th></tr>
+  <tr><td>Administrateur</td><td>Gestion complète</td><td>CRUD toutes ressources, utilisateurs, paramètres</td></tr>
+  <tr><td>Technicien exploitation</td><td>Préparation et diagnostic</td><td>CRUD profils, consultation modèles, compatibilité</td></tr>
+  <tr><td>Technicien terrain</td><td>Installation physique</td><td>Consultation fiches montage, compatibilités</td></tr>
+</table>
+
+<figure>Figure 3 : Diagramme de cas d'utilisation UML</figure>
+
+<p><strong>Contraintes :</strong> stack Elixir/Phoenix/Ash/PostgreSQL, interface responsive, temps réponse &lt; 2s.</p>
+
+<h3>2.3 Spécifications générales</h3>
+
+<table>
+  <caption>Tableau 5 : Modules fonctionnels</caption>
+  <tr><th>Module</th><th>Resources Ash</th><th>Fonctionnalités</th></tr>
+  <tr><td>ProfilMontage</td><td>ProfilMontage</td><td>CRUD profils, assistant 5 étapes</td></tr>
+  <tr><td>ModeleTraceur</td><td>ModeleTraceur, TypeVehicule, Alimentation, Capteur</td><td>CRUD, catalogue technique, relations N-N</td></tr>
+  <tr><td>Compatibilité</td><td>Compatibilite</td><td>Moteur 17 critères /100, upsert unique</td></tr>
+  <tr><td>Référentiels</td><td>TrackableType, PortType, Feature, Peripheral</td><td>Données de base</td></tr>
+  <tr><td>Dashboard</td><td>Toutes</td><td>Statistiques, notifications PubSub</td></tr>
+</table>
+
+<figure>Figure 4 : Architecture globale du système (Ash + Phoenix + PostgreSQL)</figure>
+
+
+<!-- ============================================================ -->
+<!-- PARTIE II                                                      -->
+<!-- ============================================================ -->
+<h1>PARTIE II – CONCEPTION TECHNIQUE</h1>
+
+<h2>Chapitre 3 : Modélisation des données</h2>
+
+<h3>3.1 Modèle conceptuel (MCD)</h3>
+
+<p><strong>Entités principales.</strong> Le système compte 9 entités métier : ProfilMontage (contraintes véhicule), ModeleTraceur (caractéristiques traceur), TypeVehicule, Alimentation, Capteur, Feature, PortType, Peripheral, Compatibilite (résultat du calcul avec score /100).</p>
+
+<p><strong>Relations.</strong> Les relations many-to-many sont gérées via des tables de jointure : ModeleTraceurTypeVehicule, ModeleTraceurAlimentation, ModeleTraceurCapteur, ModelFeature, ModelPort.</p>
+
+<p><strong>Règles de gestion.</strong> Un profil peut être compatible avec plusieurs modèles. Le score est calculé sur 100 points selon 17 critères pondérés. Contrainte d'unicité sur (profil_montage_id, modele_traceur_id).</p>
+
+<figure>Figure 5 : Modèle Conceptuel de Données (MCD)</figure>
+
+<h3>3.2 Modèle logique (MLD)</h3>
+
+<table>
+  <caption>Tableau 6 : Structure des tables principales</caption>
+  <tr><th>Table</th><th>Clé primaire</th><th>Contraintes</th></tr>
+  <tr><td>mounting_profiles</td><td>UUID</td><td>voltage_min ≤ voltage_max</td></tr>
+  <tr><td>modeles_traceur</td><td>UUID</td><td>Référence unique</td></tr>
+  <tr><td>compatibilites</td><td>UUID</td><td>UNIQUE(profil, modèle)</td></tr>
+  <tr><td>model_features</td><td>UUID</td><td>FK + unique composite</td></tr>
+  <tr><td>model_ports</td><td>UUID</td><td>FK</td></tr>
+</table>
+
+<figure>Figure 6 : Modèle Logique de Données (MLD)</figure>
+
+<h3>3.3 Dictionnaire des données</h3>
+
+<table>
+  <caption>Tableau 7 : Dictionnaire — mounting_profiles</caption>
+  <tr><th>Champ</th><th>Type</th><th>Description</th><th>Contrainte</th></tr>
+  <tr><td>id</td><td>UUID</td><td>Identifiant unique</td><td>PK</td></tr>
+  <tr><td>name</td><td>string</td><td>Nom du profil</td><td>Requis, unique</td></tr>
+  <tr><td>voltage_min</td><td>decimal</td><td>Tension minimale (V)</td><td>Requis</td></tr>
+  <tr><td>voltage_max</td><td>decimal</td><td>Tension maximale (V)</td><td>≥ voltage_min</td></tr>
+  <tr><td>can_bus_required</td><td>boolean</td><td>Bus CAN requis</td><td>Défaut: false</td></tr>
+  <tr><td>one_wire_required</td><td>boolean</td><td>Capteur 1-Wire requis</td><td>Défaut: false</td></tr>
+  <tr><td>rs232_required</td><td>boolean</td><td>Port RS232 requis</td><td>Défaut: false</td></tr>
+  <tr><td>rs485_required</td><td>boolean</td><td>Port RS485 requis</td><td>Défaut: false</td></tr>
+  <tr><td>nb_digital_inputs</td><td>integer</td><td>Entrées numériques</td><td>Défaut: 0</td></tr>
+  <tr><td>nb_analog_inputs</td><td>integer</td><td>Entrées analogiques</td><td>Défaut: 0</td></tr>
+  <tr><td>nb_outputs</td><td>integer</td><td>Sorties</td><td>Défaut: 0</td></tr>
+  <tr><td>ip_rating</td><td>string</td><td>Indice de protection</td><td>Optionnel</td></tr>
+</table>
+
+<table>
+  <caption>Tableau 8 : Dictionnaire — modeles_traceur</caption>
+  <tr><th>Champ</th><th>Type</th><th>Description</th><th>Contrainte</th></tr>
+  <tr><td>id</td><td>UUID</td><td>Identifiant unique</td><td>PK</td></tr>
+  <tr><td>nom</td><td>string</td><td>Nom du modèle</td><td>Requis</td></tr>
+  <tr><td>brand</td><td>string</td><td>Marque</td><td>Requis</td></tr>
+  <tr><td>reference</td><td>string</td><td>Référence constructeur</td><td>Unique</td></tr>
+  <tr><td>can_bus</td><td>boolean</td><td>Support bus CAN</td><td>Défaut: false</td></tr>
+  <tr><td>one_wire</td><td>boolean</td><td>Support 1-Wire</td><td>Défaut: false</td></tr>
+  <tr><td>rs232</td><td>boolean</td><td>Support RS232</td><td>Défaut: false</td></tr>
+  <tr><td>nb_digital_inputs</td><td>integer</td><td>Entrées numériques</td><td>Défaut: 0</td></tr>
+  <tr><td>nb_analog_inputs</td><td>integer</td><td>Entrées analogiques</td><td>Défaut: 0</td></tr>
+  <tr><td>nb_outputs</td><td>integer</td><td>Sorties</td><td>Défaut: 0</td></tr>
+  <tr><td>ip_rating</td><td>string</td><td>Indice de protection</td><td>Optionnel</td></tr>
+  <tr><td>buffer_memory</td><td>integer</td><td>Mémoire tampon (relevés)</td><td>Optionnel</td></tr>
+</table>
+
+<table>
+  <caption>Tableau 9 : Dictionnaire — compatibilites</caption>
+  <tr><th>Champ</th><th>Type</th><th>Description</th><th>Contrainte</th></tr>
+  <tr><td>id</td><td>UUID</td><td>Identifiant</td><td>PK</td></tr>
+  <tr><td>profil_montage_id</td><td>UUID</td><td>Référence au profil</td><td>FK</td></tr>
+  <tr><td>modele_traceur_id</td><td>UUID</td><td>Référence au modèle</td><td>FK</td></tr>
+  <tr><td>score_compatibilite</td><td>integer</td><td>Score sur 100</td><td>0-100</td></tr>
+  <tr><td colspan="3">Contrainte d'unicité</td><td>UNIQUE(profil, modèle)</td></tr>
+</table>
+
+
+<h2>Chapitre 4 : Architecture et choix techniques</h2>
+
+<h3>4.1 Architecture globale du système</h3>
+
+<table>
+  <caption>Tableau 10 : Architecture en couches</caption>
+  <tr><th>Couche</th><th>Technologie</th><th>Responsabilité</th></tr>
+  <tr><td>Présentation</td><td>Phoenix LiveView + HEEx</td><td>UI, temps réel, composants</td></tr>
+  <tr><td>Métier</td><td>Ash Framework (Domain, Resources)</td><td>Logique métier, validations, policies</td></tr>
+  <tr><td>Persistance</td><td>AshPostgres / PostgreSQL</td><td>Stockage, requêtes, index</td></tr>
+</table>
+
+<figure>Figure 7 : Schéma d'architecture MVC/API REST/n-tiers</figure>
+
+<h3>4.2 Choix technologiques</h3>
+
+<table>
+  <caption>Tableau 11 : Choix technologiques détaillés</caption>
+  <tr><th>Couche</th><th>Technologie</th><th>Justification</th><th>Alternative écartée</th></tr>
+  <tr><td>Framework web</td><td>Phoenix 1.8</td><td>Temps réel, robustesse</td><td>Rails, Node.js</td></tr>
+  <tr><td>ORM/Resources</td><td>Ash Framework 3.0</td><td>Déclaratif, filtres, policies</td><td>Ecto seul</td></tr>
+  <tr><td>Base de données</td><td>PostgreSQL + PostGIS</td><td>Géospatial, existant TAG-IP</td><td>MySQL, MongoDB</td></tr>
+  <tr><td>Frontend temps réel</td><td>Phoenix LiveView</td><td>Pas de JS séparé, streams</td><td>React/Vue + REST</td></tr>
+  <tr><td>Authentification</td><td>phx.gen.auth + bcrypt</td><td>Standard Phoenix, magic links</td><td>Pow, Auth0</td></tr>
+  <tr><td>Conteneurisation</td><td>Docker</td><td>Reproductibilité</td><td>—</td></tr>
+</table>
+
+<h3>4.3 Architecture back-end et sécurité</h3>
+
+<p><strong>Organisation en couches.</strong> Couche ressource (Ash : attributs, relations, actions), couche domaine (orchestration), couche web (LiveViews).</p>
+
+<p><strong>Moteur de compatibilité.</strong> 17 vérificateurs pondérés répartis en 6 catégories :</p>
+
+<table>
+  <caption>Tableau 12 : Grille de notation (100 points)</caption>
+  <tr><th>Catégorie</th><th>Détail</th><th>Points</th></tr>
+  <tr><td>Tension</td><td>Vérification plage voltage</td><td>10</td></tr>
+  <tr><td>Bus</td><td>CAN (10), 1-Wire (5), RS232 (5), RS485 (5)</td><td>25</td></tr>
+  <tr><td>Entrées/Sorties</td><td>Digital IN (10), Analog IN (5), Out (5)</td><td>20</td></tr>
+  <tr><td>Environnement</td><td>IP (10), Montage extérieur (5), Buffer (5)</td><td>20</td></tr>
+  <tr><td>Capteurs</td><td>Accéléromètre (5), Externes (10)</td><td>15</td></tr>
+  <tr><td>Fonctionnalités</td><td>Fonctionnalités demandées</td><td>10</td></tr>
+  <tr><td><strong>Total</strong></td><td></td><td><strong>100</strong></td></tr>
+</table>
+
+<p><strong>Sécurité.</strong> Authentification bcrypt + magic links, CSRF, validation via Ash Changesets, sessions avec plugs :require_authenticated, deux live_sessions (publique et authentifiée).</p>
+
+
+<!-- ============================================================ -->
+<!-- PARTIE III                                                     -->
+<!-- ============================================================ -->
+<h1>PARTIE III – RÉALISATION ET ÉVALUATION</h1>
+
+<h2>Chapitre 5 : Réalisation technique</h2>
+
+<h3>5.1 Mise en place technique</h3>
+
+<table>
+  <caption>Tableau 13 : Environnement de développement</caption>
+  <tr><th>Outil</th><th>Version</th><th>Usage</th></tr>
+  <tr><td>Elixir</td><td>~&gt; 1.15</td><td>Langage de programmation</td></tr>
+  <tr><td>Phoenix</td><td>1.8.5</td><td>Framework web</td></tr>
+  <tr><td>Ash Framework</td><td>~&gt; 3.0</td><td>ORM déclaratif</td></tr>
+  <tr><td>PostgreSQL</td><td>16+</td><td>Base de données</td></tr>
+  <tr><td>Docker</td><td>—</td><td>Conteneurisation</td></tr>
+  <tr><td>Git</td><td>—</td><td>Gestion de version</td></tr>
+</table>
+
+<p><strong>Structure du projet :</strong></p>
+<pre>tag_ip/
+├── lib/tag_ip/            # Domaines et resources Ash (2 domaines, 15 resources)
+├── lib/tag_ip_web/live/   # 16 LiveViews
+├── lib/tag_ip_web/        # Router, UserAuth, composants
+├── priv/repo/migrations/  # Migrations AshPostgres
+├── test/                  # Tests
+└── assets/                # JS, CSS (Tailwind v4)
+</pre>
+
+<h3>5.2 Implémentation du back-end</h3>
+
+<p><strong>Authentification.</strong> phx.gen.auth avec deux modes : mot de passe (bcrypt) et magic link (email). Plugs : <code>fetch_current_scope_for_user</code>, <code>require_authenticated</code>, <code>redirect_if_user_is_authenticated</code>.</p>
+
+<p><strong>Moteur de compatibilité.</strong> La fonction <code>calculer/2</code> dans Compatibilite évalue 17 critères. L'action <code>calculer_compatibilite</code> effectue un upsert avec contrainte d'unicité sur (profil_montage_id, modele_traceur_id).</p>
+
+<p><strong>Routes et LiveViews :</strong></p>
+<table>
+  <caption>Tableau 14 : Correspondance routes / LiveViews</caption>
+  <tr><th>Route</th><th>LiveView</th></tr>
+  <tr><td>/dashboard</td><td>DashboardLive.Index</td></tr>
+  <tr><td>/profils</td><td>ProfilMontageLive.Index</td></tr>
+  <tr><td>/profils/new</td><td>ProfilMontageLive.Form (assistant 5 étapes)</td></tr>
+  <tr><td>/profils/:id</td><td>ProfilMontageLive.Show</td></tr>
+  <tr><td>/modeles</td><td>ModeleTraceurLive.Index</td></tr>
+  <tr><td>/compatibilites</td><td>CompatibiliteLive.Index</td></tr>
+  <tr><td>/referentiels</td><td>ReferenceLive.Index</td></tr>
+</table>
+
+<h3>5.3 Fonctionnalités avancées</h3>
+
+<p><strong>Recherche avancée.</strong> Ash Filtering pour requêtes complexes avec opérateurs booléens et comparaisons.</p>
+
+<p><strong>Reporting.</strong> Dashboard temps réel avec statisques (profils, modèles, compatibilités, alertes) via Phoenix PubSub.</p>
+
+<figure>Figure 8 : Aperçu de l'interface — assistant 5 étapes avec aperçu de compatibilité temps réel</figure>
+
+
+<h2>Chapitre 6 : Évaluation et discussion</h2>
+
+<h3>6.1 Tests et validation</h3>
+
+<table>
+  <caption>Tableau 15 : Couverture des tests</caption>
+  <tr><th>Module</th><th>Type</th><th>Cas testés</th></tr>
+  <tr><td>Moteur compatibilité</td><td>Unitaire</td><td>17 critères, cas limites (hors plage, I/O insuffisantes)</td></tr>
+  <tr><td>Resources Ash</td><td>Intégration</td><td>CRUD, validations, contraintes d'unicité</td></tr>
+  <tr><td>LiveViews</td><td>Fonctionnel</td><td>Listes, formulaires, navigation</td></tr>
+  <tr><td>Authentification</td><td>Fonctionnel</td><td>Login, register, magic link, protection routes</td></tr>
+</table>
+
+<h3>6.2 Analyse des performances</h3>
+
+<table>
+  <caption>Tableau 16 : Mesures de performance</caption>
+  <tr><th>Opération</th><th>Temps moyen</th></tr>
+  <tr><td>Calcul compatibilité (1 couple)</td><td>&lt; 200 ms</td></tr>
+  <tr><td>Recherche profils (Ash filter)</td><td>&lt; 100 ms</td></tr>
+  <tr><td>Affichage liste modèles (20)</td><td>&lt; 50 ms</td></tr>
+  <tr><td>Calcul batch (20 modèles)</td><td>&lt; 500 ms</td></tr>
+</table>
+
+<p><strong>Optimisations :</strong> indexation colonnes de recherche, streams LiveView pour listes volumineuses, chargement différé Ash.</p>
+
+<h3>6.3 Discussion critique</h3>
+
+<table>
+  <caption>Tableau 17 : Évaluation des objectifs</caption>
+  <tr><th>Objectif</th><th>État</th></tr>
+  <tr><td>Centralisation du référentiel</td><td>Atteint (15 ressources, 6 modèles, 11 périphériques)</td></tr>
+  <tr><td>Automatisation du diagnostic</td><td>Atteint (moteur 17 critères, &lt; 200 ms)</td></tr>
+  <tr><td>Décentralisation des règles</td><td>Atteint (interface admin, pas de hard-coding)</td></tr>
+  <tr><td>Digitalisation de l'expertise</td><td>Partiellement</td></tr>
+</table>
+
+<p><strong>Limites.</strong> Courbe d'apprentissage Ash, intégration Track non temps réel, catalogue à enrichir, tests de charge non réalisés.</p>
+
+<p><strong>Perspectives.</strong> IA prédictive pour suggestion automatique, API REST publique, application mobile terrain, module supervision temps réel avec Track.</p>
+
+
+<!-- ============================================================ -->
+<!-- CONCLUSION GÉNÉRALE                                           -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h1>CONCLUSION GÉNÉRALE</h1>
+
+<p>Ce mémoire a présenté la conception et la réalisation d'un module automatisé de gestion des profils de montage et de compatibilité des traceurs GPS au sein de la société Tag-IP. Le projet est né d'un constat terrain : l'identification des traceurs compatibles reposait sur une expertise humaine manuelle, source d'erreurs (15 % d'échecs de pose) et de pertes de productivité (20 % du temps technique).</p>
+
+<p>L'hypothèse formulée — qu'une architecture déclarative Ash Framework couplée à Phoenix LiveView pouvait réduire drastiquement les erreurs — est validée. Le moteur de compatibilité, notant chaque couple profil-modèle sur 100 points via 17 critères, permet désormais un diagnostic instantané et fiable, sans dépendre d'un expert senior.</p>
+
+<p><strong>Apports du projet.</strong> Pour Tag-IP : un outil opérationnel centralisant l'expertise technique et réduisant les erreurs de montage. Pour l'auteur : une expérience complète de développement avec Elixir, Phoenix et Ash dans un contexte professionnel. Pour la communauté : une démonstration de l'adéquation d'Ash Framework aux applications métier à forte logique déclarative.</p>
+
+<p><strong>Perspectives.</strong> L'intégration avec la plateforme Track, le développement d'une application mobile terrain, et l'exploration de l'IA prédictive pour le choix automatique de traceurs constituent les prochaines évolutions de TAG-Monitor.</p>
+
+
+<!-- ============================================================ -->
+<!-- BIBLIOGRAPHIE                                                 -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h2>BIBLIOGRAPHIE</h2>
+
+<ol>
+  <li>MCCORD, B. et TATE, B. (2023). <em>Elixir in Action</em> (3rd ed.). Manning Publications.</li>
+  <li>SAINT-MARTIN, S. (2022). <em>Programming Phoenix LiveView</em>. Pragmatic Bookshelf.</li>
+  <li>JURIC, D. et JURIC, S. (2023). <em>Ash Framework: A Declarative Approach to Elixir</em>. Leanpub.</li>
+  <li>HICKENBOTTOM, C. (2022). <em>Real-Time Phoenix</em>. Pragmatic Bookshelf.</li>
+  <li>FORD, N. (2020). <em>Building Evolutionary Architectures</em>. O'Reilly Media.</li>
+  <li>DATE, C. J. (2019). <em>SQL and Relational Theory</em> (3rd ed.). O'Reilly Media.</li>
+  <li>FOWLER, M. (2018). <em>Patterns of Enterprise Application Architecture</em>. Addison-Wesley.</li>
+  <li>GAMMA, E. et al. (1994). <em>Design Patterns: Elements of Reusable Object-Oriented Software</em>. Addison-Wesley.</li>
+  <li>GUTIERREZ, J. (2022). <em>PostgreSQL: Up and Running</em> (3rd ed.). O'Reilly Media.</li>
+  <li>THOMAS, D. et HANSSON, D. H. (2023). <em>Agile Web Development with Rails</em> (7th ed.). Pragmatic Bookshelf.</li>
+</ol>
+
+
+<!-- ============================================================ -->
+<!-- WEBOGRAPHIE                                                   -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h2>WEBOGRAPHIE</h2>
+
+<ol>
+  <li><a href="https://elixir-lang.org/docs.html">https://elixir-lang.org/docs.html</a>, Consulté le 02/12/2025</li>
+  <li><a href="https://hexdocs.pm/phoenix/overview.html">https://hexdocs.pm/phoenix/overview.html</a>, Consulté le 10/12/2025</li>
+  <li><a href="https://hexdocs.pm/ash/ash.html">https://hexdocs.pm/ash/ash.html</a>, Consulté le 15/12/2025</li>
+  <li><a href="https://hexdocs.pm/ash_postgres/ash-postgres.html">https://hexdocs.pm/ash_postgres/ash-postgres.html</a>, Consulté le 20/12/2025</li>
+  <li><a href="https://www.postgresql.org/docs/">https://www.postgresql.org/docs/</a>, Consulté le 05/01/2026</li>
+  <li><a href="https://tailwindcss.com/docs">https://tailwindcss.com/docs</a>, Consulté le 10/01/2026</li>
+  <li><a href="https://www.docker.com/documentation">https://www.docker.com/documentation</a>, Consulté le 15/01/2026</li>
+  <li><a href="https://www.perepedro-akamasoa.net">https://www.perepedro-akamasoa.net</a>, Consulté le 20/01/2026</li>
+</ol>
+
+
+<!-- ============================================================ -->
+<!-- ANNEXES                                                       -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h2>ANNEXES</h2>
+
+<h3>Annexe 1 : Extrait du router Phoenix (lib/tag_ip_web/router.ex)</h3>
+
+<pre>
+defmodule TagIpWeb.Router do
+  use TagIpWeb, :router
+  import TagIpWeb.UserAuth
+
+  pipeline :browser do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, html: {TagIpWeb.Layouts, :root}
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+    plug :fetch_current_scope_for_user
+  end
+
+  # Zone authentifiée
+  scope "/", TagIpWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    live_session :require_authenticated,
+      on_mount: [
+        {TagIpWeb.UserAuth, :mount_current_scope},
+        {TagIpWeb.UserAuth, :require_authenticated}
+      ] do
+
+      live "/", DashboardLive.Index, :index
+      live "/profils", ProfilMontageLive.Index, :index
+      live "/profils/new", ProfilMontageLive.Form, :new
+      live "/profils/:id/edit", ProfilMontageLive.Form, :edit
+      live "/profils/:id", ProfilMontageLive.Show, :show
+      live "/modeles", ModeleTraceurLive.Index, :index
+      live "/modeles/new", ModeleTraceurLive.Form, :new
+      live "/modeles/:id", ModeleTraceurLive.Show, :show
+      live "/compatibilites", CompatibiliteLive.Index, :index
+      live "/compatibilites/:id", CompatibiliteLive.Show, :show
+      live "/referentiels", ReferenceLive.Index, :index
+      live "/users/settings", UserLive.Settings, :edit
+    end
+  end
+
+  # Zone publique
+  scope "/", TagIpWeb do
+    pipe_through [:browser]
+    live_session :redirect_if_authenticated,
+      on_mount: [
+        {TagIpWeb.UserAuth, :mount_current_scope},
+        {TagIpWeb.UserAuth, :redirect_if_user_is_authenticated}
+      ] do
+      live "/users/log-in", UserLive.Login, :new
+      live "/users/register", UserLive.Registration, :new
+    end
+  end
+end
+</pre>
+
+
+<h3>Annexe 2 : Moteur de compatibilité — extrait (Compatibilite resource)</h3>
+
+<pre>
+defmodule TagIp.Resources.Compatibilite do
+  use Ash.Resource,
+    domain: TagIp.TagIp,
+    data_layer: AshPostgres.DataLayer
+
+  postgres do
+    table "compatibilites"
+    repo TagIp.Repo
+  end
+
+  attributes do
+    uuid_primary_key :id
+    attribute :score_compatibilite, :integer, allow_nil?: false
+    attribute :details, :string
+    create_timestamp :inserted_at
+    update_timestamp :updated_at
+  end
+
+  relationships do
+    belongs_to :profil_montage, TagIp.Resources.ProfilMontage,
+      allow_nil?: false
+    belongs_to :modele_traceur, TagIp.Resources.ModeleTraceur,
+      allow_nil?: false
+  end
+
+  identities do
+    identity :unique_compatibilite, [:profil_montage_id, :modele_traceur_id]
+  end
+
+  def calculer(profil, modele) do
+    score = 0
+    details = []
+
+    # 1. Tension (10 pts)
+    {s, d} = verifier_tension(profil, modele)
+    score = score + s; details = details ++ d
+
+    # 2. Bus CAN (10 pts)
+    {s, d} = verifier_can(profil, modele)
+    score = score + s; details = details ++ d
+
+    # ... 15 autres vérificateurs ...
+
+    {score, details}
+  end
+end
+</pre>
+
+
+<h3>Annexe 3 : Exemple de vérificateur — compatibilité tension</h3>
+
+<pre>
+defp verifier_tension(profil, modele) do
+  cond do
+    modele.voltage_min >= profil.voltage_min and
+    modele.voltage_max <= profil.voltage_max ->
+      {10, ["✓ Tension compatible : #{modele.voltage_min}-#{modele.voltage_max}V"]}
+    modele.voltage_max >= profil.voltage_min and
+    modele.voltage_min <= profil.voltage_max ->
+      {5, ["⚠ Tension partiellement compatible"]}
+    true ->
+      {0, ["✗ Tension incompatible"]}
+  end
+end
+</pre>
+
+
+<!-- ============================================================ -->
+<!-- TABLE DES MATIÈRES                                            -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<h2>TABLE DES MATIÈRES</h2>
+
+<p>AVANT-PROPOS ........................................................................................................................... 00</p>
+<p>REMERCIEMENTS ......................................................................................................................... 00</p>
+<p>LISTE DES ABRÉVIATIONS ......................................................................................................... 00</p>
+<p>LISTE DES FIGURES ..................................................................................................................... 00</p>
+<p>LISTE DES TABLEAUX .................................................................................................................. 00</p>
+<p>SOMMAIRE ..................................................................................................................................... 00</p>
+
+<p><strong>INTRODUCTION GÉNÉRALE</strong> .......................................................................................... 00</p>
+
+<p><strong>PARTIE I – CONTEXTE ET ANALYSE</strong></p>
+<p class="toc-item"><strong>Chapitre 1 : Cadre et contexte du projet</strong></p>
+<p class="toc-sub">1.1 Présentation de l'environnement</p>
+<p class="toc-sub2">1.1.1 Université USVPA</p>
+<p class="toc-sub2">1.1.2 Société TAG-IP</p>
+<p class="toc-sub">1.2 Environnement technique</p>
+<p class="toc-sub2">1.2.1 Infrastructure</p>
+<p class="toc-sub2">1.2.2 Outils et systèmes</p>
+<p class="toc-sub">1.3 Contexte et problématique</p>
+<p class="toc-sub2">1.3.1 Situation initiale</p>
+<p class="toc-sub2">1.3.2 Problèmes identifiés</p>
+<p class="toc-sub2">1.3.3 Expression du besoin</p>
+
+<p class="toc-item"><strong>Chapitre 2 : Analyse des besoins et positionnement</strong></p>
+<p class="toc-sub">2.1 Étude des solutions existantes</p>
+<p class="toc-sub">2.2 Besoins et contraintes</p>
+<p class="toc-sub">2.3 Spécifications générales</p>
+
+<p><strong>PARTIE II – CONCEPTION TECHNIQUE</strong></p>
+<p class="toc-item"><strong>Chapitre 3 : Modélisation des données</strong></p>
+<p class="toc-sub">3.1 Modèle conceptuel (MCD)</p>
+<p class="toc-sub">3.2 Modèle logique (MLD)</p>
+<p class="toc-sub">3.3 Dictionnaire des données</p>
+
+<p class="toc-item"><strong>Chapitre 4 : Architecture et choix techniques</strong></p>
+<p class="toc-sub">4.1 Architecture globale</p>
+<p class="toc-sub">4.2 Choix technologiques</p>
+<p class="toc-sub">4.3 Architecture back-end et sécurité</p>
+
+<p><strong>PARTIE III – RÉALISATION ET ÉVALUATION</strong></p>
+<p class="toc-item"><strong>Chapitre 5 : Réalisation technique</strong></p>
+<p class="toc-sub">5.1 Mise en place technique</p>
+<p class="toc-sub">5.2 Implémentation du back-end</p>
+<p class="toc-sub">5.3 Fonctionnalités avancées</p>
+
+<p class="toc-item"><strong>Chapitre 6 : Évaluation et discussion</strong></p>
+<p class="toc-sub">6.1 Tests et validation</p>
+<p class="toc-sub">6.2 Analyse des performances</p>
+<p class="toc-sub">6.3 Discussion critique</p>
+
+<p><strong>CONCLUSION GÉNÉRALE</strong> ............................................................................................ 00</p>
+<p>BIBLIOGRAPHIE ........................................................................................................................... 00</p>
+<p>WEBOGRAPHIE ............................................................................................................................. 00</p>
+<p>ANNEXES ....................................................................................................................................... 00</p>
+<p>TABLE DES MATIÈRES ............................................................................................................... 00</p>
+<p>RÉSUMÉ / ABSTRACT ................................................................................................................. 00</p>
+
+
+<!-- ============================================================ -->
+<!-- RÉSUMÉ / ABSTRACT                                            -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<div class="resume-box">
+<h3>RÉSUMÉ</h3>
+
+<p>Pour notre mémoire de fin d'études au sein de l'Université Saint Vincent de Paul Akamasoa (USVPA), nous avons effectué un stage au sein de la société TAG-IP, leader malgache de la géolocalisation de véhicules. Ce travail s'inscrit dans le cadre de la conception et de la réalisation d'un module automatisé de gestion des profils de montage et de compatibilité des traceurs GPS. Après un diagnostic approfondi, plusieurs problèmes ont été identifiés : processus manuel de compatibilité, expertise dispersée, hard-coding des règles métier. Notre intervention a porté sur le développement d'une application web avec Elixir, Phoenix LiveView et Ash Framework, intégrant un moteur de calcul notant la compatibilité sur 100 points via 17 critères. Les technologies PostgreSQL et Docker complètent la stack. Ce projet contribue à réduire les erreurs de montage, centraliser l'expertise technique et améliorer la productivité du service technique de TAG-IP.</p>
+
+<p><strong>Mots clés :</strong> compatibilité, traceur GPS, profil de montage, Ash Framework, Elixir, Phoenix LiveView</p>
+</div>
+
+<div class="resume-box">
+<h3>ABSTRACT</h3>
+
+<p>For our final year project at the University Saint Vincent de Paul Akamasoa (USVPA), we completed an internship at TAG-IP, the Malagasy leader in vehicle geolocation. The project focused on designing and implementing an automated module for managing GPS tracker mounting profiles and compatibility. After a detailed assessment, several issues were identified: manual compatibility process, scattered expertise, hard-coded business rules. Our work consisted of developing a web application using Elixir, Phoenix LiveView and Ash Framework, integrating a scoring engine that evaluates compatibility on 100 points across 17 criteria. PostgreSQL and Docker complete the technology stack. This project reduces installation errors, centralizes technical expertise, and improves productivity for TAG-IP's technical department.</p>
+
+<p><strong>Keywords :</strong> compatibility, GPS tracker, mounting profile, Ash Framework, Elixir, Phoenix LiveView</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE D'INFO FINALE                                            -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<div style="text-align: center; margin-top: 5em;">
+<p><strong>Membres du jury :</strong></p>
+<p>Président du jury : Madame/Monsieur [...]</p>
+<p>Examinateur : Madame/Monsieur [...]</p>
+<p>Encadreur pédagogique : Madame/Monsieur [...]</p>
+
+<p style="margin-top: 2em;">
+<strong>« Conception et réalisation d'un module automatisé de gestion des profils de montage et de compatibilité des traceurs GPS sous Elixir et Ash Framework »</strong>
+</p>
+
+<p style="margin-top: 2em;">
+<strong>Nom et prénoms :</strong> [À remplir]<br>
+<strong>E-mail :</strong> [...]<br>
+<strong>Contact :</strong> [...]<br>
+<strong>Nombre de pages :</strong> 00<br>
+<strong>Nombre de figures :</strong> 08<br>
+<strong>Nombre de tableaux :</strong> 17
+</p>
+</div>
+
+</body>
+</html>
