@@ -111,7 +111,10 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
              |> put_flash(:info, "Profil « #{nom} » supprimé avec succès.")
              |> assign(:pending_delete_id, nil)
              |> assign(:pending_delete_label, nil)
-             |> assign(:profils, list_profils(socket.assigns.search, socket.assigns.page).results)}
+             |> assign(
+               :profils,
+               list_profils(socket.assigns.search, socket.assigns.page).results
+             )}
 
           {:error, reason} ->
             msg = "Erreur lors de la suppression du profil « #{nom} » : #{inspect(reason)}"
@@ -202,7 +205,10 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
             {:noreply,
              socket
              |> put_flash(:info, "Profil dupliqué avec succès.")
-             |> assign(:profils, list_profils(socket.assigns.search, socket.assigns.page).results)}
+             |> assign(
+               :profils,
+               list_profils(socket.assigns.search, socket.assigns.page).results
+             )}
 
           {:error, reason} ->
             {:noreply,

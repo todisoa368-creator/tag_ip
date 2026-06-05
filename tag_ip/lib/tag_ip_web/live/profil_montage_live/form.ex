@@ -7,13 +7,15 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   alias TagIp.Resources.Compatibilite
   alias TagIp.Resources.Capteur
   alias TagIp.Resources.TrackableType
+  alias TagIp.Resources.TypeVehicule
+
+  import Ash.Query, only: [load: 2]
 
   @steps [
     %{num: 1, title: "Identification", description: "Nom et description du profil"},
-    %{num: 2, title: "Configuration", description: "Asset, interfaces et entrées/sorties"},
-    %{num: 3, title: "Tension", description: "Seuils électriques"},
-    %{num: 4, title: "Équipements", description: "Capteurs et options"},
-    %{num: 5, title: "Compatibilités", description: "Modèles de traceurs compatibles"}
+    %{num: 2, title: "Configuration", description: "Type d'asset, tension, interfaces"},
+    %{num: 3, title: "Équipements", description: "Capteurs et options"},
+    %{num: 4, title: "Compatibilités", description: "Modèles de traceurs compatibles"}
   ]
 
   @impl true
@@ -25,11 +27,17 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
         {tt.label, tt.slug}
       end)
 
+    trackable_type_by_slug =
+      Enum.into(trackable_types, %{}, fn tt -> {tt.slug, tt} end)
+
+    type_vehicule_by_slug =
+      TypeVehicule.read!()
+      |> Enum.into(%{}, fn tv -> {tv.slug, tv} end)
+
     modeles =
-      Ash.read!(ModeleTraceur,
-        page: [limit: 50],
-        load: [:types_vehicule, :alimentations, :capteurs]
-      )
+      ModeleTraceur
+      |> load([:types_vehicule, :alimentations, :capteurs])
+      |> Ash.read!(page: [limit: 50])
 
     capteurs = Capteur.read!() |> Enum.sort_by(& &1.label)
     capteur_categories = capteurs |> Enum.map(& &1.category) |> Enum.uniq() |> Enum.sort()
@@ -45,7 +53,10 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
      |> assign(:compatibilities, [])
      |> assign(:capteurs, capteurs)
      |> assign(:capteur_categories, capteur_categories)
-     |> assign(:selected_capteur_ids, MapSet.new())}
+     |> assign(:selected_capteur_ids, MapSet.new())
+     |> assign(:trackable_type_by_slug, trackable_type_by_slug)
+     |> assign(:type_vehicule_by_slug, type_vehicule_by_slug)
+     |> assign(:previous_object_type, nil)}
   end
 
   @impl true
@@ -66,7 +77,14 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     total = socket.assigns.total_steps
 
     if step < total do
-      params = normalize_params(params)
+      params =
+        params
+        |> normalize_params()
+        |> maybe_autofill_voltage(
+          socket.assigns.trackable_type_by_slug,
+          socket.assigns.type_vehicule_by_slug,
+          socket.assigns.previous_object_type
+        )
 
       form =
         socket.assigns.form.source
@@ -90,7 +108,8 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
        |> assign(:step, step + 1)
        |> assign(:form, form)
        |> assign(:compatibilities, compatibilities)
-       |> assign(:voltage_compatible_count, voltage_compatible_count)}
+       |> assign(:voltage_compatible_count, voltage_compatible_count)
+       |> assign(:previous_object_type, params["object_type"])}
     else
       {:noreply, socket}
     end
@@ -112,7 +131,14 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     step = socket.assigns.step
 
     if step > 1 do
-      params = normalize_params(params)
+      params =
+        params
+        |> normalize_params()
+        |> maybe_autofill_voltage(
+          socket.assigns.trackable_type_by_slug,
+          socket.assigns.type_vehicule_by_slug,
+          socket.assigns.previous_object_type
+        )
 
       form =
         socket.assigns.form.source
@@ -136,7 +162,8 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
        |> assign(:step, step - 1)
        |> assign(:form, form)
        |> assign(:compatibilities, compatibilities)
-       |> assign(:voltage_compatible_count, voltage_compatible_count)}
+       |> assign(:voltage_compatible_count, voltage_compatible_count)
+       |> assign(:previous_object_type, params["object_type"])}
     else
       {:noreply, socket}
     end
@@ -154,7 +181,14 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
 
   @impl true
   def handle_event("validate", %{"profil_montage" => params}, socket) do
-    params = normalize_params(params)
+    params =
+      params
+      |> normalize_params()
+      |> maybe_autofill_voltage(
+        socket.assigns.trackable_type_by_slug,
+        socket.assigns.type_vehicule_by_slug,
+        socket.assigns.previous_object_type
+      )
 
     form =
       socket.assigns.form.source
@@ -177,7 +211,8 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
      socket
      |> assign(:form, form)
      |> assign(:compatibilities, compatibilities)
-     |> assign(:voltage_compatible_count, voltage_compatible_count)}
+     |> assign(:voltage_compatible_count, voltage_compatible_count)
+     |> assign(:previous_object_type, params["object_type"])}
   end
 
   @impl true
@@ -285,6 +320,7 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     |> assign(:compatibilities, compatibilities)
     |> assign(:voltage_compatible_count, voltage_compatible_count)
     |> assign(:selected_capteur_ids, source_capteur_ids)
+    |> assign(:previous_object_type, source.object_type)
   end
 
   defp apply_action(socket, :new, _params) do
@@ -298,6 +334,7 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     |> assign(:profil, nil)
     |> assign(:voltage_compatible_count, nil)
     |> assign(:compatibilities, [])
+    |> assign(:previous_object_type, nil)
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
@@ -346,6 +383,7 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     |> assign(:compatibilities, compatibilities)
     |> assign(:voltage_compatible_count, voltage_compatible_count)
     |> assign(:selected_capteur_ids, source_capteur_ids)
+    |> assign(:previous_object_type, profil.object_type)
   end
 
   defp compute_compatibilities(params, modeles, capteur_slugs \\ []) do
@@ -404,6 +442,46 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   end
 
   defp normalize_params(val), do: val
+
+  defp maybe_autofill_voltage(
+         params,
+         trackable_type_by_slug,
+         type_vehicule_by_slug,
+         previous_object_type
+       ) do
+    object_type = params["object_type"]
+
+    cond do
+      is_nil(object_type) or object_type == "" ->
+        params
+
+      object_type == previous_object_type ->
+        params
+
+      tt = trackable_type_by_slug[object_type] ->
+        fill_voltage(params, tt)
+
+      tv = type_vehicule_by_slug[object_type] ->
+        fill_voltage(params, tv)
+
+      true ->
+        params
+    end
+  end
+
+  defp fill_voltage(params, source) when not is_struct(source) do
+    params
+  end
+
+  defp fill_voltage(params, source) do
+    if source.voltage_min && source.voltage_max do
+      params
+      |> Map.put("voltage_min", source.voltage_min)
+      |> Map.put("voltage_max", source.voltage_max)
+    else
+      params
+    end
+  end
 
   defp sync_capteurs(profil_id, selected_ids) do
     existing =

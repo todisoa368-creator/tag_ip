@@ -53,11 +53,12 @@ defmodule TagIp.Resources.Compatibilite do
       filter(expr(id == ^arg(:id)))
     end
 
-    action :clear_all do
-      returns(:integer)
+    action :clear_all, :integer do
+      run(fn _input, _context ->
+        # On utilise le Repo pour supprimer toutes les entrées.
+        # delete_all retourne un tuple {nombre_supprimé, nil}
+        {count, _} = TagIp.Repo.delete_all(TagIp.Resources.Compatibilite)
 
-      run(fn _input, _ ->
-        {count, _} = TagIp.Repo.delete_all({"compatibilites", nil})
         {:ok, count}
       end)
     end
@@ -120,18 +121,18 @@ defmodule TagIp.Resources.Compatibilite do
 
     results = Enum.map(checks, fn check -> check.(profil, modele) end)
 
-    capteur_result =
+    captured_capteur_slugs =
       if capteur_slugs in [nil, []] do
-        profil_capteurs =
-          if is_list(profil.capteurs), do: Enum.map(profil.capteurs, & &1.slug), else: []
-
-        if profil_capteurs == [] do
-          {5, nil}
-        else
-          check_capteurs(profil, modele, profil_capteurs)
-        end
+        if is_list(profil.capteurs), do: Enum.map(profil.capteurs, & &1.slug), else: []
       else
-        check_capteurs(profil, modele, capteur_slugs)
+        capteur_slugs
+      end
+
+    capteur_result =
+      if captured_capteur_slugs == [] do
+        {0, nil}
+      else
+        check_capteurs(profil, modele, captured_capteur_slugs)
       end
 
     results = results ++ [capteur_result]
@@ -139,8 +140,16 @@ defmodule TagIp.Resources.Compatibilite do
     reasons =
       results |> Enum.map(&elem(&1, 1)) |> Enum.reject(&is_nil/1)
 
-    score = results |> Enum.map(&elem(&1, 0)) |> Enum.sum()
-    compatible = score >= 40
+    earned = results |> Enum.map(&elem(&1, 0)) |> Enum.sum()
+    max_possible = calculate_max_possible(profil, captured_capteur_slugs)
+
+    score = if max_possible > 0, do: min(100, round(earned / max_possible * 100)), else: 0
+
+    type_supported? =
+      is_nil(profil.object_type) or profil.object_type == "" or
+        profil.object_type in Enum.map(modele.types_vehicule || [], & &1.slug)
+
+    compatible = type_supported? and score >= 40
 
     {score, compatible, reasons}
   end
@@ -193,11 +202,41 @@ defmodule TagIp.Resources.Compatibilite do
   # ---------------------------------------------------------------------------
   # 1. Type de véhicule (8 pts)
   # ---------------------------------------------------------------------------
+  defp calculate_max_possible(profil, capteur_slugs) do
+    Enum.reduce(
+      [
+        if(profil.object_type not in [nil, ""], do: 8, else: 0),
+        if(profil.voltage_min not in [nil, ""] and profil.voltage_max not in [nil, ""],
+          do: 10,
+          else: 0
+        ),
+        if(profil.can_bus_requis, do: 8, else: 0),
+        if(profil.one_wire_requis, do: 5, else: 0),
+        if(profil.rs232_requis, do: 4, else: 0),
+        if(profil.rs485_requis, do: 4, else: 0),
+        if(profil.inputs_requis not in [nil, 0], do: 8, else: 0),
+        if(profil.analog_inputs_requis not in [nil, 0], do: 5, else: 0),
+        if(profil.outputs_requis not in [nil, 0], do: 5, else: 0),
+        if(profil.montage_exterieur, do: 10, else: 0),
+        if(profil.ultra_low_power_requis, do: 5, else: 0),
+        if(profil.accelerometre_requis, do: 5, else: 0),
+        # buffer memory (always active)
+        5,
+        if(profil.antenne_deportee, do: 4, else: 0),
+        if(profil.buzzer, do: 4, else: 0),
+        if(profil.fuel_probe_type not in [nil, "", "none"], do: 5, else: 0),
+        if(profil.geofence_enabled, do: 5, else: 0),
+        if(capteur_slugs not in [nil, []], do: 5, else: 0)
+      ],
+      &+/2
+    )
+  end
+
   defp check_type_vehicule(profil, modele) do
     types_compatibles = Enum.map(modele.types_vehicule || [], & &1.slug)
 
     if is_nil(profil.object_type) or profil.object_type == "" do
-      {8, nil}
+      {0, nil}
     else
       if profil.object_type in types_compatibles do
         {8, "✓ Type de véhicule '#{profil.object_type}' compatible"}
@@ -215,7 +254,7 @@ defmodule TagIp.Resources.Compatibilite do
   # ---------------------------------------------------------------------------
   defp check_alimentation(profil, modele) do
     if is_nil(profil.voltage_min) or is_nil(profil.voltage_max) do
-      {10, nil}
+      {0, nil}
     else
       # Check 1 : comparer directement en Volts
       direct_match? =
@@ -265,7 +304,7 @@ defmodule TagIp.Resources.Compatibilite do
         {0, "✗ Interface CAN-Bus non supportée par ce traceur"}
       end
     else
-      {8, nil}
+      {0, nil}
     end
   end
 
@@ -280,7 +319,7 @@ defmodule TagIp.Resources.Compatibilite do
         {0, "✗ Interface 1-Wire non supportée par ce traceur"}
       end
     else
-      {5, nil}
+      {0, nil}
     end
   end
 
@@ -295,7 +334,7 @@ defmodule TagIp.Resources.Compatibilite do
         {0, "✗ Interface RS232 non supportée par ce traceur"}
       end
     else
-      {4, nil}
+      {0, nil}
     end
   end
 
@@ -310,7 +349,7 @@ defmodule TagIp.Resources.Compatibilite do
         {0, "✗ Interface RS485 non supportée par ce traceur"}
       end
     else
-      {4, nil}
+      {0, nil}
     end
   end
 
@@ -323,7 +362,7 @@ defmodule TagIp.Resources.Compatibilite do
 
     cond do
       is_nil(requis) or requis == 0 ->
-        {8, nil}
+        {0, nil}
 
       is_nil(dispo) ->
         {0, "✗ Nombre d'entrées numériques requis: #{requis}, mais le modèle ne les déclare pas"}
@@ -345,7 +384,7 @@ defmodule TagIp.Resources.Compatibilite do
 
     cond do
       is_nil(requis) or requis == 0 ->
-        {5, nil}
+        {0, nil}
 
       is_nil(dispo) ->
         {0, "✗ Nombre d'entrées analogiques requis: #{requis}, mais le modèle ne les déclare pas"}
@@ -367,7 +406,7 @@ defmodule TagIp.Resources.Compatibilite do
 
     cond do
       is_nil(requis) or requis == 0 ->
-        {5, nil}
+        {0, nil}
 
       is_nil(dispo) ->
         {0, "✗ Nombre de sorties requis: #{requis}, mais le modèle ne les déclare pas"}
@@ -392,7 +431,7 @@ defmodule TagIp.Resources.Compatibilite do
          "✗ Indice de protection insuffisant: #{modele.ip_rating || "non spécifié"} requis: IP67 pour montage extérieur"}
       end
     else
-      {10, nil}
+      {0, nil}
     end
   end
 
@@ -407,7 +446,7 @@ defmodule TagIp.Resources.Compatibilite do
         {0, "✗ Mode Ultra-Low Power non supporté par ce traceur"}
       end
     else
-      {5, nil}
+      {0, nil}
     end
   end
 
@@ -422,7 +461,7 @@ defmodule TagIp.Resources.Compatibilite do
         {0, "✗ Accéléromètre 3 axes non supporté par ce traceur"}
       end
     else
-      {5, nil}
+      {0, nil}
     end
   end
 
@@ -444,7 +483,7 @@ defmodule TagIp.Resources.Compatibilite do
         {0, "✗ Antennes externes non supportées par ce traceur"}
       end
     else
-      {4, nil}
+      {0, nil}
     end
   end
 
@@ -461,7 +500,7 @@ defmodule TagIp.Resources.Compatibilite do
         {0, "✗ Buzzer non supporté"}
       end
     else
-      {4, nil}
+      {0, nil}
     end
   end
 
@@ -473,7 +512,7 @@ defmodule TagIp.Resources.Compatibilite do
 
     if is_nil(profil.fuel_probe_type) or profil.fuel_probe_type == "" or
          profil.fuel_probe_type == "none" do
-      {5, nil}
+      {0, nil}
     else
       probe_key = "fuel_probe_#{profil.fuel_probe_type}"
       capteurs_str = if capteurs == [], do: "aucun", else: Enum.join(capteurs, ", ")
@@ -500,7 +539,7 @@ defmodule TagIp.Resources.Compatibilite do
         {0, "✗ Géofencing non supporté"}
       end
     else
-      {5, nil}
+      {0, nil}
     end
   end
 
@@ -519,7 +558,7 @@ defmodule TagIp.Resources.Compatibilite do
     end
   end
 
-  defp check_capteurs(_profil, _modele, []), do: {5, nil}
+  defp check_capteurs(_profil, _modele, []), do: {0, nil}
 
   # ---------------------------------------------------------------------------
   # Helpers

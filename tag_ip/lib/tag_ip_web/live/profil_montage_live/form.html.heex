@@ -194,6 +194,77 @@
 
             <div class="border-t border-blue-200 pt-6 mt-6">
               <p class="text-sm font-medium text-gray-700 mb-4">
+                Seuils de tension (pré-remplis selon le type d'objet)
+              </p>
+              <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 text-sm text-amber-800 flex items-start gap-3">
+                <.icon
+                  name="hero-exclamation-triangle"
+                  class="w-5 h-5 mt-0.5 shrink-0 text-amber-500"
+                />
+                <span>
+                  La tension minimum doit être <strong>strictement inférieure</strong>
+                  à la tension maximum. Ces valeurs sont automatiquement suggérées
+                  d'après le type d'objet sélectionné.
+                </span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <.input
+                  field={@form[:voltage_min]}
+                  type="number"
+                  label="Tension Minimum (V)"
+                  placeholder="ex: 10.8"
+                />
+                <.input
+                  field={@form[:voltage_max]}
+                  type="number"
+                  label="Tension Maximum (V)"
+                  placeholder="ex: 32"
+                />
+              </div>
+
+              <%= unless is_nil(@voltage_compatible_count) do %>
+                <div class={[
+                  "p-4 rounded-lg border flex items-start gap-3 transition-all duration-300",
+                  if(@voltage_compatible_count == 0,
+                    do: "bg-red-50 border-red-200",
+                    else: "bg-emerald-50 border-emerald-200"
+                  )
+                ]}>
+                  <.icon
+                    name={
+                      if(@voltage_compatible_count == 0,
+                        do: "hero-exclamation-triangle",
+                        else: "hero-check-circle"
+                      )
+                    }
+                    class={[
+                      "w-5 h-5 mt-0.5 shrink-0",
+                      if(@voltage_compatible_count == 0,
+                        do: "text-red-500",
+                        else: "text-emerald-500"
+                      )
+                    ]}
+                  />
+                  <div>
+                    <%= if @voltage_compatible_count == 0 do %>
+                      <p class="text-sm font-semibold text-red-800">
+                        Aucun modèle compatible avec cette plage de tension
+                      </p>
+                      <p class="mt-1 text-xs text-red-600">
+                        Ajustez les valeurs — aucun traceur de votre catalogue ne supporte cette plage.
+                      </p>
+                    <% else %>
+                      <p class="text-sm font-semibold text-emerald-800">
+                        {@voltage_compatible_count} modèle(s) compatible(s) avec cette tension
+                      </p>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="border-t border-blue-200 pt-6 mt-6">
+              <p class="text-sm font-medium text-gray-700 mb-4">
                 Interfaces de communication requises
               </p>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -251,94 +322,6 @@
         </div>
 
         <div :if={@step == 3}>
-          <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-6">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
-                3
-              </div>
-              <div>
-                <h2 class="text-lg font-semibold text-gray-900">Seuils de tension</h2>
-                <p class="text-sm text-gray-500">
-                  Définissez les seuils électriques en Volts (V)
-                </p>
-              </div>
-            </div>
-            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-sm text-amber-800 flex items-start gap-3">
-              <.icon
-                name="hero-exclamation-triangle"
-                class="w-5 h-5 mt-0.5 shrink-0 text-amber-500"
-              />
-              <span>
-                La tension minimum doit être <strong>strictement inférieure</strong>
-                à la tension maximum.
-                Exemple typique : 10800 mV (10.8 V) — 32000 mV (32 V).
-              </span>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <.input
-                field={@form[:voltage_min]}
-                type="number"
-                label="Tension Minimum (mV)"
-                placeholder="ex: 10800"
-              />
-              <.input
-                field={@form[:voltage_max]}
-                type="number"
-                label="Tension Maximum (mV)"
-                placeholder="ex: 32000"
-              />
-            </div>
-
-            <%!-- Avertissement intelligent : compatibilité tension en direct --%>
-            <%= unless is_nil(@voltage_compatible_count) do %>
-              <div class={[
-                "mt-4 p-4 rounded-lg border flex items-start gap-3 transition-all duration-300",
-                if(@voltage_compatible_count == 0,
-                  do: "bg-red-50 border-red-200",
-                  else: "bg-emerald-50 border-emerald-200"
-                )
-              ]}>
-                <.icon
-                  name={
-                    if(@voltage_compatible_count == 0,
-                      do: "hero-exclamation-triangle",
-                      else: "hero-check-circle"
-                    )
-                  }
-                  class={[
-                    "w-5 h-5 mt-0.5 shrink-0",
-                    if(@voltage_compatible_count == 0,
-                      do: "text-red-500",
-                      else: "text-emerald-500"
-                    )
-                  ]}
-                />
-                <div>
-                  <%= if @voltage_compatible_count == 0 do %>
-                    <p class="text-sm font-semibold text-red-800">
-                      Aucun modèle compatible avec cette plage de tension
-                    </p>
-                    <p class="mt-1 text-xs text-red-600">
-                      Ajustez les valeurs — aucun traceur de votre catalogue ne supporte {round(
-                        parse_float(@form[:voltage_min].value) / 1000
-                      )}V – {round(parse_float(@form[:voltage_max].value) / 1000)}V.
-                      Consultez la page des modèles pour les plages disponibles.
-                    </p>
-                  <% else %>
-                    <p class="text-sm font-semibold text-emerald-800">
-                      {@voltage_compatible_count} modèle(s) compatible(s) détecté(s)
-                    </p>
-                    <p class="mt-1 text-xs text-emerald-600">
-                      La plage de tension saisie est supportée par {@voltage_compatible_count} traceur(s) du catalogue.
-                    </p>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-          </div>
-        </div>
-
-        <div :if={@step == 4}>
           <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-6">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
@@ -528,7 +511,7 @@
           </div>
         </div>
 
-        <div :if={@step == 5}>
+        <div :if={@step == 4}>
           <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-6">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">

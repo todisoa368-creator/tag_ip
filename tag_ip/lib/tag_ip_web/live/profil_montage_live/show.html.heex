@@ -28,32 +28,32 @@
           </div>
 
           <div class="mt-8 grid gap-4 sm:grid-cols-3">
-            <div class="rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
-              <dt class="text-xs uppercase tracking-[0.2em] text-slate-400">Compatibilités</dt>
+            <div class="min-w-0 rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-400">Compati-bilités</dt>
               <dd class="mt-2 text-lg font-semibold text-white">{Enum.count(@compatibilites)}</dd>
             </div>
-            <div class="rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
+            <div class="min-w-0 rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
               <dt class="text-xs uppercase tracking-[0.2em] text-slate-400">Créé le</dt>
-              <dd class="mt-2 text-base font-medium text-slate-200">
+              <dd class="mt-2 break-words text-sm font-medium text-slate-200">
                 {format_datetime(@profil.inserted_at)}
               </dd>
             </div>
-            <div class="rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
+            <div class="min-w-0 rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
               <dt class="text-xs uppercase tracking-[0.2em] text-slate-400">Modifié le</dt>
-              <dd class="mt-2 text-base font-medium text-slate-200">
+              <dd class="mt-2 break-words text-sm font-medium text-slate-200">
                 {format_datetime(@profil.updated_at)}
               </dd>
             </div>
           </div>
 
           <div class="mt-8 grid gap-4 sm:grid-cols-2">
-            <div class="rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
+            <div class="min-w-0 rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
               <p class="text-sm text-slate-400">Buzzer</p>
               <p class="mt-3 text-lg font-semibold text-white">
                 {if @profil.buzzer, do: "Oui", else: "Non"}
               </p>
             </div>
-            <div class="rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
+            <div class="min-w-0 rounded-3xl bg-slate-900/80 p-5 ring-1 ring-slate-200/10">
               <p class="text-sm text-slate-400">Geofencing</p>
               <p class="mt-3 text-lg font-semibold text-white">
                 {if @profil.geofence_enabled, do: "Oui", else: "Non"}
@@ -122,7 +122,7 @@
             <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
               <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Tension min/max</dt>
               <dd class="mt-2 text-sm font-semibold text-slate-900">
-                {@profil.voltage_min} / {@profil.voltage_max} mV
+                {@profil.voltage_min} / {@profil.voltage_max} V
               </dd>
             </div>
             <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">

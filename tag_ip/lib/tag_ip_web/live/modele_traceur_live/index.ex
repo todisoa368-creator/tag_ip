@@ -104,7 +104,10 @@ defmodule TagIpWeb.ModeleTraceurLive.Index do
              |> put_flash(:info, "Modèle « #{nom} » supprimé avec succès.")
              |> assign(:pending_delete_id, nil)
              |> assign(:pending_delete_label, nil)
-             |> assign(:modeles, list_modeles(socket.assigns.search, socket.assigns.page).results)}
+             |> assign(
+               :modeles,
+               list_modeles(socket.assigns.search, socket.assigns.page).results
+             )}
 
           _ ->
             {:noreply,
@@ -182,7 +185,10 @@ defmodule TagIpWeb.ModeleTraceurLive.Index do
             {:noreply,
              socket
              |> put_flash(:info, "Modèle dupliqué")
-             |> assign(:modeles, list_modeles(socket.assigns.search, socket.assigns.page).results)}
+             |> assign(
+               :modeles,
+               list_modeles(socket.assigns.search, socket.assigns.page).results
+             )}
 
           {:error, _} ->
             {:noreply, put_flash(socket, :error, "Erreur lors de la duplication")}

@@ -30,7 +30,15 @@ defmodule TagIp.Resources.ModeleTraceurCapteur do
   end
 
   actions do
-    defaults([:read, :destroy, :update, :create])
+    defaults([:read, :destroy, :update])
+
+    create :create do
+      primary?(true)
+      upsert?(true)
+      upsert_identity(:unique_modele_capteur)
+
+      accept([:modele_traceur_id, :capteur_id])
+    end
   end
 
   code_interface do

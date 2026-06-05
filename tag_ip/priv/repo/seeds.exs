@@ -86,7 +86,9 @@ case Repo.get_by(User, email: admin_email) do
       })
 
     user
-    |> Ecto.Changeset.change(%{confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)})
+    |> Ecto.Changeset.change(%{
+      confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
+    })
     |> Repo.update!()
 
     IO.puts("Admin créé avec succès.")
@@ -278,6 +280,24 @@ types_vehicule_data = [
     voltage_max: 36,
     inputs_requis: 2,
     outputs_requis: 0
+  },
+  %{
+    slug: "asset",
+    label: "Actif générique",
+    description: "Actif équipé d'un traceur (conteneur, outillage, équipement)",
+    voltage_min: 3.7,
+    voltage_max: 12,
+    inputs_requis: 0,
+    outputs_requis: 0
+  },
+  %{
+    slug: "padlock",
+    label: "Cadenas connecté",
+    description: "Cadenas intelligent connecté (NFC, Bluetooth, GSM)",
+    voltage_min: 3.7,
+    voltage_max: 5,
+    inputs_requis: 0,
+    outputs_requis: 1
   },
   %{
     slug: "construction_machine",
@@ -559,6 +579,23 @@ if File.exists?(types_path) do
     end
   end)
 end
+
+IO.puts("Mise à jour des seuils de tension pour les types d'objets...")
+
+voltage_by_slug =
+  Enum.into(types_vehicule_data, %{}, fn tv ->
+    {tv.slug, %{voltage_min: tv.voltage_min, voltage_max: tv.voltage_max}}
+  end)
+
+TrackableType.read!()
+|> Enum.each(fn tt ->
+  if voltage_data = voltage_by_slug[tt.slug] do
+    TrackableType.create!(
+      Map.merge(%{slug: tt.slug, label: tt.label, description: tt.description}, voltage_data),
+      action: :create
+    )
+  end
+end)
 
 # =========================================================
 # 5. Port Types

@@ -59,10 +59,11 @@ defmodule TagIpWeb.DashboardLive.Index do
             </span>
           </div>
           <h1 class="text-3xl sm:text-4xl font-bold text-white">
-            Bienvenue sur TAG-Gestion de Profils
+            Bienvenue sur la plateforme de gestion des profils de montage
           </h1>
           <p class="mt-3 text-blue-100 text-lg max-w-2xl">
-            Interface de supervision des profils de montage et équipements Tag-IP.
+            Gérez les profils de montage et consultez les compatibilités
+            entre les modèles de traceurs GPS.
           </p>
           <div class="mt-6 flex flex-wrap gap-3">
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 text-white text-sm font-medium backdrop-blur-sm">
@@ -217,16 +218,17 @@ defmodule TagIpWeb.DashboardLive.Index do
 
       <%!-- Carte d'information système --%>
       <div class="bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200 p-6">
-        <div class="flex items-start gap-4">
-          <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+        <div>
+          <div class="flex items-center gap-2">
             <.icon name="hero-information-circle" class="size-5 text-blue-600" />
+            <h3 class="font-semibold text-gray-900">
+              À propos du système
+            </h3>
           </div>
-          <div>
-            <h3 class="font-semibold text-gray-900">À propos de TAG-Gestion de Profils</h3>
-            <p class="mt-1 text-sm text-gray-600 leading-relaxed">
-              Projet de gestion des profils de montage pour traceurs GPS. Utilisez le menu supérieur ou les accès rapides ci-dessus pour gérer les profils, modèles de traceurs, compatibilités et référentiels.
-            </p>
-          </div>
+
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed">
+            Cette plateforme permet de gérer les profils de montage, consulter le catalogue des modèles de traceurs GPS et visualiser les compatibilités calculées automatiquement entre les profils et les équipements.
+          </p>
         </div>
       </div>
     </div>

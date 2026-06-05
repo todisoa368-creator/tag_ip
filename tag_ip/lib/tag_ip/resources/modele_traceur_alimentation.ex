@@ -30,7 +30,15 @@ defmodule TagIp.Resources.ModeleTraceurAlimentation do
   end
 
   actions do
-    defaults([:read, :destroy, :update, :create])
+    defaults([:read, :destroy, :update])
+
+    create :create do
+      primary?(true)
+      upsert?(true)
+      upsert_identity(:unique_modele_alimentation)
+
+      accept([:modele_traceur_id, :alimentation_id])
+    end
   end
 
   code_interface do

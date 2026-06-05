@@ -20,14 +20,23 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
 
   @impl true
   def handle_params(%{"id" => id}, _url, socket) do
-    profil = Ash.get!(TagIp.Resources.ProfilMontage, id) |> Ash.load!(:capteurs)
-    compatibilites = list_compatibilites(id)
+    case Ash.get(TagIp.Resources.ProfilMontage, id) do
+      {:ok, profil} ->
+        profil = Ash.load!(profil, :capteurs)
+        compatibilites = list_compatibilites(id)
 
-    {:noreply,
-     socket
-     |> assign(:page_title, "Profil: #{profil.name}")
-     |> assign(:profil, profil)
-     |> assign(:compatibilites, compatibilites)}
+        {:noreply,
+         socket
+         |> assign(:page_title, "Profil: #{profil.name}")
+         |> assign(:profil, profil)
+         |> assign(:compatibilites, compatibilites)}
+
+      {:error, _reason} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Profil introuvable.")
+         |> push_navigate(to: ~p"/profils")}
+    end
   end
 
   defp list_compatibilites(profil_id) do

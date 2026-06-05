@@ -29,6 +29,14 @@ defmodule TagIp.Resources.TrackableType do
       public?(true)
     end
 
+    attribute :voltage_min, :float do
+      public?(true)
+    end
+
+    attribute :voltage_max, :float do
+      public?(true)
+    end
+
     timestamps()
   end
 
@@ -41,7 +49,9 @@ defmodule TagIp.Resources.TrackableType do
       accept([
         :slug,
         :label,
-        :description
+        :description,
+        :voltage_min,
+        :voltage_max
       ])
 
       upsert?(true)

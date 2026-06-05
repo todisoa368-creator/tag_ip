@@ -7,12 +7,20 @@
       </p>
     </div>
 
-    <.link
-      navigate={~p"/profils/new"}
-      class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md transition-all duration-200"
-    >
-      + Nouveau Profil
-    </.link>
+    <div class="flex items-center gap-3">
+      <.link
+        navigate={~p"/export/profils.csv"}
+        class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm hover:shadow-md transition-all duration-200"
+      >
+        <.icon name="hero-arrow-down-tray" class="size-4" /> CSV
+      </.link>
+      <.link
+        navigate={~p"/profils/new"}
+        class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md transition-all duration-200"
+      >
+        + Nouveau Profil
+      </.link>
+    </div>
   </div>
 
   <.search_input value={@search} placeholder="Rechercher par nom..." />

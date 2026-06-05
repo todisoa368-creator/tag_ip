@@ -69,14 +69,6 @@
               class="flex-1 max-w-xs"
               input_class="w-full md:w-full"
             />
-            <%= if not Enum.empty?(@compatibilites) do %>
-              <button
-                phx-click="clear_all"
-                class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg border border-red-300 text-red-700 hover:bg-red-50 transition-colors"
-              >
-                <.icon name="hero-trash" class="size-4" /> Tout effacer
-              </button>
-            <% end %>
           </div>
         </div>
 

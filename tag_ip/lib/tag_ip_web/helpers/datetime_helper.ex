@@ -24,7 +24,7 @@ defmodule TagIpWeb.Helpers.DatetimeHelper do
   def format_datetime(%DateTime{} = datetime) do
     datetime
     |> DateTime.shift_zone!(@timezone, Tz.TimeZoneDatabase)
-    |> Calendar.strftime("%d/%m/%Y %H:%M")
+    |> Calendar.strftime("%d/%m/%Y à %H:%M")
   end
 
   def format_datetime(%NaiveDateTime{} = naive) do

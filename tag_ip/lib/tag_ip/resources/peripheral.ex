@@ -8,6 +8,10 @@ defmodule TagIp.Resources.Peripheral do
     repo(TagIp.Repo)
   end
 
+  identities do
+    identity(:unique_name, [:name])
+  end
+
   attributes do
     uuid_primary_key(:id)
 
@@ -36,6 +40,8 @@ defmodule TagIp.Resources.Peripheral do
     create :create do
       primary?(true)
       accept([:name, :description, :port_type_id])
+      upsert?(true)
+      upsert_identity(:unique_name)
     end
   end
 

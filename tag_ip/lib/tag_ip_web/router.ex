@@ -20,7 +20,7 @@ defmodule TagIpWeb.Router do
   scope "/", TagIpWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    live_session :require_authenticated,
+    live_session :require_authenticated_user,
       on_mount: [
         {TagIpWeb.UserAuth, :mount_current_scope},
         {TagIpWeb.UserAuth, :require_authenticated}
@@ -29,33 +29,36 @@ defmodule TagIpWeb.Router do
       live "/", DashboardLive.Index, :index
       live "/dashboard", DashboardLive.Index, :index
 
-      # Profils
-      live "/profils", ProfilMontageLive.Index, :index
-      live "/profils/new", ProfilMontageLive.Form, :new
-      live "/profils/:id/edit", ProfilMontageLive.Form, :edit
-      live "/profils/:id", ProfilMontageLive.Show, :show
-
-      # Modèles
-      live "/modeles", ModeleTraceurLive.Index, :index
-      live "/modeles/new", ModeleTraceurLive.Form, :new
-      live "/modeles/:id/edit", ModeleTraceurLive.Form, :edit
-      live "/modeles/:id", ModeleTraceurLive.Show, :show
-
-      # Référentiels
-      live "/referentiels", ReferenceLive.Index, :index
-
-      # Compatibilités
-      live "/compatibilites", CompatibiliteLive.Index, :index
-      live "/compatibilites/new", CompatibiliteLive.Index, :new
-      live "/compatibilites/:id", CompatibiliteLive.Show, :show
-
       # Settings
       live "/users/settings", UserLive.Settings, :edit
 
       live "/users/settings/confirm-email/:token",
            UserLive.Settings,
            :confirm_email
+
+      # Profils
+      live "/profils", ProfilMontageLive.Index, :index
+      live "/profils/new", ProfilMontageLive.Form, :new
+      live "/profils/:id", ProfilMontageLive.Show, :show
+      live "/profils/:id/edit", ProfilMontageLive.Form, :edit
+
+      # Modèles
+      live "/modeles", ModeleTraceurLive.Index, :index
+      live "/modeles/new", ModeleTraceurLive.Form, :new
+      live "/modeles/:id", ModeleTraceurLive.Show, :show
+      live "/modeles/:id/edit", ModeleTraceurLive.Form, :edit
+
+      # Compatibilités
+      live "/compatibilites", CompatibiliteLive.Index, :index
+      live "/compatibilites/new", CompatibiliteLive.Index, :new
+      live "/compatibilites/:id", CompatibiliteLive.Show, :show
+
+      # Référentiels
+      live "/referentiels", ReferenceLive.Index, :index
     end
+
+    get "/export/modeles.csv", ExportController, :modeles
+    get "/export/profils.csv", ExportController, :profils
 
     post "/users/update-password",
          UserSessionController,

@@ -30,7 +30,15 @@ defmodule TagIp.Resources.ModeleTraceurTypeVehicule do
   end
 
   actions do
-    defaults([:read, :destroy, :update, :create])
+    defaults([:read, :destroy, :update])
+
+    create :create do
+      primary?(true)
+      upsert?(true)
+      upsert_identity(:unique_modele_type)
+
+      accept([:modele_traceur_id, :type_vehicule_id])
+    end
   end
 
   code_interface do

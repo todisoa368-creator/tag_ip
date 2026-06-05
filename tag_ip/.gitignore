@@ -33,5 +33,9 @@ tag_ip-*.tar
 
 # In case you use Node.js/npm, you want to ignore these.
 npm-debug.log
+*.log
 /assets/node_modules/
+
+# OS files
+.DS_Store
 
