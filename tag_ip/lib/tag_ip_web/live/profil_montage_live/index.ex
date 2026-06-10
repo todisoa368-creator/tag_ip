@@ -157,6 +157,7 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
           one_wire_requis: source.one_wire_requis,
           rs232_requis: source.rs232_requis,
           rs485_requis: source.rs485_requis,
+          bluetooth_ble_requis: source.bluetooth_ble_requis,
           inputs_requis: source.inputs_requis,
           analog_inputs_requis: source.analog_inputs_requis,
           outputs_requis: source.outputs_requis,

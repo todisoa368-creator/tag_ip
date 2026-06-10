@@ -36,6 +36,20 @@ defmodule TagIp.Resources.Capteur do
     timestamps()
   end
 
+  relationships do
+    many_to_many :modeles_traceur, TagIp.Resources.ModeleTraceur do
+      through(TagIp.Resources.ModeleTraceurCapteur)
+      source_attribute_on_join_resource(:capteur_id)
+      destination_attribute_on_join_resource(:modele_traceur_id)
+    end
+
+    many_to_many :profils_montage, TagIp.Resources.ProfilMontage do
+      through(TagIp.Resources.ProfilMontageCapteur)
+      source_attribute_on_join_resource(:capteur_id)
+      destination_attribute_on_join_resource(:profil_montage_id)
+    end
+  end
+
   actions do
     defaults([:read, :destroy, :update])
 

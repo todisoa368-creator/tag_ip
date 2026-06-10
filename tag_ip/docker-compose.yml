@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tag_ip_dev
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    command: sh -c "mix ecto.create && mix ecto.migrate && MIX_ENV=dev mix phx.server"
+    ports:
+      - "4000:4000"
+    environment:
+      MIX_ENV: dev
+      DATABASE_URL: "ecto://postgres:postgres@db:5432/tag_ip_dev"
+    depends_on:
+      - db
+    volumes:
+      - ./:/app
+      - _build:/app/_build
+      - deps:/app/deps
+
+volumes:
+  db_data:
+  _build:
+  deps:

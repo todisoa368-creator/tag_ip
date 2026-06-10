@@ -14,7 +14,7 @@ defmodule TagIpWeb.Router do
   end
 
   # =========================================================
-  # ZONE SÉCURISÉE
+  # ZONE SÉCURISÉE — TOUS UTILISATEURS AUTHENTIFIÉS
   # =========================================================
 
   scope "/", TagIpWeb do
@@ -29,20 +29,41 @@ defmodule TagIpWeb.Router do
       live "/", DashboardLive.Index, :index
       live "/dashboard", DashboardLive.Index, :index
 
+      # Comparaison technique
+      live "/comparaison", ComparaisonLive.Index, :index
+      live "/comparaisons/enregistrees", ComparaisonLive.Admin, :index
+
       # Settings
       live "/users/settings", UserLive.Settings, :edit
-
       live "/users/settings/confirm-email/:token",
            UserLive.Settings,
            :confirm_email
 
-      # Profils
+      # Profils de montage
       live "/profils", ProfilMontageLive.Index, :index
       live "/profils/new", ProfilMontageLive.Form, :new
       live "/profils/:id", ProfilMontageLive.Show, :show
       live "/profils/:id/edit", ProfilMontageLive.Form, :edit
+    end
 
-      # Modèles
+    get "/export/profils.csv", ExportController, :profils
+    post "/users/update-password", UserSessionController, :update_password
+  end
+
+  # =========================================================
+  # ZONE ADMIN — RÉSERVÉ AUX ADMINISTRATEURS
+  # =========================================================
+
+  scope "/", TagIpWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    live_session :require_admin_user,
+      on_mount: [
+        {TagIpWeb.UserAuth, :mount_current_scope},
+        {TagIpWeb.UserAuth, :require_authenticated},
+        {TagIpWeb.UserAuth, :require_admin}
+      ] do
+      # Modèles de traceurs
       live "/modeles", ModeleTraceurLive.Index, :index
       live "/modeles/new", ModeleTraceurLive.Form, :new
       live "/modeles/:id", ModeleTraceurLive.Show, :show
@@ -58,11 +79,6 @@ defmodule TagIpWeb.Router do
     end
 
     get "/export/modeles.csv", ExportController, :modeles
-    get "/export/profils.csv", ExportController, :profils
-
-    post "/users/update-password",
-         UserSessionController,
-         :update_password
   end
 
   # =========================================================

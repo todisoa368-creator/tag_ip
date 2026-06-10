@@ -111,18 +111,23 @@
           </div>
 
           <dl class="mt-8 grid gap-5 sm:grid-cols-2">
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60 sm:col-span-2">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Modèle traceur</dt>
+              <dd class="mt-2 text-sm font-semibold text-slate-900">
+                <%= if @profil.modele_traceur do %>
+                  {supplier_label(@profil.modele_traceur.brand)} — {@profil.modele_traceur.nom}
+                  <span class="text-slate-500">({@profil.modele_traceur.reference})</span>
+                <% else %>
+                  <span class="text-slate-500">Non spécifié</span>
+                <% end %>
+              </dd>
+            </div>
             <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
               <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">
                 Intervalle de rapport
               </dt>
               <dd class="mt-2 text-sm font-semibold text-slate-900">
                 {@profil.reporting_interval || "Non défini"}
-              </dd>
-            </div>
-            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
-              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Tension min/max</dt>
-              <dd class="mt-2 text-sm font-semibold text-slate-900">
-                {@profil.voltage_min} / {@profil.voltage_max} V
               </dd>
             </div>
             <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
@@ -151,6 +156,46 @@
                   </div>
                 <% else %>
                   <span class="text-sm text-slate-500">Aucun capteur spécifique requis</span>
+                <% end %>
+              </dd>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60 sm:col-span-2">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">
+                Périphériques requis
+              </dt>
+              <dd class="mt-2">
+                <%= if @profil.peripherals && @profil.peripherals != [] do %>
+                  <div class="flex flex-wrap gap-2">
+                    <span
+                      :for={peripheral <- @profil.peripherals}
+                      class="inline-flex items-center rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-800"
+                    >
+                      {peripheral.name}
+                    </span>
+                  </div>
+                <% else %>
+                  <span class="text-sm text-slate-500">
+                    Aucun périphérique spécifique requis
+                  </span>
+                <% end %>
+              </dd>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60 sm:col-span-2">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">
+                Fonctionnalités sélectionnées
+              </dt>
+              <dd class="mt-2">
+                <%= if @profil.feature_slugs && @profil.feature_slugs != [] do %>
+                  <div class="flex flex-wrap gap-2">
+                    <span
+                      :for={slug <- @profil.feature_slugs}
+                      class="inline-flex items-center rounded-full bg-teal-100 px-3 py-1 text-xs font-medium text-teal-800"
+                    >
+                      {feature_label(slug)}
+                    </span>
+                  </div>
+                <% else %>
+                  <span class="text-sm text-slate-500">Aucune fonctionnalité sélectionnée</span>
                 <% end %>
               </dd>
             </div>

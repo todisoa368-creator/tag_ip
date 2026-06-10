@@ -183,7 +183,6 @@ profils = [
     object_type: "forklift",
     voltage_min: 12,
     voltage_max: 48,
-    geofence_enabled: true,
     accelerometre_requis: true,
     inputs_requis: 2,
     outputs_requis: 0
@@ -204,7 +203,6 @@ profils = [
     object_type: "car",
     voltage_min: 12,
     voltage_max: 15,
-    geofence_enabled: true,
     accelerometre_requis: true,
     inputs_requis: 1,
     outputs_requis: 0
@@ -216,8 +214,6 @@ profils = [
     voltage_min: 12,
     voltage_max: 36,
     can_bus_requis: true,
-    buzzer: true,
-    geofence_enabled: true,
     accelerometre_requis: true,
     inputs_requis: 2,
     outputs_requis: 0
@@ -239,7 +235,6 @@ profils = [
     object_type: "boat",
     voltage_min: 12,
     voltage_max: 24,
-    geofence_enabled: true,
     accelerometre_requis: true,
     antenne_deportee: true,
     inputs_requis: 1,
@@ -455,6 +450,12 @@ capteurs_data = [
   # === Énergie ===
   %{slug: "engine", label: "Moteur", description: "Surveillance état moteur", category: "energy"},
   %{
+    slug: "battery_level_monitor",
+    label: "Niveau batterie",
+    description: "Surveillance du niveau de charge de la batterie",
+    category: "energy"
+  },
+  %{
     slug: "engine_speed",
     label: "Régime moteur",
     description: "Mesure du régime moteur (RPM)",
@@ -498,6 +499,24 @@ capteurs_data = [
     category: "safety"
   },
   %{
+    slug: "alert_button_monitor",
+    label: "Bouton d'alerte (SOS)",
+    description: "Détection activation bouton d'urgence SOS",
+    category: "safety"
+  },
+  %{
+    slug: "lock_status_monitor",
+    label: "Statut verrouillage",
+    description: "Surveillance de l'état verrouillé/déverrouillé",
+    category: "safety"
+  },
+  %{
+    slug: "body_tracker_activity_monitor",
+    label: "Activité personne",
+    description: "Détection d'activité et de mouvement pour traceur personnel",
+    category: "safety"
+  },
+  %{
     slug: "buzzer",
     label: "Buzzer",
     description: "Avertisseur sonore intégré",
@@ -528,6 +547,12 @@ capteurs_data = [
     slug: "odometer_monitor",
     label: "Odomètre",
     description: "Compteur kilométrique",
+    category: "vehicle_status"
+  },
+  %{
+    slug: "availability_monitor",
+    label: "Disponibilité (For Hire)",
+    description: "Surveillance de l'état de disponibilité du véhicule",
     category: "vehicle_status"
   },
   # === Connectivité ===
@@ -665,6 +690,11 @@ features = [
     description: "Suivi de position en temps réel par intervalle"
   },
   %{
+    slug: "green_driving",
+    label: "Green Driving",
+    description: "Éco-conduite — analyse du comportement de conduite (freinage, accélération)"
+  },
+  %{
     slug: "eco_driving",
     label: "Eco-driving",
     description: "Analyse du comportement de conduite (freinage, accélération)"
@@ -703,6 +733,42 @@ features = [
     slug: "engine_immobilization",
     label: "Engine Immobilization",
     description: "Coupure moteur à distance via relais"
+  },
+  # === Fonctionnalités de la Matrice de Capacités (Assistant) ===
+  %{
+    slug: "alert_button",
+    label: "Alerte bouton (SOS)",
+    description: "Bouton d'alerte panique / SOS"
+  },
+  %{
+    slug: "buzzer_feature",
+    label: "Buzzer",
+    description: "Avertisseur sonore intégré"
+  },
+  %{
+    slug: "fuel_cap",
+    label: "Bouchon réservoir",
+    description: "Détection ouverture bouchon réservoir"
+  },
+  %{
+    slug: "fuel_analog",
+    label: "Carburant (Analogique)",
+    description: "Sonde carburant analogique"
+  },
+  %{
+    slug: "fuel_rs232",
+    label: "Carburant (RS232)",
+    description: "Sonde carburant sur port série RS232"
+  },
+  %{
+    slug: "fuel_ble",
+    label: "Carburant (BLE)",
+    description: "Sonde carburant sans fil Bluetooth BLE"
+  },
+  %{
+    slug: "fuel_can",
+    label: "Carburant (CAN)",
+    description: "Sonde carburant sur bus CAN"
   }
 ]
 
@@ -714,16 +780,46 @@ feature_ids =
   |> Map.new()
 
 # =========================================================
-# 7. Nouveaux modèles de traceurs (données du chef de projet)
+# 7. Modèles de traceurs pour la comparaison technique
 # =========================================================
-IO.puts("Insertion des modèles du guide de référence...")
+IO.puts("Insertion des modèles de traceurs pour la comparaison technique...")
+
+teltonika_vehicle_features =
+  ~w(alert_button driver_id green_driving buzzer_feature fuel_cap fuel_analog fuel_rs232 fuel_ble fuel_can crash_detection)
+
+teltonika_body_features = ~w(alert_button)
+systech_features = ~w(alert_button driver_id buzzer_feature fuel_analog)
+wonderproud_features = ~w(alert_button driver_id buzzer_feature fuel_analog)
+jointech_features = []
+
+teltonika_vehicle_capteurs =
+  ~w(ignition alert_button_monitor buzzer fuel_cap_monitor fuel_probe_analog fuel_probe_digital fuel_probe_can_bus driver_identification_monitor geofence engine)
+
+teltonika_body_capteurs = ~w(alert_button_monitor body_tracker_activity_monitor)
+
+systech_vehicle_capteurs =
+  ~w(ignition alert_button_monitor buzzer driver_identification_monitor fuel_probe_analog geofence)
+
+wonderproud_vehicle_capteurs =
+  ~w(ignition alert_button_monitor buzzer driver_identification_monitor fuel_probe_analog geofence)
+
+jointech_capteurs = ~w(lock_status_monitor movement_monitor)
+
+teltonika_vehicle_types =
+  ~w(truck car bus van construction_machine railway-vehicle moto forklift boat)
+
+teltonika_body_types = ~w(person)
+systech_types = ~w(truck car bus van construction_machine)
+wonderproud_types = ~w(truck car bus van)
+jointech_types = ~w(smart_lock padlock)
 
 new_tracker_models = [
+  # === Teltonika — Catégorie: vehicle ===
   %{
-    nom: "FMC120 (FMx120)",
+    nom: "FMB003",
     brand: "Teltonika",
-    reference: "TLT-FMC120",
-    description: "Traceur GPS 4G avec accéléromètre, Bluetooth BLE, 1-Wire.",
+    reference: "TLT-FMB003",
+    description: "Traceur GPS véhicule — gamme FMB",
     nb_digital_inputs: 2,
     nb_analog_inputs: 1,
     nb_outputs: 2,
@@ -734,18 +830,213 @@ new_tracker_models = [
     accelerometer: true,
     buffer_memory: 128,
     ip_rating: "IP54",
-    voltage_min: 3,
-    voltage_max: 50,
+    voltage_min: 10,
+    voltage_max: 30,
     alimentation_slugs: ~w(12V 24V),
-    capteur_slugs:
-      ~w(ignition connectivity_monitor movement_monitor odometer_monitor driver_identification_monitor),
-    type_vehicule_slugs:
-      ~w(railway-vehicle construction_machine truck smart_lock moto forklift person car bus object boat),
-    feature_slugs:
-      ~w(real_time_tracking eco_driving crash_detection geofencing fuel_monitoring driver_id cold_chain engine_immobilization)
+    capteur_slugs: teltonika_vehicle_capteurs,
+    type_vehicule_slugs: teltonika_vehicle_types,
+    feature_slugs: teltonika_vehicle_features
   },
   %{
-    nom: "FMC130 (FMx130)",
+    nom: "FMB020",
+    brand: "Teltonika",
+    reference: "TLT-FMB020",
+    description: "Traceur GPS véhicule — gamme FMB",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 2,
+    can_bus: false,
+    one_wire: true,
+    rs232: false,
+    rs485: false,
+    accelerometer: true,
+    buffer_memory: 128,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs: teltonika_vehicle_capteurs,
+    type_vehicule_slugs: teltonika_vehicle_types,
+    feature_slugs: teltonika_vehicle_features
+  },
+  %{
+    nom: "FMB120",
+    brand: "Teltonika",
+    reference: "TLT-FMB120",
+    description: "Traceur GPS véhicule — gamme FMB",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 2,
+    can_bus: false,
+    one_wire: true,
+    rs232: false,
+    rs485: false,
+    accelerometer: true,
+    buffer_memory: 128,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs: teltonika_vehicle_capteurs,
+    type_vehicule_slugs: teltonika_vehicle_types,
+    feature_slugs: teltonika_vehicle_features
+  },
+  %{
+    nom: "FMB125",
+    brand: "Teltonika",
+    reference: "TLT-FMB125",
+    description: "Traceur GPS véhicule — gamme FMB",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 2,
+    can_bus: false,
+    one_wire: true,
+    rs232: false,
+    rs485: false,
+    accelerometer: true,
+    buffer_memory: 128,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs: teltonika_vehicle_capteurs,
+    type_vehicule_slugs: teltonika_vehicle_types,
+    feature_slugs: teltonika_vehicle_features
+  },
+  %{
+    nom: "FMB130",
+    brand: "Teltonika",
+    reference: "TLT-FMB130",
+    description: "Traceur GPS véhicule — gamme FMB",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 2,
+    can_bus: false,
+    one_wire: true,
+    rs232: false,
+    rs485: false,
+    accelerometer: true,
+    buffer_memory: 128,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs: teltonika_vehicle_capteurs,
+    type_vehicule_slugs: teltonika_vehicle_types,
+    feature_slugs: teltonika_vehicle_features
+  },
+  %{
+    nom: "FMB140",
+    brand: "Teltonika",
+    reference: "TLT-FMB140",
+    description: "Traceur GPS véhicule — gamme FMB",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 2,
+    can_bus: false,
+    one_wire: true,
+    rs232: false,
+    rs485: false,
+    accelerometer: true,
+    buffer_memory: 128,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs: teltonika_vehicle_capteurs,
+    type_vehicule_slugs: teltonika_vehicle_types,
+    feature_slugs: teltonika_vehicle_features
+  },
+  %{
+    nom: "FMB204",
+    brand: "Teltonika",
+    reference: "TLT-FMB204",
+    description: "Traceur GPS véhicule — gamme FMB",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 2,
+    can_bus: false,
+    one_wire: true,
+    rs232: false,
+    rs485: false,
+    accelerometer: true,
+    buffer_memory: 128,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs: teltonika_vehicle_capteurs,
+    type_vehicule_slugs: teltonika_vehicle_types,
+    feature_slugs: teltonika_vehicle_features
+  },
+  %{
+    nom: "FMB640",
+    brand: "Teltonika",
+    reference: "TLT-FMB640",
+    description: "Traceur GPS véhicule haut de gamme",
+    nb_digital_inputs: 4,
+    nb_analog_inputs: 2,
+    nb_outputs: 4,
+    can_bus: true,
+    one_wire: true,
+    rs232: true,
+    rs485: true,
+    accelerometer: true,
+    buffer_memory: 512,
+    ip_rating: "IP65",
+    voltage_min: 10,
+    voltage_max: 50,
+    alimentation_slugs: ~w(12V 24V 9-36V),
+    capteur_slugs: teltonika_vehicle_capteurs,
+    type_vehicule_slugs: teltonika_vehicle_types,
+    feature_slugs: teltonika_vehicle_features
+  },
+  %{
+    nom: "FMB641",
+    brand: "Teltonika",
+    reference: "TLT-FMB641",
+    description: "Traceur GPS véhicule haut de gamme",
+    nb_digital_inputs: 4,
+    nb_analog_inputs: 2,
+    nb_outputs: 4,
+    can_bus: true,
+    one_wire: true,
+    rs232: true,
+    rs485: true,
+    accelerometer: true,
+    buffer_memory: 512,
+    ip_rating: "IP65",
+    voltage_min: 10,
+    voltage_max: 50,
+    alimentation_slugs: ~w(12V 24V 9-36V),
+    capteur_slugs: teltonika_vehicle_capteurs,
+    type_vehicule_slugs: teltonika_vehicle_types,
+    feature_slugs: teltonika_vehicle_features
+  },
+  %{
+    nom: "FMB920",
+    brand: "Teltonika",
+    reference: "TLT-FMB920",
+    description: "Traceur GPS véhicule — gamme FMB",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 2,
+    can_bus: false,
+    one_wire: true,
+    rs232: false,
+    rs485: false,
+    accelerometer: true,
+    buffer_memory: 128,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs: teltonika_vehicle_capteurs,
+    type_vehicule_slugs: teltonika_vehicle_types,
+    feature_slugs: teltonika_vehicle_features
+  },
+  %{
+    nom: "FMC130",
     brand: "Teltonika",
     reference: "TLT-FMC130",
     description: "Traceur GPS 4G avec entrées négatives, Bluetooth BLE, 1-Wire et accéléromètre.",
@@ -759,23 +1050,42 @@ new_tracker_models = [
     accelerometer: true,
     buffer_memory: 256,
     ip_rating: "IP54",
-    voltage_min: 3,
-    voltage_max: 50,
+    voltage_min: 10,
+    voltage_max: 30,
     alimentation_slugs: ~w(12V 24V),
-    capteur_slugs:
-      ~w(ignition connectivity_monitor movement_monitor odometer_monitor driver_identification_monitor engine),
-    type_vehicule_slugs:
-      ~w(railway-vehicle construction_machine truck smart_lock moto forklift person car bus object boat),
-    feature_slugs:
-      ~w(real_time_tracking eco_driving crash_detection geofencing fuel_monitoring driver_id cold_chain engine_immobilization)
+    capteur_slugs: teltonika_vehicle_capteurs,
+    type_vehicule_slugs: teltonika_vehicle_types,
+    feature_slugs: teltonika_vehicle_features
   },
   %{
-    nom: "FMC640 (FMx640)",
+    nom: "FMC230",
     brand: "Teltonika",
-    reference: "TLT-FMC640",
-    description: "Traceur GPS 4G robuste avec CAN, RS232, RS485, K-Line.",
+    reference: "TLT-FMC230",
+    description: "Traceur GPS 4G véhicule",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 2,
+    can_bus: false,
+    one_wire: true,
+    rs232: false,
+    rs485: false,
+    accelerometer: true,
+    buffer_memory: 128,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs: teltonika_vehicle_capteurs,
+    type_vehicule_slugs: teltonika_vehicle_types,
+    feature_slugs: teltonika_vehicle_features
+  },
+  %{
+    nom: "FMP100",
+    brand: "Teltonika",
+    reference: "TLT-FMP100",
+    description: "Traceur GPS véhicule haut de gamme — gamme FMP",
     nb_digital_inputs: 4,
-    nb_analog_inputs: 4,
+    nb_analog_inputs: 2,
     nb_outputs: 4,
     can_bus: true,
     one_wire: true,
@@ -784,15 +1094,82 @@ new_tracker_models = [
     accelerometer: true,
     buffer_memory: 512,
     ip_rating: "IP65",
-    voltage_min: 3,
+    voltage_min: 10,
     voltage_max: 50,
     alimentation_slugs: ~w(12V 24V 9-36V),
-    capteur_slugs:
-      ~w(ignition engine engine_speed connectivity_monitor movement_monitor odometer_monitor fuel_level_monitor fuel_cap_monitor driver_identification_monitor buzzer geofence fuel_probe_can_bus),
-    type_vehicule_slugs:
-      ~w(railway-vehicle construction_machine truck smart_lock moto forklift person car bus object boat),
-    feature_slugs:
-      ~w(real_time_tracking eco_driving crash_detection geofencing fuel_monitoring driver_id cold_chain tacho_download engine_immobilization)
+    capteur_slugs: teltonika_vehicle_capteurs,
+    type_vehicule_slugs: teltonika_vehicle_types,
+    feature_slugs: teltonika_vehicle_features
+  },
+
+  # === Teltonika — Catégorie: body_tracker ===
+  %{
+    nom: "GH5200",
+    brand: "Teltonika",
+    reference: "TLT-GH5200",
+    description: "Traceur GPS personnel / body tracker",
+    nb_digital_inputs: 0,
+    nb_analog_inputs: 0,
+    nb_outputs: 0,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: true,
+    buffer_memory: 32,
+    ip_rating: "IP67",
+    voltage_min: 3.7,
+    voltage_max: 5,
+    alimentation_slugs: ~w(batterie),
+    capteur_slugs: teltonika_body_capteurs,
+    type_vehicule_slugs: teltonika_body_types,
+    feature_slugs: teltonika_body_features
+  },
+  %{
+    nom: "TMT250",
+    brand: "Teltonika",
+    reference: "TLT-TMT250",
+    description: "Traceur GPS personnel / body tracker",
+    nb_digital_inputs: 0,
+    nb_analog_inputs: 0,
+    nb_outputs: 0,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: true,
+    buffer_memory: 32,
+    ip_rating: "IP67",
+    voltage_min: 3.7,
+    voltage_max: 5,
+    alimentation_slugs: ~w(batterie),
+    capteur_slugs: teltonika_body_capteurs,
+    type_vehicule_slugs: teltonika_body_types,
+    feature_slugs: teltonika_body_features
+  },
+
+  # === Systech — Catégorie: vehicle ===
+  %{
+    nom: "A1",
+    brand: "Systech",
+    reference: "SYS-CAREU-A1",
+    description: "Traceur GPS économique Systech",
+    nb_digital_inputs: 1,
+    nb_analog_inputs: 1,
+    nb_outputs: 1,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 64,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V),
+    capteur_slugs: systech_vehicle_capteurs,
+    type_vehicule_slugs: systech_types,
+    feature_slugs: systech_features
   },
   %{
     nom: "CAREU U1",
@@ -809,24 +1186,43 @@ new_tracker_models = [
     accelerometer: false,
     buffer_memory: 256,
     ip_rating: "IP54",
-    voltage_min: 3,
+    voltage_min: 10,
     voltage_max: 50,
     alimentation_slugs: ~w(12V 24V),
     capteur_slugs:
-      ~w(ignition engine connectivity_monitor movement_monitor odometer_monitor fuel_level_monitor fuel_cap_monitor driver_identification_monitor geofence fuel_probe_can_bus),
-    type_vehicule_slugs:
-      ~w(railway-vehicle construction_machine truck smart_lock moto forklift person car bus object boat),
-    feature_slugs:
-      ~w(real_time_tracking geofencing fuel_monitoring driver_id cold_chain engine_immobilization)
+      ~w(ignition alert_button_monitor buzzer driver_identification_monitor geofence fuel_probe_analog),
+    type_vehicule_slugs: ~w(truck car bus van construction_machine railway-vehicle),
+    feature_slugs: systech_features
   },
   %{
-    nom: "CAREU A1",
+    nom: "CAREU U1+",
     brand: "Systech",
-    reference: "SYS-CAREU-A1",
-    description:
-      "Traceur GPS économique avec entrée analogique jauge carburant et coupure moteur.",
-    nb_digital_inputs: 1,
-    nb_analog_inputs: 1,
+    reference: "SYS-CAREU-U1PLUS",
+    description: "Traceur GPS Systech U1+",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 0,
+    nb_outputs: 1,
+    can_bus: true,
+    one_wire: true,
+    rs232: true,
+    rs485: true,
+    accelerometer: false,
+    buffer_memory: 256,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 50,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs: systech_vehicle_capteurs,
+    type_vehicule_slugs: systech_types,
+    feature_slugs: systech_features
+  },
+  %{
+    nom: "CAREU U1 Lite",
+    brand: "Systech",
+    reference: "SYS-CAREU-U1LITE",
+    description: "Traceur GPS Systech U1 Lite",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 0,
     nb_outputs: 1,
     can_bus: false,
     one_wire: false,
@@ -835,19 +1231,18 @@ new_tracker_models = [
     accelerometer: false,
     buffer_memory: 64,
     ip_rating: "IP54",
-    voltage_min: 3,
-    voltage_max: 50,
+    voltage_min: 10,
+    voltage_max: 30,
     alimentation_slugs: ~w(12V),
-    capteur_slugs: ~w(ignition connectivity_monitor movement_monitor geofence),
-    type_vehicule_slugs:
-      ~w(railway-vehicle construction_machine truck smart_lock moto forklift person car bus object boat),
-    feature_slugs: ~w(real_time_tracking geofencing fuel_monitoring engine_immobilization)
+    capteur_slugs: systech_vehicle_capteurs,
+    type_vehicule_slugs: systech_types,
+    feature_slugs: systech_features
   },
   %{
-    nom: "VT200",
-    brand: "Wondeproud",
-    reference: "WON-VT200",
-    description: "Traceur GPS basique avec entrée SOS et sortie coupure moteur.",
+    nom: "WR",
+    brand: "Systech",
+    reference: "SYS-WR",
+    description: "Traceur GPS Systech WR",
     nb_digital_inputs: 2,
     nb_analog_inputs: 1,
     nb_outputs: 1,
@@ -858,13 +1253,302 @@ new_tracker_models = [
     accelerometer: false,
     buffer_memory: 64,
     ip_rating: "IP54",
-    voltage_min: 3,
-    voltage_max: 50,
+    voltage_min: 10,
+    voltage_max: 30,
     alimentation_slugs: ~w(12V),
-    capteur_slugs: ~w(ignition connectivity_monitor movement_monitor geofence),
-    type_vehicule_slugs:
-      ~w(railway-vehicle construction_machine truck smart_lock moto forklift person car bus object boat),
-    feature_slugs: ~w(real_time_tracking geofencing engine_immobilization)
+    capteur_slugs: systech_vehicle_capteurs,
+    type_vehicule_slugs: systech_types,
+    feature_slugs: systech_features
+  },
+  %{
+    nom: "CAREU U1 UW1",
+    brand: "Systech",
+    reference: "SYS-CAREU-U1UW1",
+    description: "Traceur GPS Systech U1 UW1",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 0,
+    nb_outputs: 1,
+    can_bus: true,
+    one_wire: true,
+    rs232: true,
+    rs485: true,
+    accelerometer: false,
+    buffer_memory: 256,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 50,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs: systech_vehicle_capteurs,
+    type_vehicule_slugs: systech_types,
+    feature_slugs: systech_features
+  },
+  %{
+    nom: "CAREU Ueco",
+    brand: "Systech",
+    reference: "SYS-CAREU-UECO",
+    description: "Traceur GPS économique Systech",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 1,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 64,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V),
+    capteur_slugs: systech_vehicle_capteurs,
+    type_vehicule_slugs: systech_types,
+    feature_slugs: systech_features
+  },
+  %{
+    nom: "COBAN 103-B",
+    brand: "Systech",
+    reference: "SYS-COBAN-103B",
+    description: "Traceur GPS COBAN 103-B",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 1,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 64,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V),
+    capteur_slugs: systech_vehicle_capteurs,
+    type_vehicule_slugs: systech_types,
+    feature_slugs: systech_features
+  },
+  %{
+    nom: "P1",
+    brand: "Systech",
+    reference: "SYS-P1",
+    description: "Traceur GPS Systech P1",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 1,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 64,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V),
+    capteur_slugs: systech_vehicle_capteurs,
+    type_vehicule_slugs: systech_types,
+    feature_slugs: systech_features
+  },
+  %{
+    nom: "P2",
+    brand: "Systech",
+    reference: "SYS-P2",
+    description: "Traceur GPS Systech P2",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 1,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 64,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V),
+    capteur_slugs: systech_vehicle_capteurs,
+    type_vehicule_slugs: systech_types,
+    feature_slugs: systech_features
+  },
+  %{
+    nom: "Ucan",
+    brand: "Systech",
+    reference: "SYS-UCAN",
+    description: "Traceur GPS Systech Ucan",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 1,
+    can_bus: true,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 64,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 50,
+    alimentation_slugs: ~w(12V 24V),
+    capteur_slugs: systech_vehicle_capteurs,
+    type_vehicule_slugs: systech_types,
+    feature_slugs: systech_features
+  },
+  %{
+    nom: "UGO",
+    brand: "Systech",
+    reference: "SYS-CAREU-UGO",
+    description: "Traceur GPS économique Systech",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 1,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 64,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V),
+    capteur_slugs: systech_vehicle_capteurs,
+    type_vehicule_slugs: systech_types,
+    feature_slugs: systech_features
+  },
+
+  # === WonderProud — Catégorie: vehicle ===
+  %{
+    nom: "VT10",
+    brand: "WonderProud",
+    reference: "WON-VT10",
+    description: "Traceur GPS véhicule WonderProud",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 1,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 64,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V),
+    capteur_slugs: wonderproud_vehicle_capteurs,
+    type_vehicule_slugs: wonderproud_types,
+    feature_slugs: wonderproud_features
+  },
+  %{
+    nom: "VT200",
+    brand: "WonderProud",
+    reference: "WON-VT200",
+    description: "Traceur GPS basique WonderProud",
+    nb_digital_inputs: 2,
+    nb_analog_inputs: 1,
+    nb_outputs: 1,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 64,
+    ip_rating: "IP54",
+    voltage_min: 10,
+    voltage_max: 30,
+    alimentation_slugs: ~w(12V),
+    capteur_slugs: wonderproud_vehicle_capteurs,
+    type_vehicule_slugs: wonderproud_types,
+    feature_slugs: wonderproud_features
+  },
+
+  # === Jointech — Catégorie: cadenas ===
+  %{
+    nom: "JT700 solar",
+    brand: "Jointech",
+    reference: "JTC-JT700",
+    description: "Cadenas connecté GPS",
+    nb_digital_inputs: 0,
+    nb_analog_inputs: 0,
+    nb_outputs: 0,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 16,
+    ip_rating: "IP68",
+    voltage_min: 3.7,
+    voltage_max: 5,
+    alimentation_slugs: ~w(batterie),
+    capteur_slugs: jointech_capteurs,
+    type_vehicule_slugs: jointech_types,
+    feature_slugs: jointech_features
+  },
+  %{
+    nom: "JT701",
+    brand: "Jointech",
+    reference: "JTC-JT701",
+    description: "Cadenas connecté GPS",
+    nb_digital_inputs: 0,
+    nb_analog_inputs: 0,
+    nb_outputs: 0,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 16,
+    ip_rating: "IP68",
+    voltage_min: 3.7,
+    voltage_max: 5,
+    alimentation_slugs: ~w(batterie),
+    capteur_slugs: jointech_capteurs,
+    type_vehicule_slugs: jointech_types,
+    feature_slugs: jointech_features
+  },
+  %{
+    nom: "JT701D",
+    brand: "Jointech",
+    reference: "JTC-JT701D",
+    description: "Cadenas connecté GPS",
+    nb_digital_inputs: 0,
+    nb_analog_inputs: 0,
+    nb_outputs: 0,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 16,
+    ip_rating: "IP68",
+    voltage_min: 3.7,
+    voltage_max: 5,
+    alimentation_slugs: ~w(batterie),
+    capteur_slugs: jointech_capteurs,
+    type_vehicule_slugs: jointech_types,
+    feature_slugs: jointech_features
+  },
+  %{
+    nom: "JT709A",
+    brand: "Jointech",
+    reference: "JTC-JT709A",
+    description: "Cadenas connecté GPS haut de gamme",
+    nb_digital_inputs: 0,
+    nb_analog_inputs: 0,
+    nb_outputs: 0,
+    can_bus: false,
+    one_wire: false,
+    rs232: false,
+    rs485: false,
+    accelerometer: false,
+    buffer_memory: 32,
+    ip_rating: "IP68",
+    voltage_min: 3.7,
+    voltage_max: 5,
+    alimentation_slugs: ~w(batterie),
+    capteur_slugs: jointech_capteurs,
+    type_vehicule_slugs: jointech_types,
+    feature_slugs: jointech_features
   }
 ]
 
@@ -935,15 +1619,6 @@ all_modeles = ModeleTraceur.read!()
 model_by_ref = Map.new(all_modeles, &{&1.reference, &1.id})
 
 pin_defs = [
-  # Teltonika FMC120
-  {model_by_ref["TLT-FMC120"], port_type_ids["digital_input"], "DIN1 (Ignition)"},
-  {model_by_ref["TLT-FMC120"], port_type_ids["digital_input"], "DIN2"},
-  {model_by_ref["TLT-FMC120"], port_type_ids["analog_input"], "AIN1"},
-  {model_by_ref["TLT-FMC120"], port_type_ids["digital_output"], "DOUT1 (Immobilizer)"},
-  {model_by_ref["TLT-FMC120"], port_type_ids["digital_output"], "DOUT2"},
-  {model_by_ref["TLT-FMC120"], port_type_ids["one_wire"], "1-Wire Data"},
-  {model_by_ref["TLT-FMC120"], port_type_ids["bluetooth_ble"], "Bluetooth BLE Channel"},
-
   # Teltonika FMC130
   {model_by_ref["TLT-FMC130"], port_type_ids["digital_input"], "DIN1 (Ignition)"},
   {model_by_ref["TLT-FMC130"], port_type_ids["digital_input"], "DIN2 (Negative Input support)"},
@@ -954,26 +1629,6 @@ pin_defs = [
   {model_by_ref["TLT-FMC130"], port_type_ids["digital_output"], "DOUT3"},
   {model_by_ref["TLT-FMC130"], port_type_ids["one_wire"], "1-Wire Data"},
   {model_by_ref["TLT-FMC130"], port_type_ids["bluetooth_ble"], "Bluetooth BLE Channel"},
-
-  # Teltonika FMC640
-  {model_by_ref["TLT-FMC640"], port_type_ids["digital_input"], "DIN1"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["digital_input"], "DIN2"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["digital_input"], "DIN3"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["digital_input"], "DIN4"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["analog_input"], "AIN1"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["analog_input"], "AIN2"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["analog_input"], "AIN3"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["analog_input"], "AIN4"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["digital_output"], "DOUT1"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["digital_output"], "DOUT2"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["digital_output"], "DOUT3"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["digital_output"], "DOUT4"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["one_wire"], "1-Wire Data"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["rs232"], "RS232 Port"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["rs485"], "RS485 Port"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["can_bus"], "CAN1 High/Low (FMS/J1939)"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["can_bus"], "CAN2 High/Low (J1708)"},
-  {model_by_ref["TLT-FMC640"], port_type_ids["tachograph"], "K-Line (Tachograph)"},
 
   # Systech CAREU U1
   {model_by_ref["SYS-CAREU-U1"], port_type_ids["digital_input"], "DIN1 (Ignition)"},
@@ -986,7 +1641,7 @@ pin_defs = [
   {model_by_ref["SYS-CAREU-U1"], port_type_ids["rs485"], "RS485 Bus"},
   {model_by_ref["SYS-CAREU-U1"], port_type_ids["can_bus"], "Internal OBDII/CAN Interpreter"},
 
-  # Systech CAREU A1
+  # Systech A1
   {model_by_ref["SYS-CAREU-A1"], port_type_ids["digital_input"], "DIN1 (Ignition)"},
   {model_by_ref["SYS-CAREU-A1"], port_type_ids["analog_input"], "AIN1 (Fuel Gauge)"},
   {model_by_ref["SYS-CAREU-A1"], port_type_ids["digital_output"], "DOUT1 (Immobilizer)"},

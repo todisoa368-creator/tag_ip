@@ -1,13 +1,14 @@
 <TagIpWeb.Layouts.app flash={@flash} current_scope={@current_scope}>
-  <div class="max-w-3xl mx-auto my-10">
+  <div class="max-w-4xl mx-auto my-10">
     <div class="bg-white border border-gray-200 shadow-sm rounded-2xl p-8">
       <div class="mb-2">
         <h1 class="text-2xl font-bold text-gray-900">{@page_title}</h1>
         <p class="text-sm text-gray-500 mt-1">
-          Étape {@step} sur {@total_steps} — {Enum.at(@steps, @step - 1)[:description]}
+          {Enum.at(@steps, @step - 1)[:description]}
         </p>
       </div>
-
+      
+<!-- Progress Steps -->
       <div class="relative mb-10 mt-8">
         <div class="flex items-center justify-between">
           <div :for={s <- @steps} class="flex items-center flex-1 last:flex-none">
@@ -18,7 +19,8 @@
                 s.num == @step && "bg-white border-blue-600 text-blue-600 shadow-md",
                 s.num > @step && "bg-gray-100 border-gray-300 text-gray-400"
               ]}>
-                {s.num}
+                <.icon :if={s.num < @step} name="hero-check" class="w-5 h-5 text-white" />
+                <span :if={s.num >= @step}>{s.num}</span>
               </div>
               <span class={[
                 "text-xs mt-2 font-medium transition-colors duration-300 text-center",
@@ -32,102 +34,25 @@
               :if={s.num < @total_steps}
               class={[
                 "flex-1 h-1 mx-4 rounded transition-all duration-500",
-                if(s.num < @step, do: "bg-blue-600", else: "bg-gray-200")
+                s.num < @step && "bg-blue-600",
+                s.num >= @step && "bg-gray-200"
               ]}
             />
           </div>
         </div>
       </div>
-
+      
+<!-- Progress Bar -->
       <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-8">
         <div
-          class="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500 ease-out shadow-sm"
+          class="bg-linear-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500 ease-out shadow-sm"
           style="width: {(@step / @total_steps) * 100}%"
         />
       </div>
-
-      <.form
-        for={@form}
-        id="profil-montage-form"
-        phx-change="validate"
-        phx-submit="save"
-        class="space-y-8"
-      >
-        <input type="hidden" name={@form[:name].name} value={@form[:name].value} />
-        <input type="hidden" name={@form[:description].name} value={@form[:description].value} />
-        <input type="hidden" name={@form[:object_type].name} value={@form[:object_type].value} />
-        <input
-          type="hidden"
-          name={@form[:reporting_interval].name}
-          value={@form[:reporting_interval].value}
-        />
-        <input type="hidden" name={@form[:voltage_min].name} value={@form[:voltage_min].value} />
-        <input type="hidden" name={@form[:voltage_max].name} value={@form[:voltage_max].value} />
-        <input
-          type="hidden"
-          name={@form[:fuel_probe_type].name}
-          value={@form[:fuel_probe_type].value}
-        />
-        <input
-          type="hidden"
-          name={@form[:driver_id_type].name}
-          value={@form[:driver_id_type].value}
-        />
-        <input type="hidden" name={@form[:buzzer].name} value={@form[:buzzer].value} />
-        <input
-          type="hidden"
-          name={@form[:geofence_enabled].name}
-          value={@form[:geofence_enabled].value}
-        />
-        <input
-          type="hidden"
-          name={@form[:can_bus_requis].name}
-          value={@form[:can_bus_requis].value}
-        />
-        <input
-          type="hidden"
-          name={@form[:one_wire_requis].name}
-          value={@form[:one_wire_requis].value}
-        />
-        <input type="hidden" name={@form[:rs232_requis].name} value={@form[:rs232_requis].value} />
-        <input type="hidden" name={@form[:rs485_requis].name} value={@form[:rs485_requis].value} />
-        <input
-          type="hidden"
-          name={@form[:inputs_requis].name}
-          value={@form[:inputs_requis].value}
-        />
-        <input
-          type="hidden"
-          name={@form[:analog_inputs_requis].name}
-          value={@form[:analog_inputs_requis].value}
-        />
-        <input
-          type="hidden"
-          name={@form[:outputs_requis].name}
-          value={@form[:outputs_requis].value}
-        />
-        <input
-          type="hidden"
-          name={@form[:montage_exterieur].name}
-          value={@form[:montage_exterieur].value}
-        />
-        <input
-          type="hidden"
-          name={@form[:antenne_deportee].name}
-          value={@form[:antenne_deportee].value}
-        />
-        <input
-          type="hidden"
-          name={@form[:accelerometre_requis].name}
-          value={@form[:accelerometre_requis].value}
-        />
-        <input
-          type="hidden"
-          name={@form[:ultra_low_power_requis].name}
-          value={@form[:ultra_low_power_requis].value}
-        />
-
-        <div :if={@step == 1}>
+      
+<!-- ==================== STEP 1: IDENTIFICATION ==================== -->
+      <div :if={@step == 1}>
+        <form id="step1-form" phx-submit="next_step" class="contents">
           <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-6">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
@@ -136,524 +61,450 @@
               <div>
                 <h2 class="text-lg font-semibold text-gray-900">Identification du profil</h2>
                 <p class="text-sm text-gray-500">
-                  Informations de base pour identifier ce profil de montage
+                  Saisissez le nom et la description du profil de montage
                 </p>
               </div>
             </div>
             <div class="grid gap-6">
-              <.input
-                field={@form[:name]}
-                label="Nom du profil"
-                placeholder="ex: Camion 24V Jointech"
-                required
-              />
-              <.input
-                field={@form[:description]}
-                type="textarea"
-                label="Description (optionnel)"
-                placeholder="Détails sur l'installation physique, remarques..."
-              />
+              <div>
+                <label for="profile_name" class="block text-sm font-medium text-gray-700 mb-1">
+                  Nom du profil <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="profile_name"
+                  name="profile_name"
+                  type="text"
+                  value={@profile_name}
+                  placeholder="ex: Camion Teltonika FMP100"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  for="profile_description"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Description (optionnel)
+                </label>
+                <textarea
+                  id="profile_description"
+                  name="profile_description"
+                  placeholder="Détails sur l'installation physique, remarques..."
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  rows="3"
+                >{@profile_description}</textarea>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div :if={@step == 2}>
+        </form>
+      </div>
+      
+<!-- ==================== STEP 2: SÉLECTION MATÉRIEL ==================== -->
+      <div :if={@step == 2}>
+        <form id="step2-form" phx-submit="next-step" class="contents">
           <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-6">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
                 2
               </div>
               <div>
-                <h2 class="text-lg font-semibold text-gray-900">Type d'asset et Fréquence</h2>
+                <h2 class="text-lg font-semibold text-gray-900">Sélection du matériel</h2>
                 <p class="text-sm text-gray-500">
-                  Configurez le type de véhicule et l'intervalle de rapport
+                  Choisissez le fournisseur et le modèle du traceur GPS
                 </p>
               </div>
             </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <.input
-                field={@form[:object_type]}
-                type="select"
-                label="Type d'objet"
-                options={@object_type_options}
-              />
-              <.input
-                field={@form[:reporting_interval]}
-                type="select"
-                label="Intervalle de rapport"
-                options={[
-                  {"1 seconde (Demo/Urgence)", :interval_1s},
-                  {"5 secondes", :interval_5s},
-                  {"10 secondes", :interval_10s},
-                  {"30 secondes (Standard)", :interval_30s},
-                  {"1 minute", :interval_1m},
-                  {"5 minutes (Économie)", :interval_5m}
-                ]}
-              />
-            </div>
-
-            <div class="border-t border-blue-200 pt-6 mt-6">
-              <p class="text-sm font-medium text-gray-700 mb-4">
-                Seuils de tension (pré-remplis selon le type d'objet)
-              </p>
-              <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 text-sm text-amber-800 flex items-start gap-3">
-                <.icon
-                  name="hero-exclamation-triangle"
-                  class="w-5 h-5 mt-0.5 shrink-0 text-amber-500"
-                />
-                <span>
-                  La tension minimum doit être <strong>strictement inférieure</strong>
-                  à la tension maximum. Ces valeurs sont automatiquement suggérées
-                  d'après le type d'objet sélectionné.
-                </span>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <.input
-                  field={@form[:voltage_min]}
-                  type="number"
-                  label="Tension Minimum (V)"
-                  placeholder="ex: 10.8"
-                />
-                <.input
-                  field={@form[:voltage_max]}
-                  type="number"
-                  label="Tension Maximum (V)"
-                  placeholder="ex: 32"
-                />
-              </div>
-
-              <%= unless is_nil(@voltage_compatible_count) do %>
-                <div class={[
-                  "p-4 rounded-lg border flex items-start gap-3 transition-all duration-300",
-                  if(@voltage_compatible_count == 0,
-                    do: "bg-red-50 border-red-200",
-                    else: "bg-emerald-50 border-emerald-200"
-                  )
-                ]}>
-                  <.icon
-                    name={
-                      if(@voltage_compatible_count == 0,
-                        do: "hero-exclamation-triangle",
-                        else: "hero-check-circle"
-                      )
-                    }
-                    class={[
-                      "w-5 h-5 mt-0.5 shrink-0",
-                      if(@voltage_compatible_count == 0,
-                        do: "text-red-500",
-                        else: "text-emerald-500"
-                      )
-                    ]}
-                  />
-                  <div>
-                    <%= if @voltage_compatible_count == 0 do %>
-                      <p class="text-sm font-semibold text-red-800">
-                        Aucun modèle compatible avec cette plage de tension
-                      </p>
-                      <p class="mt-1 text-xs text-red-600">
-                        Ajustez les valeurs — aucun traceur de votre catalogue ne supporte cette plage.
-                      </p>
-                    <% else %>
-                      <p class="text-sm font-semibold text-emerald-800">
-                        {@voltage_compatible_count} modèle(s) compatible(s) avec cette tension
-                      </p>
-                    <% end %>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-
-            <div class="border-t border-blue-200 pt-6 mt-6">
-              <p class="text-sm font-medium text-gray-700 mb-4">
-                Interfaces de communication requises
-              </p>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <label class="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                  <input type="hidden" name={@form[:can_bus_requis].name} value="false" />
-                  <input
-                    type="checkbox"
-                    name={@form[:can_bus_requis].name}
-                    id={@form[:can_bus_requis].id}
-                    value="true"
-                    checked={@form[:can_bus_requis].value in [true, "true"]}
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span class="text-sm font-medium text-gray-800">CAN-Bus</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                  <input type="hidden" name={@form[:one_wire_requis].name} value="false" />
-                  <input
-                    type="checkbox"
-                    name={@form[:one_wire_requis].name}
-                    id={@form[:one_wire_requis].id}
-                    value="true"
-                    checked={@form[:one_wire_requis].value in [true, "true"]}
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span class="text-sm font-medium text-gray-800">1-Wire</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                  <input type="hidden" name={@form[:rs232_requis].name} value="false" />
-                  <input
-                    type="checkbox"
-                    name={@form[:rs232_requis].name}
-                    id={@form[:rs232_requis].id}
-                    value="true"
-                    checked={@form[:rs232_requis].value in [true, "true"]}
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span class="text-sm font-medium text-gray-800">RS232</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                  <input type="hidden" name={@form[:rs485_requis].name} value="false" />
-                  <input
-                    type="checkbox"
-                    name={@form[:rs485_requis].name}
-                    id={@form[:rs485_requis].id}
-                    value="true"
-                    checked={@form[:rs485_requis].value in [true, "true"]}
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span class="text-sm font-medium text-gray-800">RS485</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div :if={@step == 3}>
-          <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-6">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
-                4
-              </div>
               <div>
-                <h2 class="text-lg font-semibold text-gray-900">Capteurs et Options</h2>
-                <p class="text-sm text-gray-500">
-                  Équipements, capteurs et fonctionnalités embarquées
-                </p>
-              </div>
-            </div>
-
-            <div class="flex flex-col gap-4">
-              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                <input type="hidden" name={@form[:montage_exterieur].name} value="false" />
-                <input
-                  type="checkbox"
-                  name={@form[:montage_exterieur].name}
-                  id={@form[:montage_exterieur].id}
-                  value="true"
-                  checked={@form[:montage_exterieur].value in [true, "true"]}
-                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <div>
-                  <span class="text-sm font-medium text-gray-800">Montage extérieur</span>
-                  <p class="text-xs text-gray-500">
-                    Protection IP67 automatique — filtre les traceurs étanches
-                  </p>
-                </div>
-              </label>
-
-              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                <input type="hidden" name={@form[:fuel_probe_type].name} value="none" />
-                <input
-                  type="checkbox"
-                  name={@form[:fuel_probe_type].name}
-                  id={@form[:fuel_probe_type].id}
-                  value="analog"
-                  checked={@form[:fuel_probe_type].value == "analog"}
-                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <div>
-                  <span class="text-sm font-medium text-gray-800">Sonde de carburant</span>
-                  <p class="text-xs text-gray-500">Mesure du niveau de carburant (analogique)</p>
-                </div>
-              </label>
-
-              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                <input type="hidden" name={@form[:driver_id_type].name} value="none" />
-                <input
-                  type="checkbox"
-                  name={@form[:driver_id_type].name}
-                  id={@form[:driver_id_type].id}
-                  value="rfid"
-                  checked={@form[:driver_id_type].value == "rfid"}
-                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <div>
-                  <span class="text-sm font-medium text-gray-800">Identification chauffeur</span>
-                  <p class="text-xs text-gray-500">
-                    Lecteur RFID pour identification du conducteur
-                  </p>
-                </div>
-              </label>
-
-              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                <input type="hidden" name={@form[:buzzer].name} value="false" />
-                <input
-                  type="checkbox"
-                  name={@form[:buzzer].name}
-                  id={@form[:buzzer].id}
-                  value="true"
-                  checked={@form[:buzzer].value in [true, "true"]}
-                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <div>
-                  <span class="text-sm font-medium text-gray-800">Câblage du Buzzer présent</span>
-                  <p class="text-xs text-gray-500">Alerte sonore en cas d'événement</p>
-                </div>
-              </label>
-
-              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                <input type="hidden" name={@form[:geofence_enabled].name} value="false" />
-                <input
-                  type="checkbox"
-                  name={@form[:geofence_enabled].name}
-                  id={@form[:geofence_enabled].id}
-                  value="true"
-                  checked={@form[:geofence_enabled].value in [true, "true"]}
-                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <div>
-                  <span class="text-sm font-medium text-gray-800">Activer les Geofences</span>
-                  <p class="text-xs text-gray-500">Délimitation de zones virtuelles</p>
-                </div>
-              </label>
-
-              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                <input type="hidden" name={@form[:antenne_deportee].name} value="false" />
-                <input
-                  type="checkbox"
-                  name={@form[:antenne_deportee].name}
-                  id={@form[:antenne_deportee].id}
-                  value="true"
-                  checked={@form[:antenne_deportee].value in [true, "true"]}
-                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <div>
-                  <span class="text-sm font-medium text-gray-800">Antennes déportées</span>
-                  <p class="text-xs text-gray-500">
-                    Connecteurs pour antennes GPS/GSM externes
-                  </p>
-                </div>
-              </label>
-
-              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                <input type="hidden" name={@form[:accelerometre_requis].name} value="false" />
-                <input
-                  type="checkbox"
-                  name={@form[:accelerometre_requis].name}
-                  id={@form[:accelerometre_requis].id}
-                  value="true"
-                  checked={@form[:accelerometre_requis].value in [true, "true"]}
-                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <div>
-                  <span class="text-sm font-medium text-gray-800">Accéléromètre 3 axes</span>
-                  <p class="text-xs text-gray-500">
-                    Analyse d'éco-conduite (freinages, accélérations, virages)
-                  </p>
-                </div>
-              </label>
-
-              <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors">
-                <input type="hidden" name={@form[:ultra_low_power_requis].name} value="false" />
-                <input
-                  type="checkbox"
-                  name={@form[:ultra_low_power_requis].name}
-                  id={@form[:ultra_low_power_requis].id}
-                  value="true"
-                  checked={@form[:ultra_low_power_requis].value in [true, "true"]}
-                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <div>
-                  <span class="text-sm font-medium text-gray-800">Ultra-Low Power</span>
-                  <p class="text-xs text-gray-500">
-                    Mode veille à très faible consommation pour batteries limitées
-                  </p>
-                </div>
-              </label>
-            </div>
-
-            <div class="border-t border-blue-200 pt-6 mt-6">
-              <p class="text-sm font-medium text-gray-700 mb-4">Capteurs requis</p>
-              <p class="text-xs text-gray-500 mb-4">
-                Cochez les capteurs que ce profil doit embarquer
-              </p>
-              <div :for={category <- @capteur_categories} class="mb-4 last:mb-0">
-                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
-                  {capteur_category_label(category)}
-                </p>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  <label
-                    :for={c <- Enum.filter(@capteurs, &(&1.category == category))}
-                    class={[
-                      "flex items-center gap-2 p-2.5 bg-white rounded-lg border cursor-pointer transition-colors",
-                      if(MapSet.member?(@selected_capteur_ids, c.id),
-                        do: "border-blue-400 bg-blue-50",
-                        else: "border-gray-200 hover:border-blue-300"
-                      )
-                    ]}
+                <label for="supplier_select" class="block text-sm font-medium text-gray-700 mb-1">
+                  Fournisseur <span class="text-red-500">*</span>
+                </label>
+                <select
+                  id="supplier_select"
+                  name="supplier"
+                  phx-change="select_supplier"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                >
+                  <option value="">Sélectionnez un fournisseur</option>
+                  <option
+                    :for={brand <- @brands}
+                    value={brand}
+                    selected={@selected_supplier == brand}
                   >
-                    <input
-                      type="checkbox"
-                      value={c.id}
-                      checked={MapSet.member?(@selected_capteur_ids, c.id)}
-                      phx-click="toggle_capteur"
-                      phx-value-id={c.id}
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <span class="text-sm text-gray-800">{c.label}</span>
-                  </label>
+                    {supplier_label(brand)}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label for="model_select" class="block text-sm font-medium text-gray-700 mb-1">
+                  Modèle <span class="text-red-500">*</span>
+                </label>
+                <select
+                  id="model_select"
+                  name="model_id"
+                  phx-change="select_model"
+                  class={[
+                    "w-full px-4 py-2.5 rounded-lg border bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition",
+                    is_nil(@selected_supplier) && "opacity-50 cursor-not-allowed"
+                  ]}
+                  disabled={is_nil(@selected_supplier)}
+                >
+                  <option value="">Sélectionnez un modèle</option>
+                  <option
+                    :for={m <- @available_models}
+                    value={m.id}
+                    selected={@selected_model_id == m.id}
+                  >
+                    {m.nom} ({m.reference})
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div :if={@selected_model} class="mt-6 border-t border-blue-200 pt-6">
+              <p class="text-sm font-semibold text-gray-700 mb-3">
+                <.icon name="hero-information-circle" class="w-4 h-4 inline text-blue-600" />
+                Fiche technique — {@selected_model.nom}
+              </p>
+              <div class="bg-white rounded-lg border border-gray-200 p-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span class="text-gray-500">Référence</span>
+                  <p class="font-medium">{@selected_model.reference}</p>
+                </div>
+                <div>
+                  <span class="text-gray-500">Tension</span>
+                  <p class="font-medium">
+                    {if @selected_model.voltage_min,
+                      do: "#{@selected_model.voltage_min}V",
+                      else: "N/A"} — {if @selected_model.voltage_max,
+                      do: "#{@selected_model.voltage_max}V",
+                      else: "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <span class="text-gray-500">Entrées / Sorties</span>
+                  <p class="font-medium">
+                    {@selected_model.nb_digital_inputs || 0} DIN / {@selected_model.nb_analog_inputs ||
+                      0} AIN / {@selected_model.nb_outputs || 0} DOUT
+                  </p>
+                </div>
+                <div>
+                  <span class="text-gray-500">IP / Accéléromètre</span>
+                  <p class="font-medium">
+                    {@selected_model.ip_rating || "N/A"} / {if @selected_model.accelerometer,
+                      do: "✓",
+                      else: "✗"}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </form>
+      </div>
+      
+<!-- ==================== STEP 3: CONFIGURATION TECHNIQUE ==================== -->
+      <div :if={@step == 3}>
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
+              3
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900">Configuration technique</h2>
+              <p class="text-sm text-gray-500">
+                Fonctionnalités disponibles pour le modèle sélectionné
+              </p>
+            </div>
+          </div>
 
-        <div :if={@step == 4}>
-          <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-6">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
-                5
+          <div
+            :if={!@selected_model}
+            class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800 flex items-start gap-2"
+          >
+            <.icon
+              name="hero-exclamation-triangle"
+              class="w-5 h-5 mt-0.5 shrink-0 text-amber-500"
+            />
+            <span>Veuillez d'abord sélectionner un modèle de traceur à l'étape 2.</span>
+          </div>
+
+          <div :if={@selected_model}>
+            <p class="text-sm font-medium text-gray-600 mb-4">
+              Fonctionnalités disponibles pour <strong>{@selected_model.nom}</strong>
+              <span class="text-gray-400"> ({@selected_model.reference})</span>
+            </p>
+
+            <div
+              :if={Enum.empty?(supported_for_model(@selected_model_id, @matrix_features))}
+              class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center"
+            >
+              <.icon name="hero-information-circle" class="w-8 h-8 text-gray-400 mx-auto mb-2" />
+              <p class="text-sm text-gray-500">
+                Ce modèle ne supporte aucune fonctionnalité de la matrice.
+              </p>
+              <p class="text-xs text-gray-400 mt-1">
+                Le profil sera créé sans options spécifiques.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <label
+                :for={feat <- @matrix_features}
+                :if={feat.slug in supported_for_model(@selected_model_id, @matrix_features)}
+                class={[
+                  "flex items-start gap-3 p-4 bg-white rounded-xl border-2 cursor-pointer transition-all duration-200",
+                  if(MapSet.member?(@selected_features, feat.slug),
+                    do: "border-blue-500 bg-blue-50 shadow-sm",
+                    else: "border-gray-200 hover:border-blue-300 hover:shadow-sm"
+                  )
+                ]}
+              >
+                <div class="shrink-0 mt-0.5">
+                  <div class={[
+                    "w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all",
+                    MapSet.member?(@selected_features, feat.slug) &&
+                      "bg-blue-600 border-blue-600",
+                    !MapSet.member?(@selected_features, feat.slug) && "bg-white border-gray-300"
+                  ]}>
+                    <.icon
+                      :if={MapSet.member?(@selected_features, feat.slug)}
+                      name="hero-check"
+                      class="w-3.5 h-3.5 text-white"
+                    />
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0" phx-click="toggle_feature" phx-value-slug={feat.slug}>
+                  <span class="text-sm font-medium text-gray-900 block">{feat.label}</span>
+                  <span class="text-xs text-gray-500">{feat.description}</span>
+                </div>
+              </label>
+            </div>
+
+            <div
+              :if={!Enum.empty?(MapSet.to_list(@selected_features))}
+              class="mt-4 bg-blue-100/50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 flex items-start gap-2"
+            >
+              <.icon name="hero-check-circle" class="w-5 h-5 mt-0.5 shrink-0 text-blue-600" />
+              <span>
+                {MapSet.size(@selected_features)} fonctionnalité(s) sélectionnée(s) sur {length(
+                  supported_for_model(@selected_model_id, @matrix_features)
+                )} disponible(s).
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+<!-- ==================== STEP 4: VALIDATION FINALE ==================== -->
+      <div :if={@step == 4}>
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
+              4
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900">Validation finale</h2>
+              <p class="text-sm text-gray-500">
+                Récapitulatif et vérification de la compatibilité
+              </p>
+            </div>
+          </div>
+          
+<!-- Résumé -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-4 mb-6">
+            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+              Récapitulatif
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-3 bg-gray-50 rounded-lg">
+                <p class="text-xs text-gray-500 mb-1">Nom du profil</p>
+                <p class="text-sm font-medium text-gray-900">{@profile_name}</p>
               </div>
-              <div>
-                <h2 class="text-lg font-semibold text-gray-900">
-                  Modèles de traceurs compatibles
-                </h2>
-                <p class="text-sm text-gray-500">
-                  {length(Enum.filter(@compatibilities, & &1.compatible))} modèle(s) compatible(s) détecté(s)
+              <div class="p-3 bg-gray-50 rounded-lg">
+                <p class="text-xs text-gray-500 mb-1">Description</p>
+                <p class="text-sm text-gray-700">
+                  {if @profile_description != "", do: @profile_description, else: "—"}
+                </p>
+              </div>
+              <div class="p-3 bg-gray-50 rounded-lg">
+                <p class="text-xs text-gray-500 mb-1">Fournisseur</p>
+                <p class="text-sm font-medium text-gray-900">
+                  {supplier_label(@selected_supplier)}
+                </p>
+              </div>
+              <div class="p-3 bg-gray-50 rounded-lg">
+                <p class="text-xs text-gray-500 mb-1">Modèle</p>
+                <p class="text-sm font-medium text-gray-900">
+                  {@selected_model && @selected_model.nom}
+                  <span class="text-gray-500">
+                    ({@selected_model && @selected_model.reference})
+                  </span>
                 </p>
               </div>
             </div>
 
-            <%= if Enum.empty?(@compatibilities) do %>
-              <p class="text-sm text-gray-500 italic">
-                Remplissez les étapes précédentes pour voir les modèles compatibles.
-              </p>
-            <% else %>
-              <div class="space-y-3">
-                <div :for={compat <- @compatibilities}>
-                  <div class={[
-                    "bg-white rounded-lg border p-4",
-                    compat.compatible && "border-green-300 bg-green-50/50",
-                    !compat.compatible && "border-gray-200 opacity-70"
-                  ]}>
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-3">
-                        <.icon
-                          name={
-                            if compat.compatible, do: "hero-check-circle", else: "hero-x-circle"
-                          }
-                          class={[
-                            "size-5",
-                            compat.compatible && "text-green-500",
-                            !compat.compatible && "text-red-400"
-                          ]}
-                        />
-                        <div>
-                          <p class="font-medium text-gray-900">{compat.modele.nom}</p>
-                          <p class="text-xs text-gray-500">{compat.modele.reference}</p>
-                        </div>
-                      </div>
-                      <span class={[
-                        "px-2.5 py-1 text-xs font-semibold rounded-full",
-                        compat.score >= 70 && "bg-green-100 text-green-800",
-                        compat.score >= 40 && compat.score < 70 &&
-                          "bg-yellow-100 text-yellow-800",
-                        compat.score < 40 && "bg-red-100 text-red-800"
-                      ]}>
-                        {compat.score}%
-                      </span>
-                    </div>
-                    <div
-                      :if={compat.details != []}
-                      class="mt-2 ml-8 text-xs text-gray-600 space-y-0.5"
-                    >
-                      <p :for={detail <- compat.details} class="leading-relaxed">{detail}</p>
-                    </div>
-                  </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-2">Fonctionnalités sélectionnées</p>
+              <div
+                :if={Enum.empty?(MapSet.to_list(@selected_features))}
+                class="text-sm text-gray-400 italic"
+              >
+                Aucune fonctionnalité sélectionnée
+              </div>
+              <div
+                :if={!Enum.empty?(MapSet.to_list(@selected_features))}
+                class="flex flex-wrap gap-2"
+              >
+                <div
+                  :for={slug <- MapSet.to_list(@selected_features)}
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium"
+                >
+                  <.icon name="hero-check" class="w-3.5 h-3.5" />
+                  {elem(feature_label(slug), 0)}
                 </div>
               </div>
-            <% end %>
-
-            <div class="mt-4 text-xs text-gray-500 bg-white rounded-lg border border-blue-200 p-3">
-              <p>
-                Les compatibilités seront automatiquement enregistrées lors de la création du profil. Le score minimum requis est de <strong>40%</strong>.
-              </p>
             </div>
           </div>
-        </div>
-
-        <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-          <div>
-            <button
-              :if={@step > 1}
-              type="button"
-              phx-click="prev-step"
-              class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
+          
+<!-- Résultat validation -->
+          <div :if={@validation_result}>
+            <div
+              :if={@validation_result.valid?}
+              class="bg-emerald-50 border border-emerald-200 rounded-xl p-5 mb-4"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-              Précédent
-            </button>
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                  <.icon name="hero-check" class="w-6 h-6 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 class="text-base font-semibold text-emerald-800">Profil valide ✓</h3>
+                  <p class="text-sm text-emerald-700 mt-1">
+                    Toutes les fonctionnalités sélectionnées sont compatibles avec le modèle {@selected_model &&
+                      @selected_model.nom}.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              :if={!@validation_result.valid?}
+              class="bg-red-50 border border-red-200 rounded-xl p-5 mb-4"
+            >
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                  <.icon name="hero-x-mark" class="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 class="text-base font-semibold text-red-800">Incompatibilité détectée ✗</h3>
+                  <p class="text-sm text-red-700 mt-1">
+                    Corrigez les points suivants avant d'enregistrer :
+                  </p>
+                  <ul class="mt-2 space-y-1">
+                    <li
+                      :for={error <- @validation_result.errors}
+                      class="text-sm text-red-700 flex items-start gap-2"
+                    >
+                      <.icon name="hero-x-circle" class="w-4 h-4 mt-0.5 shrink-0 text-red-500" />
+                      <span>{error}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="flex items-center gap-4">
-            <.link
-              navigate={~p"/dashboard"}
-              class="text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              Annuler
-            </.link>
-
-            <button
-              :if={@step < @total_steps}
-              type="button"
-              phx-click="next-step"
-              class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm hover:shadow-md transition-all"
-            >
-              Suivant
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-
-            <button
-              :if={@step == @total_steps}
-              type="submit"
-              class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-sm hover:shadow-md transition-all"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              Enregistrer le profil
-            </button>
+          <div class="mt-4 text-xs text-gray-500 bg-white rounded-lg border border-blue-200 p-3">
+            <p>
+              Validation selon la matrice de capacités : le système vérifie que toutes les fonctionnalités
+              sélectionnées sont supportées par le modèle <strong>{@selected_model && @selected_model.nom}</strong>.
+            </p>
           </div>
         </div>
-      </.form>
+        
+<!-- Message succès -->
+        <div
+          :if={@profile_saved}
+          class="bg-emerald-50 border border-emerald-200 rounded-xl p-6 mb-6 text-center"
+        >
+          <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+            <.icon name="hero-check-circle" class="w-8 h-8 text-emerald-600" />
+          </div>
+          <h3 class="text-lg font-semibold text-emerald-800">Profil enregistré !</h3>
+          <p class="text-sm text-emerald-700 mt-1 mb-4">
+            Le profil <strong>{@profile_name}</strong> a été créé avec succès.
+          </p>
+          <.link
+            navigate={~p"/profils/#{@saved_profile_id}"}
+            class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition text-sm font-medium"
+          >
+            Voir le profil
+          </.link>
+        </div>
+      </div>
+      
+<!-- ==================== BOUTONS ==================== -->
+      <div
+        :if={!@profile_saved}
+        class="flex items-center justify-between pt-6 border-t border-gray-200"
+      >
+        <div>
+          <button
+            :if={@step > 1}
+            type="button"
+            phx-click="prev-step"
+            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
+          >
+            <.icon name="hero-chevron-left" class="w-4 h-4" /> Précédent
+          </button>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <.link
+            navigate={~p"/dashboard"}
+            class="text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            Annuler
+          </.link>
+
+          <button
+            :if={@step == 1}
+            type="submit"
+            form="step1-form"
+            class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm hover:shadow-md transition-all"
+          >
+            Suivant <.icon name="hero-chevron-right" class="w-4 h-4" />
+          </button>
+          <button
+            :if={@step == 2}
+            type="submit"
+            form="step2-form"
+            class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm hover:shadow-md transition-all"
+          >
+            Suivant <.icon name="hero-chevron-right" class="w-4 h-4" />
+          </button>
+          <button
+            :if={@step == 3}
+            type="button"
+            phx-click="next-step"
+            class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm hover:shadow-md transition-all"
+          >
+            Suivant <.icon name="hero-chevron-right" class="w-4 h-4" />
+          </button>
+
+          <button
+            :if={@step == @total_steps && @validation_result && @validation_result.valid?}
+            type="button"
+            phx-click="save"
+            class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-sm hover:shadow-md transition-all"
+          >
+            <.icon name="hero-check" class="w-4 h-4" /> Enregistrer le profil
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </TagIpWeb.Layouts.app>

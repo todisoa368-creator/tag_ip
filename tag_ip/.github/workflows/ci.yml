@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tag_ip_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Elixir
+        uses: erlef/setup-elixir@v1
+        with:
+          elixir-version: '1.14'
+          otp-version: '26'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get
+          cd assets || true
+          if [ -f package.json ]; then npm ci; fi
+
+      - name: Create and migrate DB
+        env:
+          MIX_ENV: test
+          DATABASE_URL: "ecto://postgres:postgres@127.0.0.1:5432/tag_ip_test"
+        run: |
+          mix ecto.create --repo TagIp.Repo || true
+          mix ecto.migrate --repo TagIp.Repo || true
+
+      - name: Run tests
+        env:
+          MIX_ENV: test
+        run: mix test

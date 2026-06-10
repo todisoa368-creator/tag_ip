@@ -1,15 +1,15 @@
-defmodule TagIp.Resources.ModelFeature do
+defmodule TagIp.Resources.ProfilMontagePeripheral do
   use Ash.Resource,
     domain: TagIp.TagIp,
     data_layer: AshPostgres.DataLayer
 
   postgres do
-    table("model_features")
+    table("profil_montage_peripherals")
     repo(TagIp.Repo)
   end
 
   identities do
-    identity(:unique_modele_feature, [:modele_traceur_id, :feature_id])
+    identity(:unique_profil_peripheral, [:profil_montage_id, :peripheral_id])
   end
 
   attributes do
@@ -18,27 +18,19 @@ defmodule TagIp.Resources.ModelFeature do
   end
 
   relationships do
-    belongs_to :modele_traceur, TagIp.Resources.ModeleTraceur do
+    belongs_to :profil_montage, TagIp.Resources.ProfilMontage do
       allow_nil?(false)
       attribute_type(:uuid)
     end
 
-    belongs_to :feature, TagIp.Resources.Feature do
+    belongs_to :peripheral, TagIp.Resources.Peripheral do
       allow_nil?(false)
       attribute_type(:uuid)
     end
   end
 
   actions do
-    defaults([:read, :destroy, :update])
-
-    create :create do
-      primary?(true)
-      upsert?(true)
-      upsert_identity(:unique_modele_feature)
-
-      accept([:modele_traceur_id, :feature_id])
-    end
+    defaults([:read, :destroy, :update, :create])
   end
 
   code_interface do

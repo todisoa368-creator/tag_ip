@@ -1,169 +1,148 @@
 defmodule TagIpWeb.ProfilMontageLive.Form do
   use TagIpWeb, :live_view
 
-  alias AshPhoenix.Form
   alias TagIp.Resources.ProfilMontage
   alias TagIp.Resources.ModeleTraceur
-  alias TagIp.Resources.Compatibilite
   alias TagIp.Resources.Capteur
-  alias TagIp.Resources.TrackableType
-  alias TagIp.Resources.TypeVehicule
-
-  import Ash.Query, only: [load: 2]
+  alias TagIp.Resources.CapabilityMatrix
+  alias TagIp.Resources.ProfilMontageCapteur
 
   @steps [
-    %{num: 1, title: "Identification", description: "Nom et description du profil"},
-    %{num: 2, title: "Configuration", description: "Type d'asset, tension, interfaces"},
-    %{num: 3, title: "Équipements", description: "Capteurs et options"},
-    %{num: 4, title: "Compatibilités", description: "Modèles de traceurs compatibles"}
+    %{
+      num: 1,
+      title: "Étape 1 : Identification",
+      description: "Étape 1 — Nom du profil et description"
+    },
+    %{
+      num: 2,
+      title: "Étape 2 : Modèle traceur",
+      description: "Étape 2 — Fournisseur et modèle du traceur"
+    },
+    %{
+      num: 3,
+      title: "Étape 3 : Fonctionnalités",
+      description: "Étape 3 — Fonctionnalités supportées par le modèle"
+    },
+    %{
+      num: 4,
+      title: "Étape 4 : Validation",
+      description: "Étape 4 — Récapitulatif et vérification"
+    }
   ]
 
   @impl true
   def mount(_params, _session, socket) do
-    trackable_types = TrackableType.read!()
-
-    object_type_options =
-      Enum.map(trackable_types, fn tt ->
-        {tt.label, tt.slug}
-      end)
-
-    trackable_type_by_slug =
-      Enum.into(trackable_types, %{}, fn tt -> {tt.slug, tt} end)
-
-    type_vehicule_by_slug =
-      TypeVehicule.read!()
-      |> Enum.into(%{}, fn tv -> {tv.slug, tv} end)
-
-    modeles =
-      ModeleTraceur
-      |> load([:types_vehicule, :alimentations, :capteurs])
-      |> Ash.read!(page: [limit: 50])
-
-    capteurs = Capteur.read!() |> Enum.sort_by(& &1.label)
-    capteur_categories = capteurs |> Enum.map(& &1.category) |> Enum.uniq() |> Enum.sort()
+    modeles = ModeleTraceur.read!()
+    brands = modeles |> Enum.map(& &1.brand) |> Enum.uniq() |> Enum.sort()
+    matrix_features = CapabilityMatrix.matrix_features()
 
     {:ok,
      socket
      |> assign(:step, 1)
      |> assign(:total_steps, length(@steps))
      |> assign(:steps, @steps)
-     |> assign(:object_type_options, object_type_options)
-     |> assign(:modeles, modeles.results)
-     |> assign(:voltage_compatible_count, nil)
-     |> assign(:compatibilities, [])
-     |> assign(:capteurs, capteurs)
-     |> assign(:capteur_categories, capteur_categories)
-     |> assign(:selected_capteur_ids, MapSet.new())
-     |> assign(:trackable_type_by_slug, trackable_type_by_slug)
-     |> assign(:type_vehicule_by_slug, type_vehicule_by_slug)
-     |> assign(:previous_object_type, nil)}
+     |> assign(:modeles, modeles)
+     |> assign(:brands, brands)
+     |> assign(:matrix_features, matrix_features)
+     |> assign(:selected_supplier, nil)
+     |> assign(:available_models, [])
+     |> assign(:selected_model_id, nil)
+     |> assign(:selected_model, nil)
+     |> assign(:selected_features, MapSet.new())
+     |> assign(:profile_name, "")
+     |> assign(:profile_description, "")
+     |> assign(:validation_result, nil)
+     |> assign(:profile_saved, false)}
   end
 
   @impl true
   def handle_params(params, url, socket) do
     path = URI.parse(url).path
-    return_to = params["return_to"]
 
     {:noreply,
      socket
      |> assign(:current_path, path)
-     |> assign(:return_to, return_to)
      |> apply_action(socket.assigns.live_action, params)}
   end
 
   @impl true
-  def handle_event("next-step", %{"profil_montage" => params}, socket) do
-    step = socket.assigns.step
-    total = socket.assigns.total_steps
+  def handle_event("select_supplier", %{"supplier" => supplier}, socket) do
+    available =
+      socket.assigns.modeles
+      |> Enum.filter(&(&1.brand == supplier))
+      |> Enum.sort_by(& &1.nom)
 
-    if step < total do
-      params =
-        params
-        |> normalize_params()
-        |> maybe_autofill_voltage(
-          socket.assigns.trackable_type_by_slug,
-          socket.assigns.type_vehicule_by_slug,
-          socket.assigns.previous_object_type
-        )
+    {:noreply,
+     socket
+     |> assign(:selected_supplier, supplier)
+     |> assign(:available_models, available)
+     |> assign(:selected_model_id, nil)
+     |> assign(:selected_model, nil)
+     |> assign(:selected_features, MapSet.new())
+     |> assign(:validation_result, nil)}
+  end
 
-      form =
-        socket.assigns.form.source
-        |> Form.validate(params)
-        |> to_form()
+  def handle_event("select_model", %{"model_id" => model_id}, socket) do
+    modele =
+      socket.assigns.modeles
+      |> Enum.find(&(&1.id == model_id))
 
-      capteur_slugs =
-        resolve_capteur_slugs(socket.assigns.capteurs, socket.assigns.selected_capteur_ids)
+    modele = modele && Ash.load!(modele, [:features, :capteurs])
 
-      compatibilities = compute_compatibilities(params, socket.assigns.modeles, capteur_slugs)
+    {:noreply,
+     socket
+     |> assign(:selected_model_id, model_id)
+     |> assign(:selected_model, modele)
+     |> assign(:selected_features, MapSet.new())
+     |> assign(:validation_result, nil)}
+  end
 
-      voltage_compatible_count =
-        count_voltage_compatible(
-          socket.assigns.modeles,
-          params["voltage_min"],
-          params["voltage_max"]
-        )
+  def handle_event("toggle_feature", %{"slug" => slug}, socket) do
+    current = socket.assigns.selected_features
 
-      {:noreply,
-       socket
-       |> assign(:step, step + 1)
-       |> assign(:form, form)
-       |> assign(:compatibilities, compatibilities)
-       |> assign(:voltage_compatible_count, voltage_compatible_count)
-       |> assign(:previous_object_type, params["object_type"])}
+    updated =
+      if MapSet.member?(current, slug) do
+        MapSet.delete(current, slug)
+      else
+        MapSet.put(current, slug)
+      end
+
+    {:noreply, assign(socket, :selected_features, updated)}
+  end
+
+  def handle_event("next_step", params, socket) do
+    name = params["profile_name"]
+    description = params["profile_description"]
+
+    socket =
+      socket
+      |> assign(:profile_name, name || "")
+      |> assign(:profile_description, description || "")
+
+    if name == "" || is_nil(name) do
+      {:noreply, put_flash(socket, :error, "Veuillez saisir un nom de profil.")}
     else
-      {:noreply, socket}
+      {:noreply, assign(socket, :step, 2)}
     end
   end
 
-  def handle_event("next-step", _params, socket) do
+  def handle_event("next-step", params, socket) do
     step = socket.assigns.step
     total = socket.assigns.total_steps
 
-    if step < total do
+    socket = sync_form_data(socket, params)
+
+    {socket, can_advance} = validate_step(socket, step)
+
+    if can_advance && step < total do
+      socket =
+        if step + 1 == 4 do
+          run_final_validation(socket)
+        else
+          socket
+        end
+
       {:noreply, assign(socket, :step, step + 1)}
-    else
-      {:noreply, socket}
-    end
-  end
-
-  @impl true
-  def handle_event("prev-step", %{"profil_montage" => params}, socket) do
-    step = socket.assigns.step
-
-    if step > 1 do
-      params =
-        params
-        |> normalize_params()
-        |> maybe_autofill_voltage(
-          socket.assigns.trackable_type_by_slug,
-          socket.assigns.type_vehicule_by_slug,
-          socket.assigns.previous_object_type
-        )
-
-      form =
-        socket.assigns.form.source
-        |> Form.validate(params)
-        |> to_form()
-
-      capteur_slugs =
-        resolve_capteur_slugs(socket.assigns.capteurs, socket.assigns.selected_capteur_ids)
-
-      compatibilities = compute_compatibilities(params, socket.assigns.modeles, capteur_slugs)
-
-      voltage_compatible_count =
-        count_voltage_compatible(
-          socket.assigns.modeles,
-          params["voltage_min"],
-          params["voltage_max"]
-        )
-
-      {:noreply,
-       socket
-       |> assign(:step, step - 1)
-       |> assign(:form, form)
-       |> assign(:compatibilities, compatibilities)
-       |> assign(:voltage_compatible_count, voltage_compatible_count)
-       |> assign(:previous_object_type, params["object_type"])}
     else
       {:noreply, socket}
     end
@@ -179,83 +158,58 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     end
   end
 
-  @impl true
-  def handle_event("validate", %{"profil_montage" => params}, socket) do
-    params =
-      params
-      |> normalize_params()
-      |> maybe_autofill_voltage(
-        socket.assigns.trackable_type_by_slug,
-        socket.assigns.type_vehicule_by_slug,
-        socket.assigns.previous_object_type
-      )
+  def handle_event("save", _params, socket) do
+    features = MapSet.to_list(socket.assigns.selected_features)
+    name = socket.assigns.profile_name
+    description = socket.assigns.profile_description
+    modele_id = socket.assigns.selected_model_id
+    profile_params = build_profile_params(name, description, features, modele_id)
 
-    form =
-      socket.assigns.form.source
-      |> Form.validate(params)
-      |> to_form()
+    result =
+      case socket.assigns.profil do
+        nil ->
+          case ProfilMontage.create(profile_params, action: :create) do
+            {:ok, profil} ->
+              capteur_ids = resolve_required_capteur_ids(features)
+              sync_capteurs(profil.id, capteur_ids)
+              {:ok, profil, "créé"}
 
-    capteur_slugs =
-      resolve_capteur_slugs(socket.assigns.capteurs, socket.assigns.selected_capteur_ids)
-
-    compatibilities = compute_compatibilities(params, socket.assigns.modeles, capteur_slugs)
-
-    voltage_compatible_count =
-      count_voltage_compatible(
-        socket.assigns.modeles,
-        params["voltage_min"],
-        params["voltage_max"]
-      )
-
-    {:noreply,
-     socket
-     |> assign(:form, form)
-     |> assign(:compatibilities, compatibilities)
-     |> assign(:voltage_compatible_count, voltage_compatible_count)
-     |> assign(:previous_object_type, params["object_type"])}
-  end
-
-  @impl true
-  def handle_event("save", %{"profil_montage" => params}, socket) do
-    params = normalize_params(params)
-
-    case AshPhoenix.Form.submit(socket.assigns.form.source, params: params) do
-      {:ok, profil} ->
-        sync_capteurs(profil.id, socket.assigns.selected_capteur_ids)
-
-        for compat <- socket.assigns.compatibilities, compat.compatible do
-          Compatibilite
-          |> Ash.ActionInput.for_action(:calculer_compatibilite, %{
-            profil_id: profil.id,
-            modele_id: compat.modele.id
-          })
-          |> Ash.run_action!()
-        end
-
-        compat_count = Enum.count(socket.assigns.compatibilities, & &1.compatible)
-
-        message =
-          if socket.assigns.profil do
-            "Profil de montage modifié avec succès !"
-          else
-            "Profil de montage créé avec succès ! #{compat_count} compatibilité(s) enregistrée(s)."
+            {:error, reason} ->
+              {:error, reason}
           end
 
-        TagIp.Notification.broadcast({:notification, :info, message})
+        profil ->
+          case ProfilMontage.update(profil, profile_params, action: :update) do
+            {:ok, profil} ->
+              capteur_ids = resolve_required_capteur_ids(features)
+              sync_capteurs(profil.id, capteur_ids)
+              {:ok, profil, "modifié"}
 
-        return_to = socket.assigns.return_to || ~p"/profils"
+            {:error, reason} ->
+              {:error, reason}
+          end
+      end
+
+    case result do
+      {:ok, profil, action} ->
+        label = if action == "créé", do: "créé", else: "modifié"
+
+        TagIp.Notification.broadcast(
+          {:notification, :info, "Profil de montage #{label} avec succès !"}
+        )
 
         {:noreply,
          socket
-         |> put_flash(:info, message)
-         |> push_navigate(to: return_to)}
+         |> put_flash(:info, "Profil de montage #{label} avec succès !")
+         |> assign(:profile_saved, true)
+         |> assign(:saved_profile_id, profil.id)}
 
-      {:error, form} ->
-        {:noreply, assign(socket, form: to_form(form))}
+      {:error, reason} ->
+        {:noreply,
+         put_flash(socket, :error, "Erreur lors de l'enregistrement : #{inspect(reason)}")}
     end
   end
 
-  @impl true
   def handle_event("toggle_capteur", %{"id" => id}, socket) do
     selected = socket.assigns.selected_capteur_ids
 
@@ -271,245 +225,240 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
 
   defp apply_action(socket, :new, %{"duplicate_from" => source_id}) do
     source = Ash.get!(ProfilMontage, source_id, domain: TagIp.TagIp)
-    source = Ash.load!(source, [:capteurs])
-
-    source_capteur_ids = MapSet.new(source.capteurs || [], & &1.id)
-
-    params = %{
-      "name" => source.name,
-      "description" => source.description,
-      "reporting_interval" => source.reporting_interval,
-      "object_type" => source.object_type,
-      "voltage_min" => source.voltage_min,
-      "voltage_max" => source.voltage_max,
-      "buzzer" => source.buzzer,
-      "fuel_probe_type" => source.fuel_probe_type,
-      "geofence_enabled" => source.geofence_enabled,
-      "driver_id_type" => source.driver_id_type,
-      "can_bus_requis" => source.can_bus_requis,
-      "one_wire_requis" => source.one_wire_requis,
-      "rs232_requis" => source.rs232_requis,
-      "rs485_requis" => source.rs485_requis,
-      "inputs_requis" => source.inputs_requis,
-      "analog_inputs_requis" => source.analog_inputs_requis,
-      "outputs_requis" => source.outputs_requis,
-      "montage_exterieur" => source.montage_exterieur,
-      "antenne_deportee" => source.antenne_deportee,
-      "accelerometre_requis" => source.accelerometre_requis,
-      "ultra_low_power_requis" => source.ultra_low_power_requis
-    }
-
-    form =
-      Form.for_create(ProfilMontage, :create, as: "profil_montage", domain: TagIp.TagIp)
-      |> Form.validate(params)
-      |> to_form()
-
-    compatibilities = compute_compatibilities(params, socket.assigns.modeles)
-
-    voltage_compatible_count =
-      count_voltage_compatible(
-        socket.assigns.modeles,
-        params["voltage_min"],
-        params["voltage_max"]
-      )
 
     socket
     |> assign(:page_title, "Dupliquer le profil #{source.name}")
-    |> assign(:form, form)
     |> assign(:profil, nil)
-    |> assign(:compatibilities, compatibilities)
-    |> assign(:voltage_compatible_count, voltage_compatible_count)
-    |> assign(:selected_capteur_ids, source_capteur_ids)
-    |> assign(:previous_object_type, source.object_type)
+    |> assign(:profile_name, source.name)
+    |> assign(:profile_description, source.description || "")
+    |> assign(:selected_supplier, nil)
+    |> assign(:available_models, [])
+    |> assign(:selected_model_id, nil)
+    |> assign(:selected_model, nil)
+    |> assign(:selected_features, MapSet.new())
+    |> assign(:validation_result, nil)
+    |> assign(:profile_saved, false)
   end
 
   defp apply_action(socket, :new, _params) do
-    form =
-      Form.for_create(ProfilMontage, :create, as: "profil_montage", domain: TagIp.TagIp)
-      |> to_form()
-
     socket
     |> assign(:page_title, "Nouveau profil de montage")
-    |> assign(:form, form)
     |> assign(:profil, nil)
-    |> assign(:voltage_compatible_count, nil)
-    |> assign(:compatibilities, [])
-    |> assign(:previous_object_type, nil)
+    |> assign(:profile_name, "")
+    |> assign(:profile_description, "")
+    |> assign(:selected_supplier, nil)
+    |> assign(:available_models, [])
+    |> assign(:selected_model_id, nil)
+    |> assign(:selected_model, nil)
+    |> assign(:selected_features, MapSet.new())
+    |> assign(:validation_result, nil)
+    |> assign(:profile_saved, false)
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
-    profil = Ash.get!(ProfilMontage, id, domain: TagIp.TagIp)
-    profil = Ash.load!(profil, [:capteurs])
+    profil =
+      Ash.get!(ProfilMontage, id)
+      |> Ash.load!(:modele_traceur)
 
-    source_capteur_ids = MapSet.new(profil.capteurs || [], & &1.id)
+    modele = profil.modele_traceur
+    modele = modele && Ash.load!(modele, [:features, :capteurs])
 
-    form =
-      Form.for_update(profil, :update, as: "profil_montage")
-      |> to_form()
+    supplier = modele && modele.brand
 
-    params = %{
-      "object_type" => profil.object_type,
-      "voltage_min" => profil.voltage_min,
-      "voltage_max" => profil.voltage_max,
-      "buzzer" => profil.buzzer,
-      "fuel_probe_type" => profil.fuel_probe_type,
-      "geofence_enabled" => profil.geofence_enabled,
-      "can_bus_requis" => profil.can_bus_requis,
-      "one_wire_requis" => profil.one_wire_requis,
-      "rs232_requis" => profil.rs232_requis,
-      "rs485_requis" => profil.rs485_requis,
-      "inputs_requis" => profil.inputs_requis,
-      "analog_inputs_requis" => profil.analog_inputs_requis,
-      "outputs_requis" => profil.outputs_requis,
-      "montage_exterieur" => profil.montage_exterieur,
-      "antenne_deportee" => profil.antenne_deportee,
-      "accelerometre_requis" => profil.accelerometre_requis,
-      "ultra_low_power_requis" => profil.ultra_low_power_requis
-    }
+    available =
+      if supplier do
+        socket.assigns.modeles
+        |> Enum.filter(&(&1.brand == supplier))
+        |> Enum.sort_by(& &1.nom)
+      else
+        []
+      end
 
-    compatibilities = compute_compatibilities(params, socket.assigns.modeles)
-
-    voltage_compatible_count =
-      count_voltage_compatible(
-        socket.assigns.modeles,
-        params["voltage_min"],
-        params["voltage_max"]
-      )
+    features = MapSet.new(profil.feature_slugs || [])
 
     socket
     |> assign(:page_title, "Modifier le profil #{profil.name}")
-    |> assign(:form, form)
     |> assign(:profil, profil)
-    |> assign(:compatibilities, compatibilities)
-    |> assign(:voltage_compatible_count, voltage_compatible_count)
-    |> assign(:selected_capteur_ids, source_capteur_ids)
-    |> assign(:previous_object_type, profil.object_type)
+    |> assign(:profile_name, profil.name)
+    |> assign(:profile_description, profil.description || "")
+    |> assign(:selected_supplier, supplier)
+    |> assign(:available_models, available)
+    |> assign(:selected_model_id, modele && modele.id)
+    |> assign(:selected_model, modele)
+    |> assign(:selected_features, features)
+    |> assign(:validation_result, nil)
+    |> assign(:profile_saved, false)
   end
 
-  defp compute_compatibilities(params, modeles, capteur_slugs \\ []) do
-    modeles
-    |> Enum.map(fn modele ->
-      result = Compatibilite.calculer_depuis_params(params, modele, capteur_slugs)
+  defp sync_form_data(socket, params) do
+    supplier = params["supplier"]
 
-      %{
-        modele: modele,
-        score: result.score,
-        compatible: result.compatible,
-        details: result.details
-      }
-    end)
-    |> Enum.sort_by(fn c -> -c.score end)
-  end
+    if supplier && supplier != "" do
+      available =
+        socket.assigns.modeles
+        |> Enum.filter(&(&1.brand == supplier))
+        |> Enum.sort_by(& &1.nom)
 
-  defp count_voltage_compatible(_modeles, nil, _), do: nil
-  defp count_voltage_compatible(_modeles, _, nil), do: nil
-  defp count_voltage_compatible(_modeles, "", _), do: nil
-  defp count_voltage_compatible(_modeles, _, ""), do: nil
+      socket =
+        socket
+        |> assign(:selected_supplier, supplier)
+        |> assign(:available_models, available)
 
-  defp count_voltage_compatible(modeles, voltage_min, voltage_max) do
-    v_min = parse_float(voltage_min)
-    v_max = parse_float(voltage_max)
+      model_id = params["model_id"]
 
-    if is_nil(v_min) or is_nil(v_max) do
-      nil
+      if model_id && model_id != "" do
+        modele = Enum.find(socket.assigns.modeles, &(&1.id == model_id))
+        modele = modele && Ash.load!(modele, [:features, :capteurs])
+
+        socket
+        |> assign(:selected_model_id, model_id)
+        |> assign(:selected_model, modele)
+      else
+        socket
+      end
     else
-      modeles
-      |> Enum.count(fn modele ->
-        modele.voltage_min && modele.voltage_max &&
-          v_min >= modele.voltage_min &&
-          v_max <= modele.voltage_max
-      end)
+      socket
     end
   end
 
-  defp parse_float(nil), do: nil
-  defp parse_float(""), do: nil
-  defp parse_float(val) when is_number(val), do: val * 1.0
-
-  defp parse_float(val) when is_binary(val) do
-    case Float.parse(val) do
-      {f, _} -> f
-      :error -> nil
+  defp validate_step(socket, 1) do
+    if socket.assigns.profile_name == "" do
+      {put_flash(socket, :error, "Veuillez saisir un nom de profil."), false}
+    else
+      {socket, true}
     end
   end
 
-  defp normalize_params(params) when is_map(params) do
-    Map.new(params, fn
-      {key, val} when is_list(val) -> {key, List.last(val)}
-      {key, val} when is_map(val) -> {key, normalize_params(val)}
-      {key, val} -> {key, val}
-    end)
-  end
-
-  defp normalize_params(val), do: val
-
-  defp maybe_autofill_voltage(
-         params,
-         trackable_type_by_slug,
-         type_vehicule_by_slug,
-         previous_object_type
-       ) do
-    object_type = params["object_type"]
-
+  defp validate_step(socket, 2) do
     cond do
-      is_nil(object_type) or object_type == "" ->
-        params
+      is_nil(socket.assigns.selected_supplier) ->
+        {put_flash(socket, :error, "Veuillez sélectionner un fournisseur."), false}
 
-      object_type == previous_object_type ->
-        params
-
-      tt = trackable_type_by_slug[object_type] ->
-        fill_voltage(params, tt)
-
-      tv = type_vehicule_by_slug[object_type] ->
-        fill_voltage(params, tv)
+      is_nil(socket.assigns.selected_model_id) ->
+        {put_flash(socket, :error, "Veuillez sélectionner un modèle de traceur."), false}
 
       true ->
-        params
+        {socket, true}
     end
   end
 
-  defp fill_voltage(params, source) when not is_struct(source) do
-    params
+  defp validate_step(socket, 3) do
+    {socket, true}
   end
 
-  defp fill_voltage(params, source) do
-    if source.voltage_min && source.voltage_max do
-      params
-      |> Map.put("voltage_min", source.voltage_min)
-      |> Map.put("voltage_max", source.voltage_max)
+  defp run_final_validation(socket) do
+    modele_id = socket.assigns.selected_model_id
+    features = MapSet.to_list(socket.assigns.selected_features)
+    result = CapabilityMatrix.check_full_compatibility(modele_id, features)
+    assign(socket, :validation_result, result)
+  end
+
+  defp build_profile_params(name, description, feature_slugs, modele_traceur_id) do
+    feature_map = MapSet.new(feature_slugs)
+    fuel_type = resolve_fuel_type(feature_map)
+
+    %{
+      name: name,
+      description: description,
+      feature_slugs: feature_slugs,
+      modele_traceur_id: modele_traceur_id,
+      reporting_interval: "interval_30s",
+      buzzer: MapSet.member?(feature_map, "buzzer_feature"),
+      driver_id_type: if(MapSet.member?(feature_map, "driver_id"), do: "rfid", else: nil),
+      fuel_probe_type: fuel_type,
+      accelerometre_requis: needs_accelerometer?(feature_map),
+      geofence_enabled: true,
+      can_bus_requis: fuel_type == "can",
+      one_wire_requis: false,
+      rs232_requis: fuel_type == "rs232",
+      rs485_requis: false,
+      bluetooth_ble_requis: fuel_type == "ble",
+      inputs_requis: if(MapSet.member?(feature_map, "alert_button"), do: 1, else: nil),
+      analog_inputs_requis: if(fuel_type == "analog", do: 1, else: nil),
+      outputs_requis: nil,
+      montage_exterieur: false,
+      antenne_deportee: false,
+      ultra_low_power_requis: false
+    }
+  end
+
+  defp resolve_fuel_type(feature_map) do
+    cond do
+      MapSet.member?(feature_map, "fuel_analog") -> "analog"
+      MapSet.member?(feature_map, "fuel_rs232") -> "rs232"
+      MapSet.member?(feature_map, "fuel_ble") -> "ble"
+      MapSet.member?(feature_map, "fuel_can") -> "can"
+      true -> nil
+    end
+  end
+
+  defp needs_accelerometer?(feature_map) do
+    MapSet.member?(feature_map, "green_driving") or
+      MapSet.member?(feature_map, "crash_detection")
+  end
+
+  defp resolve_required_capteur_ids(feature_slugs) do
+    required_slugs = CapabilityMatrix.extract_required_capteurs(feature_slugs)
+
+    if required_slugs == [] do
+      []
     else
-      params
+      all_capteurs = Capteur.read!()
+      slug_to_id = Enum.into(all_capteurs, %{}, &{&1.slug, &1.id})
+
+      required_slugs
+      |> Enum.map(&slug_to_id[&1])
+      |> Enum.reject(&is_nil/1)
     end
   end
 
-  defp sync_capteurs(profil_id, selected_ids) do
+  defp sync_capteurs(profil_id, capteur_ids) do
     existing =
-      TagIp.Resources.ProfilMontageCapteur.read!()
+      ProfilMontageCapteur.read!()
       |> Enum.filter(&(&1.profil_montage_id == profil_id))
 
-    Enum.each(existing, &TagIp.Resources.ProfilMontageCapteur.destroy(&1))
+    Enum.each(existing, &ProfilMontageCapteur.destroy(&1))
 
-    Enum.each(selected_ids, fn id ->
-      TagIp.Resources.ProfilMontageCapteur.create(%{
+    Enum.each(capteur_ids, fn id ->
+      ProfilMontageCapteur.create(%{
         profil_montage_id: profil_id,
         capteur_id: id
       })
     end)
   end
 
-  defp resolve_capteur_slugs(capteurs, selected_ids) do
-    capteurs
-    |> Enum.filter(&MapSet.member?(selected_ids, &1.id))
+  def supported_for_model(modele_id, matrix_features) do
+    supported_slugs = CapabilityMatrix.supported_feature_slugs(modele_id) |> MapSet.new()
+
+    matrix_features
     |> Enum.map(& &1.slug)
+    |> Enum.filter(&MapSet.member?(supported_slugs, &1))
   end
 
-  defp capteur_category_label(nil), do: "Non catégorisé"
-  defp capteur_category_label("energy"), do: "Énergie"
-  defp capteur_category_label("safety"), do: "Sécurité"
-  defp capteur_category_label("environment"), do: "Environnement"
-  defp capteur_category_label("driver"), do: "Conducteur"
-  defp capteur_category_label("vehicle_status"), do: "État du véhicule"
-  defp capteur_category_label("connectivity"), do: "Connectivité"
-  defp capteur_category_label(category), do: category |> String.capitalize()
+  def supplier_label(supplier) do
+    case supplier do
+      "Wondeproud" -> "WonderProud"
+      other -> other
+    end
+  end
+
+  def feature_label(slug) do
+    features = [
+      {"alert_button", "Alerte bouton (SOS)"},
+      {"buzzer_feature", "Buzzer"},
+      {"driver_id", "ID chauffeur"},
+      {"green_driving", "Green Driving"},
+      {"fuel_cap", "Bouchon réservoir"},
+      {"fuel_analog", "Carburant (Analogique)"},
+      {"fuel_rs232", "Carburant (RS232)"},
+      {"fuel_ble", "Carburant (BLE)"},
+      {"fuel_can", "Carburant (CAN)"},
+      {"crash_detection", "Crash Detection"}
+    ]
+
+    case Enum.find(features, fn {s, _} -> s == slug end) do
+      {_, label} -> {label, ""}
+      nil -> {slug, ""}
+    end
+  end
 end

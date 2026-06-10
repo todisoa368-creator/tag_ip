@@ -81,6 +81,7 @@ defmodule TagIpWeb.ModeleTraceurLive.Form do
       "one_wire" => source.one_wire,
       "rs232" => source.rs232,
       "rs485" => source.rs485,
+      "bluetooth_ble" => source.bluetooth_ble,
       "nb_digital_inputs" => source.nb_digital_inputs,
       "nb_analog_inputs" => source.nb_analog_inputs,
       "nb_outputs" => source.nb_outputs,

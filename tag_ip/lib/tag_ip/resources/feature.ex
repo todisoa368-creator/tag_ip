@@ -32,6 +32,14 @@ defmodule TagIp.Resources.Feature do
     timestamps()
   end
 
+  relationships do
+    many_to_many :modeles_traceur, TagIp.Resources.ModeleTraceur do
+      through(TagIp.Resources.ModelFeature)
+      source_attribute_on_join_resource(:feature_id)
+      destination_attribute_on_join_resource(:modele_traceur_id)
+    end
+  end
+
   actions do
     defaults([:read, :destroy, :update])
 

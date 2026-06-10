@@ -55,10 +55,7 @@ defmodule TagIp.Resources.Compatibilite do
 
     action :clear_all, :integer do
       run(fn _input, _context ->
-        # On utilise le Repo pour supprimer toutes les entrées.
-        # delete_all retourne un tuple {nombre_supprimé, nil}
         {count, _} = TagIp.Repo.delete_all(TagIp.Resources.Compatibilite)
-
         {:ok, count}
       end)
     end
@@ -69,12 +66,15 @@ defmodule TagIp.Resources.Compatibilite do
       returns(:map)
 
       run(fn input, _ ->
-        profil = Ash.get!(ProfilMontage, input.arguments.profil_id)
+        profil =
+          ProfilMontage
+          |> Ash.get!(input.arguments.profil_id)
+          |> Ash.load!([:peripherals])
 
         modele =
           ModeleTraceur
           |> Ash.get!(input.arguments.modele_id)
-          |> Ash.load!([:types_vehicule, :alimentations, :capteurs])
+          |> Ash.load!([:types_vehicule, :alimentations, :capteurs, :model_ports])
 
         {score, compatible, reasons} = calculer(profil, modele)
         details = Enum.join(reasons, "\n")
@@ -98,7 +98,21 @@ defmodule TagIp.Resources.Compatibilite do
     end
   end
 
-  def calculer(profil, modele, capteur_slugs \\ nil) do
+  def calculer(profil, modele, capteur_slugs \\ nil, peripheral_ids \\ []) do
+    captured_capteur_slugs =
+      if capteur_slugs in [nil, []] do
+        if is_list(profil.capteurs), do: Enum.map(profil.capteurs, & &1.slug), else: []
+      else
+        capteur_slugs
+      end
+
+    captured_peripheral_ids =
+      if peripheral_ids in [nil, []] do
+        if is_list(profil.peripherals), do: Enum.map(profil.peripherals, & &1.id), else: []
+      else
+        peripheral_ids
+      end
+
     checks = [
       &check_type_vehicule/2,
       &check_alimentation/2,
@@ -106,6 +120,7 @@ defmodule TagIp.Resources.Compatibilite do
       &check_one_wire/2,
       &check_rs232/2,
       &check_rs485/2,
+      &check_bluetooth_ble/2,
       &check_digital_inputs/2,
       &check_analog_inputs/2,
       &check_outputs/2,
@@ -114,34 +129,26 @@ defmodule TagIp.Resources.Compatibilite do
       &check_accelerometer/2,
       &check_buffer_memory/2,
       &check_antennes_externes/2,
-      &check_buzzer/2,
-      &check_fuel_probe/2,
-      &check_geofence/2
+      &check_buzzer/3,
+      &check_geofence/3,
+      &check_fuel_probe/3,
+      &check_capteurs/3,
+      &check_peripheral_ports/3
     ]
 
-    results = Enum.map(checks, fn check -> check.(profil, modele) end)
-
-    captured_capteur_slugs =
-      if capteur_slugs in [nil, []] do
-        if is_list(profil.capteurs), do: Enum.map(profil.capteurs, & &1.slug), else: []
-      else
-        capteur_slugs
-      end
-
-    capteur_result =
-      if captured_capteur_slugs == [] do
-        {0, nil}
-      else
-        check_capteurs(profil, modele, captured_capteur_slugs)
-      end
-
-    results = results ++ [capteur_result]
+    results =
+      Enum.map(checks, fn check ->
+        case check do
+          f when is_function(f, 2) -> f.(profil, modele)
+          f when is_function(f, 3) -> f.(profil, modele, captured_capteur_slugs)
+        end
+      end)
 
     reasons =
       results |> Enum.map(&elem(&1, 1)) |> Enum.reject(&is_nil/1)
 
     earned = results |> Enum.map(&elem(&1, 0)) |> Enum.sum()
-    max_possible = calculate_max_possible(profil, captured_capteur_slugs)
+    max_possible = calculate_max_possible(profil, captured_capteur_slugs, captured_peripheral_ids)
 
     score = if max_possible > 0, do: min(100, round(earned / max_possible * 100)), else: 0
 
@@ -154,32 +161,34 @@ defmodule TagIp.Resources.Compatibilite do
     {score, compatible, reasons}
   end
 
-  def calculer_depuis_params(profil_params, modele, capteur_slugs \\ []) do
+  def calculer_depuis_params(profil_params, modele, capteur_slugs \\ [], peripheral_ids \\ []) do
     profil_params = Map.new(profil_params, fn {k, v} -> {to_string(k), v} end)
 
     capteur_slugs = Enum.map(capteur_slugs || [], &to_string(&1))
+    peripheral_ids = peripheral_ids || []
 
     profil = %TagIp.Resources.ProfilMontage{
       object_type: profil_params["object_type"],
       voltage_min: parse_float(profil_params["voltage_min"]),
       voltage_max: parse_float(profil_params["voltage_max"]),
-      buzzer: profil_params["buzzer"] in [true, "true"],
-      fuel_probe_type: profil_params["fuel_probe_type"],
-      geofence_enabled: profil_params["geofence_enabled"] in [true, "true"],
       can_bus_requis: profil_params["can_bus_requis"] in [true, "true"],
       one_wire_requis: profil_params["one_wire_requis"] in [true, "true"],
       rs232_requis: profil_params["rs232_requis"] in [true, "true"],
       rs485_requis: profil_params["rs485_requis"] in [true, "true"],
+      bluetooth_ble_requis: profil_params["bluetooth_ble_requis"] in [true, "true"],
       inputs_requis: parse_int(profil_params["inputs_requis"]),
       analog_inputs_requis: parse_int(profil_params["analog_inputs_requis"]),
       outputs_requis: parse_int(profil_params["outputs_requis"]),
+      buzzer: profil_params["buzzer"] in [true, "true"],
+      geofence_enabled: profil_params["geofence_enabled"] in [true, "true"],
+      fuel_probe_type: profil_params["fuel_probe_type"],
       montage_exterieur: profil_params["montage_exterieur"] in [true, "true"],
       antenne_deportee: profil_params["antenne_deportee"] in [true, "true"],
       accelerometre_requis: profil_params["accelerometre_requis"] in [true, "true"],
       ultra_low_power_requis: profil_params["ultra_low_power_requis"] in [true, "true"]
     }
 
-    {score, compatible, reasons} = calculer(profil, modele, capteur_slugs)
+    {score, compatible, reasons} = calculer(profil, modele, capteur_slugs, peripheral_ids)
     %{score: score, compatible: compatible, details: reasons}
   end
 
@@ -200,38 +209,46 @@ defmodule TagIp.Resources.Compatibilite do
   defp parse_int(val) when is_binary(val), do: String.to_integer(val)
 
   # ---------------------------------------------------------------------------
-  # 1. Type de véhicule (8 pts)
+  # Points maximum possibles
   # ---------------------------------------------------------------------------
-  defp calculate_max_possible(profil, capteur_slugs) do
-    Enum.reduce(
-      [
-        if(profil.object_type not in [nil, ""], do: 8, else: 0),
-        if(profil.voltage_min not in [nil, ""] and profil.voltage_max not in [nil, ""],
-          do: 10,
-          else: 0
-        ),
-        if(profil.can_bus_requis, do: 8, else: 0),
-        if(profil.one_wire_requis, do: 5, else: 0),
-        if(profil.rs232_requis, do: 4, else: 0),
-        if(profil.rs485_requis, do: 4, else: 0),
-        if(profil.inputs_requis not in [nil, 0], do: 8, else: 0),
-        if(profil.analog_inputs_requis not in [nil, 0], do: 5, else: 0),
-        if(profil.outputs_requis not in [nil, 0], do: 5, else: 0),
-        if(profil.montage_exterieur, do: 10, else: 0),
-        if(profil.ultra_low_power_requis, do: 5, else: 0),
-        if(profil.accelerometre_requis, do: 5, else: 0),
-        # buffer memory (always active)
-        5,
-        if(profil.antenne_deportee, do: 4, else: 0),
-        if(profil.buzzer, do: 4, else: 0),
-        if(profil.fuel_probe_type not in [nil, "", "none"], do: 5, else: 0),
-        if(profil.geofence_enabled, do: 5, else: 0),
-        if(capteur_slugs not in [nil, []], do: 5, else: 0)
-      ],
-      &+/2
-    )
+  defp calculate_max_possible(profil, capteur_slugs, peripheral_ids) do
+    criteria = [
+      if(profil.object_type not in [nil, ""], do: 8, else: 0),
+      if(profil.voltage_min not in [nil, ""] and profil.voltage_max not in [nil, ""],
+        do: 10,
+        else: 0
+      ),
+      if(profil.can_bus_requis, do: 8, else: 0),
+      if(profil.one_wire_requis, do: 5, else: 0),
+      if(profil.rs232_requis, do: 4, else: 0),
+      if(profil.rs485_requis, do: 4, else: 0),
+      if(profil.bluetooth_ble_requis, do: 4, else: 0),
+      if(profil.inputs_requis not in [nil, 0], do: 8, else: 0),
+      if(profil.analog_inputs_requis not in [nil, 0], do: 5, else: 0),
+      if(profil.outputs_requis not in [nil, 0], do: 5, else: 0),
+      if(profil.montage_exterieur, do: 10, else: 0),
+      if(profil.ultra_low_power_requis, do: 5, else: 0),
+      if(profil.accelerometre_requis, do: 5, else: 0),
+      if(profil.antenne_deportee, do: 4, else: 0),
+      if(profil.buzzer, do: 4, else: 0),
+      if(profil.geofence_enabled, do: 5, else: 0),
+      if(profil.fuel_probe_type not in [nil, "", "none"], do: 5, else: 0),
+      if(capteur_slugs not in [nil, []], do: 5, else: 0),
+      if(peripheral_ids not in [nil, []], do: 5, else: 0)
+    ]
+
+    active_criteria? = Enum.any?(criteria, &(&1 > 0))
+
+    if active_criteria? do
+      Enum.sum(criteria) + 5
+    else
+      0
+    end
   end
 
+  # ---------------------------------------------------------------------------
+  # 1. Type de véhicule (8 pts)
+  # ---------------------------------------------------------------------------
   defp check_type_vehicule(profil, modele) do
     types_compatibles = Enum.map(modele.types_vehicule || [], & &1.slug)
 
@@ -250,19 +267,17 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
-  # 2. Alimentation / Plage de Tension (10 pts) - CORRIGÉ ⚡
+  # 2. Alimentation / Plage de Tension (10 pts)
   # ---------------------------------------------------------------------------
   defp check_alimentation(profil, modele) do
     if is_nil(profil.voltage_min) or is_nil(profil.voltage_max) do
       {0, nil}
     else
-      # Check 1 : comparer directement en Volts
       direct_match? =
         !is_nil(modele.voltage_min) && !is_nil(modele.voltage_max) &&
           profil.voltage_min >= modele.voltage_min &&
           profil.voltage_max <= modele.voltage_max
 
-      # Check 2 : fallback sur les slugs d'alimentation (rétrocompatibilité)
       alims = Enum.map(modele.alimentations || [], & &1.slug)
       ranges = parse_voltage_ranges(alims)
 
@@ -354,7 +369,22 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
-  # 7. Entrées Numériques — Digital Inputs (8 pts)
+  # 7. Bluetooth BLE (4 pts)
+  # ---------------------------------------------------------------------------
+  defp check_bluetooth_ble(profil, modele) do
+    if profil.bluetooth_ble_requis do
+      if modele.bluetooth_ble do
+        {4, "✓ Bluetooth BLE supporté"}
+      else
+        {0, "✗ Bluetooth BLE non supporté par ce traceur"}
+      end
+    else
+      {0, nil}
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # 8. Entrées Numériques — Digital Inputs (8 pts)
   # ---------------------------------------------------------------------------
   defp check_digital_inputs(profil, modele) do
     requis = profil.inputs_requis
@@ -376,7 +406,7 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
-  # 8. Entrées Analogiques (5 pts)
+  # 9. Entrées Analogiques (5 pts)
   # ---------------------------------------------------------------------------
   defp check_analog_inputs(profil, modele) do
     requis = profil.analog_inputs_requis
@@ -398,7 +428,7 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
-  # 9. Sorties Numériques — Outputs (5 pts)
+  # 10. Sorties Numériques — Outputs (5 pts)
   # ---------------------------------------------------------------------------
   defp check_outputs(profil, modele) do
     requis = profil.outputs_requis
@@ -420,7 +450,7 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
-  # 10. Indice de Protection IP (10 pts)
+  # 11. Indice de Protection IP (10 pts)
   # ---------------------------------------------------------------------------
   defp check_ip_rating(profil, modele) do
     if profil.montage_exterieur do
@@ -436,7 +466,7 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
-  # 11. Ultra Low Power (5 pts)
+  # 12. Ultra Low Power (5 pts)
   # ---------------------------------------------------------------------------
   defp check_ultra_low_power(profil, modele) do
     if profil.ultra_low_power_requis do
@@ -451,7 +481,7 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
-  # 12. Accéléromètre 3 axes (5 pts)
+  # 13. Accéléromètre 3 axes (5 pts)
   # ---------------------------------------------------------------------------
   defp check_accelerometer(profil, modele) do
     if profil.accelerometre_requis do
@@ -466,14 +496,33 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
-  # 13. Mémoire tampon / Buffer (5 pts)
+  # 14. Mémoire tampon / Buffer (5 pts)
   # ---------------------------------------------------------------------------
-  defp check_buffer_memory(_profil, _modele) do
-    {5, nil}
+  defp check_buffer_memory(profil, _modele) do
+    has_active_criteria? =
+      profil.object_type not in [nil, ""] or
+        (not is_nil(profil.voltage_min) and not is_nil(profil.voltage_max)) or
+        profil.can_bus_requis or
+        profil.one_wire_requis or
+        profil.rs232_requis or
+        profil.rs485_requis or
+        profil.bluetooth_ble_requis or
+        profil.inputs_requis not in [nil, 0] or
+        profil.analog_inputs_requis not in [nil, 0] or
+        profil.outputs_requis not in [nil, 0] or
+        profil.montage_exterieur or
+        profil.ultra_low_power_requis or
+        profil.accelerometre_requis or
+        profil.antenne_deportee or
+        profil.buzzer or
+        profil.geofence_enabled or
+        profil.fuel_probe_type not in [nil, "", "none"]
+
+    if has_active_criteria?, do: {5, nil}, else: {0, nil}
   end
 
   # ---------------------------------------------------------------------------
-  # 14. Antennes externes / déportées (4 pts)
+  # 15. Antennes externes / déportées (4 pts)
   # ---------------------------------------------------------------------------
   defp check_antennes_externes(profil, modele) do
     if profil.antenne_deportee do
@@ -488,16 +537,14 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
-  # 15. Buzzer (4 pts)
+  # 16. Buzzer (4 pts) — via capteurs
   # ---------------------------------------------------------------------------
-  defp check_buzzer(profil, modele) do
-    capteurs = Enum.map(modele.capteurs || [], & &1.slug)
-
+  defp check_buzzer(profil, modele, _capteur_slugs) do
     if profil.buzzer do
-      if "buzzer" in capteurs do
+      if "buzzer" in Enum.map(modele.capteurs || [], & &1.slug) do
         {4, "✓ Buzzer supporté"}
       else
-        {0, "✗ Buzzer non supporté"}
+        {0, "✗ Buzzer non supporté par ce traceur"}
       end
     else
       {0, nil}
@@ -505,38 +552,14 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
-  # 16. Sonde carburant (5 pts) - CORRIGÉ ⛽
+  # 17. Geofence (5 pts) — via capteurs
   # ---------------------------------------------------------------------------
-  defp check_fuel_probe(profil, modele) do
-    capteurs = Enum.map(modele.capteurs || [], & &1.slug)
-
-    if is_nil(profil.fuel_probe_type) or profil.fuel_probe_type == "" or
-         profil.fuel_probe_type == "none" do
-      {0, nil}
-    else
-      probe_key = "fuel_probe_#{profil.fuel_probe_type}"
-      capteurs_str = if capteurs == [], do: "aucun", else: Enum.join(capteurs, ", ")
-
-      if probe_key in capteurs or profil.fuel_probe_type in capteurs do
-        {5, "✓ Sonde carburant '#{profil.fuel_probe_type}' supportée"}
-      else
-        {0,
-         "✗ Sonde carburant '#{profil.fuel_probe_type}' non supportée (disponibles: #{capteurs_str})"}
-      end
-    end
-  end
-
-  # ---------------------------------------------------------------------------
-  # 17. Geofence (5 pts)
-  # ---------------------------------------------------------------------------
-  defp check_geofence(profil, modele) do
-    capteurs = Enum.map(modele.capteurs || [], & &1.slug)
-
+  defp check_geofence(profil, modele, _capteur_slugs) do
     if profil.geofence_enabled do
-      if "geofence" in capteurs do
+      if "geofence" in Enum.map(modele.capteurs || [], & &1.slug) do
         {5, "✓ Géofencing supporté"}
       else
-        {0, "✗ Géofencing non supporté"}
+        {0, "✗ Géofencing non supporté par ce traceur"}
       end
     else
       {0, nil}
@@ -544,7 +567,28 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   # ---------------------------------------------------------------------------
-  # 18. Capteurs génériques (5 pts)
+  # 18. Sonde carburant (5 pts) — via capteurs
+  # ---------------------------------------------------------------------------
+  defp check_fuel_probe(profil, modele, _capteur_slugs) do
+    fuel_slugs =
+      ~w(fuel_level_monitor fuel_cap_monitor fuel_probe_analog fuel_probe_digital fuel_probe_can_bus)
+
+    if profil.fuel_probe_type not in [nil, "", "none"] do
+      model_capteurs = Enum.map(modele.capteurs || [], & &1.slug)
+      supported = Enum.filter(fuel_slugs, &(&1 in model_capteurs))
+
+      if supported != [] do
+        {5, "✓ Sonde(s) carburant supportée(s): #{Enum.join(supported, ", ")}"}
+      else
+        {0, "✗ Sonde carburant (#{profil.fuel_probe_type}) non supportée par ce traceur"}
+      end
+    else
+      {0, nil}
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # 19. Capteurs génériques (5 pts)
   # ---------------------------------------------------------------------------
   defp check_capteurs(_profil, modele, capteur_slugs)
        when is_list(capteur_slugs) and capteur_slugs != [] do
@@ -559,6 +603,31 @@ defmodule TagIp.Resources.Compatibilite do
   end
 
   defp check_capteurs(_profil, _modele, []), do: {0, nil}
+
+  # ---------------------------------------------------------------------------
+  # 20. Périphériques — ports requis (5 pts)
+  # ---------------------------------------------------------------------------
+  defp check_peripheral_ports(_profil, modele, peripheral_ids)
+       when is_list(peripheral_ids) and peripheral_ids != [] do
+    model_port_type_ids = Enum.map(modele.model_ports || [], & &1.port_type_id)
+
+    peripherals = Ash.read!(TagIp.Resources.Peripheral)
+
+    required_port_type_ids =
+      peripherals
+      |> Enum.filter(&(&1.id in peripheral_ids))
+      |> Enum.map(& &1.port_type_id)
+
+    missing = Enum.reject(required_port_type_ids, &(&1 in model_port_type_ids))
+
+    if missing == [] do
+      {5, "✓ Périphériques requis supportés (ports disponibles)"}
+    else
+      {0, "✗ Certains ports requis par les périphériques ne sont pas disponibles"}
+    end
+  end
+
+  defp check_peripheral_ports(_profil, _modele, []), do: {0, nil}
 
   # ---------------------------------------------------------------------------
   # Helpers

@@ -7,6 +7,14 @@ defmodule TagIpWeb.ReferenceLive.IndexTest do
 
   setup :register_and_log_in_user
 
+  setup %{conn: conn, user: user} do
+    # Assurer que l'utilisateur de test a le rôle admin pour accéder aux référentiels
+    user = Ecto.Changeset.change(user, role: "admin") |> TagIp.Repo.update!()
+    conn = TagIpWeb.ConnCase.log_in_user(conn, user)
+
+    {:ok, conn: conn, user: user}
+  end
+
   defp seed_reference_data do
     port_type =
       PortType.create!(%{

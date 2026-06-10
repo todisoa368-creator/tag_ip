@@ -1,40 +1,40 @@
-defmodule TagIp.Resources.PortType do
+defmodule TagIp.Resources.ProfileComparaison do
   use Ash.Resource,
     domain: TagIp.TagIp,
     data_layer: AshPostgres.DataLayer
 
   postgres do
-    table("port_types")
+    table("profile_comparaisons")
     repo(TagIp.Repo)
-  end
-
-  identities do
-    identity(:unique_slug, [:slug])
   end
 
   attributes do
     uuid_primary_key(:id)
 
-    attribute :slug, :string do
+    attribute :feature_slugs, {:array, :string} do
       allow_nil?(false)
+      default([])
       public?(true)
     end
 
-    attribute :label, :string do
+    attribute :peripheral_ids, {:array, :uuid} do
       allow_nil?(false)
+      default([])
       public?(true)
     end
 
-    attribute :description, :string do
+    attribute :compatible_tracker_ids, {:array, :uuid} do
+      allow_nil?(false)
+      default([])
+      public?(true)
+    end
+
+    attribute :user_id, :integer do
+      allow_nil?(true)
       public?(true)
     end
 
     timestamps()
-  end
-
-  relationships do
-    has_many :peripherals, TagIp.Resources.Peripheral
-    has_many :model_ports, TagIp.Resources.ModelPort
   end
 
   actions do
@@ -42,9 +42,7 @@ defmodule TagIp.Resources.PortType do
 
     create :create do
       primary?(true)
-      accept([:slug, :label, :description])
-      upsert?(true)
-      upsert_identity(:unique_slug)
+      accept([:feature_slugs, :peripheral_ids, :compatible_tracker_ids, :user_id])
     end
   end
 

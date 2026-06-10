@@ -22,7 +22,7 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
   def handle_params(%{"id" => id}, _url, socket) do
     case Ash.get(TagIp.Resources.ProfilMontage, id) do
       {:ok, profil} ->
-        profil = Ash.load!(profil, :capteurs)
+        profil = Ash.load!(profil, [:capteurs, :peripherals, :modele_traceur])
         compatibilites = list_compatibilites(id)
 
         {:noreply,
@@ -52,7 +52,7 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
   def handle_event("duplicate", %{"id" => id}, socket) do
     case ProfilMontage |> Ash.get(id) do
       {:ok, source} ->
-        source = Ash.load!(source, [:capteurs])
+        source = Ash.load!(source, [:capteurs, :peripherals])
 
         attrs = %{
           name: source.name,
@@ -69,6 +69,7 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
           one_wire_requis: source.one_wire_requis,
           rs232_requis: source.rs232_requis,
           rs485_requis: source.rs485_requis,
+          bluetooth_ble_requis: source.bluetooth_ble_requis,
           inputs_requis: source.inputs_requis,
           analog_inputs_requis: source.analog_inputs_requis,
           outputs_requis: source.outputs_requis,
@@ -79,10 +80,12 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
         }
 
         source_capteur_ids = Enum.map(source.capteurs || [], & &1.id)
+        source_peripheral_ids = Enum.map(source.peripherals || [], & &1.id)
 
         case ProfilMontage.create(attrs) do
           {:ok, profil} ->
             sync_capteurs(profil.id, source_capteur_ids)
+            sync_peripherals(profil.id, source_peripheral_ids)
 
             modeles =
               Ash.read!(ModeleTraceur,
@@ -204,5 +207,43 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
         capteur_id: id
       })
     end)
+  end
+
+  defp sync_peripherals(profil_id, selected_ids) do
+    existing =
+      TagIp.Resources.ProfilMontagePeripheral.read!()
+      |> Enum.filter(&(&1.profil_montage_id == profil_id))
+
+    Enum.each(existing, &TagIp.Resources.ProfilMontagePeripheral.destroy(&1))
+
+    Enum.each(selected_ids, fn id ->
+      TagIp.Resources.ProfilMontagePeripheral.create(%{
+        profil_montage_id: profil_id,
+        peripheral_id: id
+      })
+    end)
+  end
+
+  def feature_label(slug) do
+    case slug do
+      "alert_button" -> "Alerte bouton (SOS)"
+      "buzzer_feature" -> "Buzzer"
+      "driver_id" -> "ID chauffeur"
+      "green_driving" -> "Green Driving"
+      "fuel_cap" -> "Bouchon réservoir"
+      "fuel_analog" -> "Carburant (Analogique)"
+      "fuel_rs232" -> "Carburant (RS232)"
+      "fuel_ble" -> "Carburant (BLE)"
+      "fuel_can" -> "Carburant (CAN)"
+      "crash_detection" -> "Crash Detection"
+      _ -> slug
+    end
+  end
+
+  def supplier_label(supplier) do
+    case supplier do
+      "Wondeproud" -> "WonderProud"
+      other -> other
+    end
   end
 end

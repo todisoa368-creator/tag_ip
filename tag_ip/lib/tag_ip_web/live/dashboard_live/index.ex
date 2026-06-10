@@ -3,6 +3,7 @@ defmodule TagIpWeb.DashboardLive.Index do
 
   alias TagIp.Resources.ProfilMontage
   alias TagIp.Resources.ModeleTraceur
+  alias TagIp.Resources.ProfileComparaison
 
   @impl true
   def mount(_params, _session, socket) do
@@ -12,6 +13,7 @@ defmodule TagIpWeb.DashboardLive.Index do
      socket
      |> assign(page_title: "Dashboard · profile de montage ")
      |> assign(:stats, fetch_stats())
+     |> assign(:show_comparaison_modal, false)
      |> stream(:notifications, [], reset: true)}
   end
 
@@ -49,7 +51,7 @@ defmodule TagIpWeb.DashboardLive.Index do
       </div>
 
       <%!-- Hero/Welcome Section --%>
-      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 p-8 sm:p-10">
+      <div class="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-600 via-indigo-600 to-violet-600 p-8 sm:p-10">
         <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
         <div class="relative">
           <div class="flex items-center gap-3 mb-2">
@@ -77,10 +79,39 @@ defmodule TagIpWeb.DashboardLive.Index do
         </div>
       </div>
 
+      <%!-- Toolbar actions --%>
+      <div class="flex items-center justify-between mt-4 mb-2">
+        <div class="flex items-center gap-3">
+          <!-- Toolbar buttons removed: refresh and new comparaison -->
+        </div>
+        <div class="text-sm text-gray-200 hidden sm:block">
+          Dernière mise à jour : {Date.utc_today() |> Date.to_string()}
+        </div>
+      </div>
+
+      <%= if @show_comparaison_modal do %>
+        <div class="fixed inset-0 z-50 flex items-start justify-center pt-16">
+          <div class="absolute inset-0 bg-black/50" phx-click="close_comparaison_modal" />
+          <div class="relative w-full max-w-5xl mx-4">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+              <div class="flex items-center justify-between p-4 border-b">
+                <h3 class="text-lg font-semibold">Assistant de comparaison</h3>
+                <button phx-click="close_comparaison_modal" class="text-gray-500 hover:text-gray-800">
+                  <.icon name="hero-x-mark" class="size-5" />
+                </button>
+              </div>
+              <div class="p-0">
+                {live_render(@socket, TagIpWeb.ComparaisonLive.Index, id: :comparaison_modal)}
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
       <%!-- Cartes de statistiques --%>
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
         <div class="group relative bg-white overflow-hidden rounded-xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-          <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div class="absolute inset-0 bg-linear-to-r from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div class="relative px-5 py-6 sm:px-6">
             <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:bg-blue-200 transition-all duration-300">
@@ -98,7 +129,7 @@ defmodule TagIpWeb.DashboardLive.Index do
         </div>
 
         <div class="group relative bg-white overflow-hidden rounded-xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-          <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div class="absolute inset-0 bg-linear-to-r from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div class="relative px-5 py-6 sm:px-6">
             <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:bg-indigo-200 transition-all duration-300">
@@ -116,7 +147,7 @@ defmodule TagIpWeb.DashboardLive.Index do
         </div>
 
         <div class="group relative bg-white overflow-hidden rounded-xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-          <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div class="absolute inset-0 bg-linear-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div class="relative px-5 py-6 sm:px-6">
             <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:bg-emerald-200 transition-all duration-300">
@@ -137,18 +168,36 @@ defmodule TagIpWeb.DashboardLive.Index do
       <%!-- Section Accès Rapides --%>
       <div>
         <div class="flex items-center gap-2 mb-5">
-          <div class="h-px flex-1 bg-gradient-to-r from-gray-200 to-transparent" />
+          <div class="h-px flex-1 bg-linear-to-r from-gray-200 to-transparent" />
           <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Accès rapides</h2>
-          <div class="h-px flex-1 bg-gradient-to-l from-gray-200 to-transparent" />
+          <div class="h-px flex-1 bg-linear-to-l from-gray-200 to-transparent" />
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <.link
+            navigate={~p"/comparaison"}
+            class="group relative overflow-hidden bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
+          >
+            <div class="absolute inset-0 bg-linear-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div class="relative p-5 flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-linear-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shrink-0 shadow-lg shadow-cyan-200 group-hover:shadow-cyan-300 group-hover:scale-110 transition-all duration-300">
+                <.icon name="hero-scale" class="size-6 text-white" />
+              </div>
+              <div>
+                <p class="font-semibold text-gray-900 group-hover:text-cyan-600 transition-colors">
+                  Comparaison technique
+                </p>
+                <p class="text-sm text-gray-500">Traceurs GPS &#x2197;</p>
+              </div>
+            </div>
+          </.link>
+
           <.link
             navigate={~p"/profils"}
             class="group relative overflow-hidden bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
           >
-            <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div class="absolute inset-0 bg-linear-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div class="relative p-5 flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-200 group-hover:shadow-blue-300 group-hover:scale-110 transition-all duration-300">
+              <div class="w-12 h-12 rounded-xl bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-200 group-hover:shadow-blue-300 group-hover:scale-110 transition-all duration-300">
                 <.icon name="hero-document-text" class="size-6 text-white" />
               </div>
               <div>
@@ -164,9 +213,9 @@ defmodule TagIpWeb.DashboardLive.Index do
             navigate={~p"/modeles"}
             class="group relative overflow-hidden bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
           >
-            <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div class="absolute inset-0 bg-linear-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div class="relative p-5 flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-200 group-hover:shadow-indigo-300 group-hover:scale-110 transition-all duration-300">
+              <div class="w-12 h-12 rounded-xl bg-linear-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-200 group-hover:shadow-indigo-300 group-hover:scale-110 transition-all duration-300">
                 <.icon name="hero-cpu-chip" class="size-6 text-white" />
               </div>
               <div>
@@ -182,10 +231,10 @@ defmodule TagIpWeb.DashboardLive.Index do
             navigate={~p"/compatibilites"}
             class="group relative overflow-hidden bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
           >
-            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div class="absolute inset-0 bg-linear-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div class="relative p-5 flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-200 group-hover:shadow-emerald-300 group-hover:scale-110 transition-all duration-300">
-                <.icon name="hero-scale" class="size-6 text-white" />
+              <div class="w-12 h-12 rounded-xl bg-linear-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-200 group-hover:shadow-emerald-300 group-hover:scale-110 transition-all duration-300">
+                <.icon name="hero-shield-exclamation" class="size-6 text-white" />
               </div>
               <div>
                 <p class="font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">
@@ -197,12 +246,30 @@ defmodule TagIpWeb.DashboardLive.Index do
           </.link>
 
           <.link
+            navigate={~p"/comparaisons/enregistrees"}
+            class="group relative overflow-hidden bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
+          >
+            <div class="absolute inset-0 bg-linear-to-br from-rose-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div class="relative p-5 flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-linear-to-br from-rose-500 to-rose-600 flex items-center justify-center shrink-0 shadow-lg shadow-rose-200 group-hover:shadow-rose-300 group-hover:scale-110 transition-all duration-300">
+                <.icon name="hero-document-text" class="size-6 text-white" />
+              </div>
+              <div>
+                <p class="font-semibold text-gray-900 group-hover:text-rose-600 transition-colors">
+                  Comparaisons enreg.
+                </p>
+                <p class="text-sm text-gray-500">{@stats.comparaisons} enregistrées &#x2197;</p>
+              </div>
+            </div>
+          </.link>
+
+          <.link
             navigate={~p"/referentiels"}
             class="group relative overflow-hidden bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
           >
-            <div class="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div class="absolute inset-0 bg-linear-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div class="relative p-5 flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shrink-0 shadow-lg shadow-amber-200 group-hover:shadow-amber-300 group-hover:scale-110 transition-all duration-300">
+              <div class="w-12 h-12 rounded-xl bg-linear-to-br from-amber-500 to-amber-600 flex items-center justify-center shrink-0 shadow-lg shadow-amber-200 group-hover:shadow-amber-300 group-hover:scale-110 transition-all duration-300">
                 <.icon name="hero-book-open" class="size-6 text-white" />
               </div>
               <div>
@@ -217,7 +284,7 @@ defmodule TagIpWeb.DashboardLive.Index do
       </div>
 
       <%!-- Carte d'information système --%>
-      <div class="bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200 p-6">
+      <div class="bg-linear-to-r from-gray-50 to-white rounded-xl border border-gray-200 p-6">
         <div>
           <div class="flex items-center gap-2">
             <.icon name="hero-information-circle" class="size-5 text-blue-600" />
@@ -256,11 +323,30 @@ defmodule TagIpWeb.DashboardLive.Index do
     {:noreply, stream_delete(socket, :notifications, %{id: String.to_integer(id)})}
   end
 
+  @impl true
+  def handle_event("refresh", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:stats, fetch_stats())
+     |> put_flash(:info, "Statistiques rafraîchies")}
+  end
+
+  @impl true
+  def handle_event("open_comparaison_modal", _params, socket) do
+    {:noreply, assign(socket, :show_comparaison_modal, true)}
+  end
+
+  @impl true
+  def handle_event("close_comparaison_modal", _params, socket) do
+    {:noreply, assign(socket, :show_comparaison_modal, false)}
+  end
+
   defp fetch_stats do
     %{
       profils: Ash.count!(ProfilMontage, domain: TagIp.TagIp),
       modeles: Ash.count!(ModeleTraceur, domain: TagIp.TagIp),
-      alertes: Ash.count!(TagIp.Resources.Compatibilite, domain: TagIp.TagIp)
+      alertes: Ash.count!(TagIp.Resources.Compatibilite, domain: TagIp.TagIp),
+      comparaisons: Ash.count!(ProfileComparaison, domain: TagIp.TagIp)
     }
   end
 end

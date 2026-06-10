@@ -3,7 +3,7 @@ defmodule TagIp.Repo.Migrations.AddRoleToUsers do
 
   def change do
     alter table(:users) do
-      add :role, :string, default: "exploitation", null: false
+      add :role, :string, default: "user", null: false
     end
   end
 end

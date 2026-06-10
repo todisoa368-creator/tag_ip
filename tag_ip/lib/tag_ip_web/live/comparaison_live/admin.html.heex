@@ -1,0 +1,91 @@
+<TagIpWeb.Layouts.app flash={@flash} current_scope={@current_scope}>
+  <div class="max-w-7xl mx-auto my-10">
+    <div class="bg-white border border-gray-200 shadow-sm rounded-2xl p-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Comparaisons enregistrées</h1>
+          <p class="text-sm text-gray-500 mt-1">
+            Historique des comparaisons effectuées par les utilisateurs
+          </p>
+        </div>
+        <.link
+          navigate={~p"/comparaison"}
+          class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm"
+        >
+          <.icon name="hero-scale" class="w-4 h-4" /> Nouvelle comparaison
+        </.link>
+      </div>
+
+      <div
+        :if={Enum.empty?(@profiles)}
+        class="p-12 text-center bg-gray-50 rounded-xl border border-gray-200"
+      >
+        <.icon name="hero-document-text" class="size-12 text-gray-300 mx-auto mb-4" />
+        <h3 class="text-lg font-medium text-gray-500">Aucune comparaison enregistrée</h3>
+        <p class="text-sm text-gray-400 mt-1">
+          Les comparaisons validées par les utilisateurs apparaîtront ici.
+        </p>
+        <.link
+          navigate={~p"/comparaison"}
+          class="inline-flex items-center gap-2 mt-4 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all"
+        >
+          <.icon name="hero-scale" class="w-4 h-4" /> Effectuer une comparaison
+        </.link>
+      </div>
+
+      <div :if={!Enum.empty?(@profiles)} class="space-y-4">
+        <div
+          :for={profile <- Enum.sort_by(@profiles, & &1.inserted_at, {:desc, NaiveDateTime})}
+          class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-all duration-200"
+        >
+          <div class="p-5">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2 text-sm text-gray-500">
+                <.icon name="hero-calendar" class="size-4" />
+                {Calendar.strftime(profile.inserted_at, "%d %B %Y à %H:%M")}
+              </div>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                {length(profile.compatible_tracker_ids)} modèle(s) compatible(s)
+              </span>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-3">
+              <span
+                :for={slug <- profile.feature_slugs}
+                class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium"
+              >
+                {feature_label(slug)}
+              </span>
+              <span :if={Enum.empty?(profile.feature_slugs)} class="text-xs text-gray-400 italic">
+                Aucune fonctionnalité
+              </span>
+            </div>
+
+            <div :if={!Enum.empty?(profile.peripheral_ids)} class="flex flex-wrap gap-2 mb-3">
+              <span
+                :for={pid <- profile.peripheral_ids}
+                class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-medium"
+              >
+                {peripheral_name(@peripherals, pid)}
+              </span>
+            </div>
+
+            <details class="group">
+              <summary class="text-sm font-medium text-blue-600 cursor-pointer hover:text-blue-700">
+                Voir les {length(profile.compatible_tracker_ids)} modèle(s) compatible(s)
+              </summary>
+              <div class="mt-2 pl-2 space-y-1">
+                <p
+                  :for={tid <- profile.compatible_tracker_ids}
+                  class="text-sm text-gray-700 font-mono"
+                >
+                  {tracker_name(@modeles, tid)}
+                </p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</TagIpWeb.Layouts.app>

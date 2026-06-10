@@ -69,13 +69,19 @@
                   </span>
                 <% end %>
 
-                <%= if not is_nil(profil.fuel_probe_type) and profil.fuel_probe_type != "" do %>
-                  <span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10">
-                    Carburant: {String.upcase(profil.fuel_probe_type)}
+                <%= if profil.ultra_low_power_requis do %>
+                  <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-700/10">
+                    Ultra Low Power
                   </span>
                 <% end %>
 
-                <%= if !profil.can_bus_requis and !profil.accelerometre_requis and (is_nil(profil.fuel_probe_type) or profil.fuel_probe_type == "") do %>
+                <%= if profil.montage_exterieur do %>
+                  <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-700/10">
+                    Extérieur
+                  </span>
+                <% end %>
+
+                <%= if !profil.can_bus_requis and !profil.accelerometre_requis and !profil.ultra_low_power_requis and !profil.montage_exterieur do %>
                   <span class="text-xs italic text-gray-400">Standard</span>
                 <% end %>
               </div>

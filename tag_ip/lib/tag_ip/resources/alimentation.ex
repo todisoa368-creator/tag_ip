@@ -37,6 +37,14 @@ defmodule TagIp.Resources.Alimentation do
     timestamps()
   end
 
+  relationships do
+    many_to_many :modeles_traceur, TagIp.Resources.ModeleTraceur do
+      through(TagIp.Resources.ModeleTraceurAlimentation)
+      source_attribute_on_join_resource(:alimentation_id)
+      destination_attribute_on_join_resource(:modele_traceur_id)
+    end
+  end
+
   actions do
     defaults([:read, :destroy, :update])
 

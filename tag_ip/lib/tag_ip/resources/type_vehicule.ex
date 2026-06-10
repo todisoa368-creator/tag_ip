@@ -48,6 +48,14 @@ defmodule TagIp.Resources.TypeVehicule do
     timestamps()
   end
 
+  relationships do
+    many_to_many :modeles_traceur, TagIp.Resources.ModeleTraceur do
+      through(TagIp.Resources.ModeleTraceurTypeVehicule)
+      source_attribute_on_join_resource(:type_vehicule_id)
+      destination_attribute_on_join_resource(:modele_traceur_id)
+    end
+  end
+
   actions do
     defaults([:read, :destroy, :update])
 

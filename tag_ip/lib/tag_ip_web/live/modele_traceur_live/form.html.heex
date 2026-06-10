@@ -376,8 +376,14 @@
               <h4 class="text-sm font-semibold text-gray-700 mb-4">
                 Connectivité et Bus de Données
               </h4>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:border-blue-300 transition-colors">
+              <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <label class={[
+                  "flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all duration-150",
+                  if(@form[:can_bus].value in [true, "true"],
+                    do: "bg-amber-50 border-amber-300 ring-1 ring-amber-200",
+                    else: "bg-gray-50 border-gray-200 hover:border-amber-300 hover:bg-amber-50/30"
+                  )
+                ]}>
                   <input type="hidden" name={@form[:can_bus].name} value="false" />
                   <input
                     type="checkbox"
@@ -385,11 +391,18 @@
                     id={@form[:can_bus].id}
                     value="true"
                     checked={@form[:can_bus].value in [true, "true"]}
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    class="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
                   />
+                  <.icon name="hero-cpu-chip" class="size-4 text-amber-600 shrink-0" />
                   <span class="text-sm font-medium text-gray-800">CAN-Bus</span>
                 </label>
-                <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:border-blue-300 transition-colors">
+                <label class={[
+                  "flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all duration-150",
+                  if(@form[:one_wire].value in [true, "true"],
+                    do: "bg-blue-50 border-blue-300 ring-1 ring-blue-200",
+                    else: "bg-gray-50 border-gray-200 hover:border-blue-300 hover:bg-blue-50/30"
+                  )
+                ]}>
                   <input type="hidden" name={@form[:one_wire].name} value="false" />
                   <input
                     type="checkbox"
@@ -399,9 +412,16 @@
                     checked={@form[:one_wire].value in [true, "true"]}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
+                  <.icon name="hero-link" class="size-4 text-blue-600 shrink-0" />
                   <span class="text-sm font-medium text-gray-800">1-Wire</span>
                 </label>
-                <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:border-blue-300 transition-colors">
+                <label class={[
+                  "flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all duration-150",
+                  if(@form[:rs232].value in [true, "true"],
+                    do: "bg-cyan-50 border-cyan-300 ring-1 ring-cyan-200",
+                    else: "bg-gray-50 border-gray-200 hover:border-cyan-300 hover:bg-cyan-50/30"
+                  )
+                ]}>
                   <input type="hidden" name={@form[:rs232].name} value="false" />
                   <input
                     type="checkbox"
@@ -409,11 +429,22 @@
                     id={@form[:rs232].id}
                     value="true"
                     checked={@form[:rs232].value in [true, "true"]}
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    class="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500"
+                  />
+                  <.icon
+                    name="hero-arrow-right-end-on-rectangle"
+                    class="size-4 text-cyan-600 shrink-0"
                   />
                   <span class="text-sm font-medium text-gray-800">RS232</span>
                 </label>
-                <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:border-blue-300 transition-colors">
+                <label class={[
+                  "flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all duration-150",
+                  if(@form[:rs485].value in [true, "true"],
+                    do: "bg-emerald-50 border-emerald-300 ring-1 ring-emerald-200",
+                    else:
+                      "bg-gray-50 border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/30"
+                  )
+                ]}>
                   <input type="hidden" name={@form[:rs485].name} value="false" />
                   <input
                     type="checkbox"
@@ -421,9 +452,30 @@
                     id={@form[:rs485].id}
                     value="true"
                     checked={@form[:rs485].value in [true, "true"]}
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
                   />
+                  <.icon name="hero-arrow-path" class="size-4 text-emerald-600 shrink-0" />
                   <span class="text-sm font-medium text-gray-800">RS485</span>
+                </label>
+                <label class={[
+                  "flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all duration-150",
+                  if(@form[:bluetooth_ble].value in [true, "true"],
+                    do: "bg-violet-50 border-violet-300 ring-1 ring-violet-200",
+                    else:
+                      "bg-gray-50 border-gray-200 hover:border-violet-300 hover:bg-violet-50/30"
+                  )
+                ]}>
+                  <input type="hidden" name={@form[:bluetooth_ble].name} value="false" />
+                  <input
+                    type="checkbox"
+                    name={@form[:bluetooth_ble].name}
+                    id={@form[:bluetooth_ble].id}
+                    value="true"
+                    checked={@form[:bluetooth_ble].value in [true, "true"]}
+                    class="w-4 h-4 text-violet-600 border-gray-300 rounded focus:ring-violet-500"
+                  />
+                  <.icon name="hero-wifi" class="size-4 text-violet-600 shrink-0" />
+                  <span class="text-sm font-medium text-gray-800">Bluetooth BLE</span>
                 </label>
               </div>
             </div>

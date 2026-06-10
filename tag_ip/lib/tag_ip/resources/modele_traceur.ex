@@ -71,6 +71,11 @@ defmodule TagIp.Resources.ModeleTraceur do
       public?(true)
     end
 
+    attribute :bluetooth_ble, :boolean do
+      default(false)
+      public?(true)
+    end
+
     # Compatibilité élargie — Entrées/Sorties (I/O)
     attribute :nb_digital_inputs, :integer do
       public?(true)
@@ -174,6 +179,7 @@ defmodule TagIp.Resources.ModeleTraceur do
         :one_wire,
         :rs232,
         :rs485,
+        :bluetooth_ble,
         :accelerometer,
         :buffer_memory,
         :antennes_externes,
