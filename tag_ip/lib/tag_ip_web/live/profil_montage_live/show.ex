@@ -4,7 +4,6 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
   alias TagIp.Resources.Compatibilite
   alias TagIp.Resources.ModeleTraceur
   alias TagIp.Resources.ProfilMontage
-  alias TagIp.Resources.ProfilMontageCapteur
 
   @impl true
   def mount(_params, _session, socket) do
@@ -15,14 +14,24 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
      socket
      |> assign(:type_labels, type_labels)
      |> assign(:pending_delete_id, nil)
-     |> assign(:pending_delete_label, nil)}
+     |> assign(:pending_delete_label, nil)
+     |> assign(:calculating, false)}
   end
 
   @impl true
   def handle_params(%{"id" => id}, _url, socket) do
     case Ash.get(TagIp.Resources.ProfilMontage, id) do
       {:ok, profil} ->
-        profil = Ash.load!(profil, [:capteurs, :peripherals, :modele_traceur])
+        profil =
+          Ash.load!(profil, [
+            :capteurs,
+            :peripherals,
+            :modele_traceur,
+            :type_vehicule,
+            :organisation,
+            :alimentation
+          ])
+
         compatibilites = list_compatibilites(id)
 
         {:noreply,
@@ -39,98 +48,85 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
     end
   end
 
-  defp list_compatibilites(profil_id) do
-    Compatibilite
-    |> Ash.Query.new()
-    |> Ash.Query.limit(100)
-    |> Ash.Query.do_filter(profil_montage_id: profil_id)
-    |> Ash.Query.load([:modele_traceur])
-    |> Ash.read!()
+  @impl true
+  def handle_event("duplicate", %{"id" => id}, socket) do
+    case ProfilMontage.duplicate(id) do
+      {:ok, profil} ->
+        ProfilMontage.compute_compatibilities(profil.id)
+
+        TagIp.Notification.broadcast(
+          {:notification, :info, "Profil « #{profil.name} » dupliqué."}
+        )
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Profil dupliqué avec succès.")}
+
+      {:error, reason} ->
+        {:noreply,
+         put_flash(socket, :error, "Erreur lors de la duplication : #{inspect(reason)}")}
+    end
   end
 
   @impl true
-  def handle_event("duplicate", %{"id" => id}, socket) do
-    case ProfilMontage |> Ash.get(id) do
-      {:ok, source} ->
-        source = Ash.load!(source, [:capteurs, :peripherals])
+  def handle_event("calculate_compatibility", _params, socket) do
+    profil = socket.assigns.profil
 
-        attrs = %{
-          name: source.name,
-          description: source.description,
-          reporting_interval: source.reporting_interval,
-          object_type: source.object_type,
-          voltage_min: source.voltage_min,
-          voltage_max: source.voltage_max,
-          buzzer: source.buzzer,
-          fuel_probe_type: source.fuel_probe_type,
-          geofence_enabled: source.geofence_enabled,
-          driver_id_type: source.driver_id_type,
-          can_bus_requis: source.can_bus_requis,
-          one_wire_requis: source.one_wire_requis,
-          rs232_requis: source.rs232_requis,
-          rs485_requis: source.rs485_requis,
-          bluetooth_ble_requis: source.bluetooth_ble_requis,
-          inputs_requis: source.inputs_requis,
-          analog_inputs_requis: source.analog_inputs_requis,
-          outputs_requis: source.outputs_requis,
-          montage_exterieur: source.montage_exterieur,
-          antenne_deportee: source.antenne_deportee,
-          accelerometre_requis: source.accelerometre_requis,
-          ultra_low_power_requis: source.ultra_low_power_requis
+    _task =
+      Task.async(fn ->
+        modeles =
+          Ash.read!(ModeleTraceur,
+            page: [limit: 50],
+            load: [:types_vehicule, :alimentations, :capteurs]
+          )
+
+        params = %{
+          "object_type" => profil.object_type,
+          "voltage_min" => profil.voltage_min,
+          "voltage_max" => profil.voltage_max,
+          "rs232_requis" => profil.rs232_requis,
+          "rs485_requis" => profil.rs485_requis,
+          "montage_exterieur" => profil.montage_exterieur,
+          "ultra_low_power_requis" => profil.ultra_low_power_requis,
+          "can_bus_requis" => profil.can_bus_requis,
+          "one_wire_requis" => profil.one_wire_requis,
+          "bluetooth_ble_requis" => profil.bluetooth_ble_requis,
+          "inputs_requis" => profil.inputs_requis,
+          "analog_inputs_requis" => profil.analog_inputs_requis,
+          "outputs_requis" => profil.outputs_requis,
+          "buzzer" => profil.buzzer,
+          "geofence_enabled" => profil.geofence_enabled,
+          "fuel_probe_type" => profil.fuel_probe_type,
+          "antenne_deportee" => profil.antenne_deportee,
+          "accelerometre_requis" => profil.accelerometre_requis
         }
 
-        source_capteur_ids = Enum.map(source.capteurs || [], & &1.id)
-        source_peripheral_ids = Enum.map(source.peripherals || [], & &1.id)
+        capteur_slugs = Enum.map(profil.capteurs || [], & &1.slug)
+        peripheral_ids = Enum.map(profil.peripherals || [], & &1.id)
 
-        case ProfilMontage.create(attrs) do
-          {:ok, profil} ->
-            sync_capteurs(profil.id, source_capteur_ids)
-            sync_peripherals(profil.id, source_peripheral_ids)
+        compatibilities =
+          modeles.results
+          |> Enum.map(fn modele ->
+            result =
+              Compatibilite.calculer_depuis_params(params, modele, capteur_slugs, peripheral_ids)
 
-            modeles =
-              Ash.read!(ModeleTraceur,
-                page: [limit: 50],
-                load: [:types_vehicule, :alimentations, :capteurs]
-              )
+            %{modele: modele, score: result.score, compatible: result.compatible}
+          end)
+          |> Enum.sort_by(fn c -> -c.score end)
 
-            params =
-              attrs
-              |> Enum.map(fn {k, v} -> {to_string(k), v} end)
-              |> Map.new()
-
-            compatibilities =
-              modeles.results
-              |> Enum.map(fn modele ->
-                result = Compatibilite.calculer_depuis_params(params, modele)
-                %{modele: modele, compatible: result.compatible, score: result.score}
-              end)
-              |> Enum.sort_by(fn c -> -c.score end)
-
-            for compat <- compatibilities, compat.compatible do
-              Compatibilite
-              |> Ash.ActionInput.for_action(:calculer_compatibilite, %{
-                profil_id: profil.id,
-                modele_id: compat.modele.id
-              })
-              |> Ash.run_action!()
-            end
-
-            TagIp.Notification.broadcast(
-              {:notification, :info, "Profil « #{profil.name} » dupliqué."}
-            )
-
-            {:noreply,
-             socket
-             |> put_flash(:info, "Profil dupliqué avec succès.")}
-
-          {:error, reason} ->
-            {:noreply,
-             put_flash(socket, :error, "Erreur lors de la duplication : #{inspect(reason)}")}
+        for compat <- compatibilities do
+          Compatibilite
+          |> Ash.ActionInput.for_action(:calculer_compatibilite, %{
+            profil_id: profil.id,
+            modele_id: compat.modele.id
+          })
+          |> Ash.run_action!()
         end
 
-      {:error, _reason} ->
-        {:noreply, put_flash(socket, :error, "Profil introuvable.")}
-    end
+        %{profil_id: profil.id, count: length(compatibilities)}
+      end)
+
+    {:noreply, assign(socket, :calculating, true)}
   end
 
   @impl true
@@ -194,56 +190,31 @@ defmodule TagIpWeb.ProfilMontageLive.Show do
     end
   end
 
-  defp sync_capteurs(profil_id, selected_ids) do
-    existing =
-      ProfilMontageCapteur.read!()
-      |> Enum.filter(&(&1.profil_montage_id == profil_id))
+  @impl true
+  def handle_info({ref, result}, socket) do
+    Process.demonitor(ref, [:flush])
+    compatibilites = list_compatibilites(result.profil_id)
 
-    Enum.each(existing, &ProfilMontageCapteur.destroy(&1))
-
-    Enum.each(selected_ids, fn id ->
-      ProfilMontageCapteur.create(%{
-        profil_montage_id: profil_id,
-        capteur_id: id
-      })
-    end)
+    {:noreply,
+     socket
+     |> assign(:compatibilites, compatibilites)
+     |> assign(:calculating, false)
+     |> put_flash(:info, "Compatibilité calculée pour #{result.count} modèles de traceurs.")}
   end
 
-  defp sync_peripherals(profil_id, selected_ids) do
-    existing =
-      TagIp.Resources.ProfilMontagePeripheral.read!()
-      |> Enum.filter(&(&1.profil_montage_id == profil_id))
-
-    Enum.each(existing, &TagIp.Resources.ProfilMontagePeripheral.destroy(&1))
-
-    Enum.each(selected_ids, fn id ->
-      TagIp.Resources.ProfilMontagePeripheral.create(%{
-        profil_montage_id: profil_id,
-        peripheral_id: id
-      })
-    end)
+  def handle_info({:DOWN, _ref, :process, _pid, reason}, socket) do
+    {:noreply,
+     socket
+     |> assign(:calculating, false)
+     |> put_flash(:error, "Erreur lors du calcul : #{inspect(reason)}")}
   end
 
-  def feature_label(slug) do
-    case slug do
-      "alert_button" -> "Alerte bouton (SOS)"
-      "buzzer_feature" -> "Buzzer"
-      "driver_id" -> "ID chauffeur"
-      "green_driving" -> "Green Driving"
-      "fuel_cap" -> "Bouchon réservoir"
-      "fuel_analog" -> "Carburant (Analogique)"
-      "fuel_rs232" -> "Carburant (RS232)"
-      "fuel_ble" -> "Carburant (BLE)"
-      "fuel_can" -> "Carburant (CAN)"
-      "crash_detection" -> "Crash Detection"
-      _ -> slug
-    end
-  end
-
-  def supplier_label(supplier) do
-    case supplier do
-      "Wondeproud" -> "WonderProud"
-      other -> other
-    end
+  defp list_compatibilites(profil_id) do
+    Compatibilite
+    |> Ash.Query.new()
+    |> Ash.Query.limit(100)
+    |> Ash.Query.do_filter(profil_montage_id: profil_id)
+    |> Ash.Query.load([:modele_traceur])
+    |> Ash.read!()
   end
 end

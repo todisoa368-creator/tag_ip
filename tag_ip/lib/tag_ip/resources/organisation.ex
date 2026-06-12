@@ -1,36 +1,31 @@
-defmodule TagIp.Resources.ProfileComparaison do
+defmodule TagIp.Resources.Organisation do
   use Ash.Resource,
     domain: TagIp.TagIp,
     data_layer: AshPostgres.DataLayer
 
   postgres do
-    table("profile_comparaisons")
+    table("organisations")
     repo(TagIp.Repo)
+  end
+
+  identities do
+    identity(:unique_slug, [:slug])
   end
 
   attributes do
     uuid_primary_key(:id)
 
-    attribute :feature_slugs, {:array, :string} do
+    attribute :name, :string do
       allow_nil?(false)
-      default([])
       public?(true)
     end
 
-    attribute :peripheral_ids, {:array, :uuid} do
+    attribute :slug, :string do
       allow_nil?(false)
-      default([])
       public?(true)
     end
 
-    attribute :compatible_tracker_ids, {:array, :uuid} do
-      allow_nil?(false)
-      default([])
-      public?(true)
-    end
-
-    attribute :user_id, :integer do
-      allow_nil?(true)
+    attribute :description, :string do
       public?(true)
     end
 
@@ -42,7 +37,9 @@ defmodule TagIp.Resources.ProfileComparaison do
 
     create :create do
       primary?(true)
-      accept([:feature_slugs, :peripheral_ids, :compatible_tracker_ids, :user_id])
+      accept([:name, :slug, :description])
+      upsert?(true)
+      upsert_identity(:unique_slug)
     end
   end
 

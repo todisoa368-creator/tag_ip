@@ -55,16 +55,6 @@
               >
                 Profils de montage
               </.link>
-              <.link
-                href={~p"/comparaison"}
-                class={[
-                  "hover:text-blue-600 transition pb-1 border-b-2",
-                  active_nav?(assigns, :comparaison) && "text-blue-600 border-blue-600",
-                  !active_nav?(assigns, :comparaison) && "border-transparent"
-                ]}
-              >
-                Comparaison
-              </.link>
               <%= if @current_scope.user.role == "admin" do %>
                 <.link
                   href={~p"/modeles"}

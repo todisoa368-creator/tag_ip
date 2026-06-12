@@ -6,12 +6,15 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   alias TagIp.Resources.Capteur
   alias TagIp.Resources.CapabilityMatrix
   alias TagIp.Resources.ProfilMontageCapteur
+  alias TagIp.Resources.TypeVehicule
+  alias TagIp.Resources.Organisation
+  alias TagIp.Resources.Alimentation
 
   @steps [
     %{
       num: 1,
       title: "Étape 1 : Identification",
-      description: "Étape 1 — Nom du profil et description"
+      description: "Étape 1 — Nom du profil et type de véhicule"
     },
     %{
       num: 2,
@@ -32,9 +35,16 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
 
   @impl true
   def mount(_params, _session, socket) do
-    modeles = ModeleTraceur.read!()
+    modeles =
+      ModeleTraceur.read!()
+      |> Enum.map(&Ash.load!(&1, [:types_vehicule]))
+
     brands = modeles |> Enum.map(& &1.brand) |> Enum.uniq() |> Enum.sort()
     matrix_features = CapabilityMatrix.matrix_features()
+    types_vehicule = TypeVehicule.read!() |> Enum.sort_by(& &1.label)
+
+    organisations = Organisation.read!() |> Enum.sort_by(& &1.name)
+    alimentations = Alimentation.read!() |> Enum.sort_by(& &1.label)
 
     {:ok,
      socket
@@ -44,13 +54,25 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
      |> assign(:modeles, modeles)
      |> assign(:brands, brands)
      |> assign(:matrix_features, matrix_features)
+     |> assign(:types_vehicule, types_vehicule)
+     |> assign(:organisations, organisations)
+     |> assign(:alimentations, alimentations)
      |> assign(:selected_supplier, nil)
      |> assign(:available_models, [])
      |> assign(:selected_model_id, nil)
      |> assign(:selected_model, nil)
      |> assign(:selected_features, MapSet.new())
+     |> assign(:selected_type_vehicule_id, nil)
+     |> assign(:selected_type_vehicule, nil)
+     |> assign(:selected_organisation_id, nil)
+     |> assign(:selected_alimentation_id, nil)
      |> assign(:profile_name, "")
      |> assign(:profile_description, "")
+     |> assign(:object_type, nil)
+     |> assign(:voltage_min, nil)
+     |> assign(:voltage_max, nil)
+     |> assign(:inputs_requis, nil)
+     |> assign(:outputs_requis, nil)
      |> assign(:validation_result, nil)
      |> assign(:profile_saved, false)}
   end
@@ -67,15 +89,80 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
 
   @impl true
   def handle_event("select_supplier", %{"supplier" => supplier}, socket) do
+    tv_id = socket.assigns.selected_type_vehicule_id
+
     available =
       socket.assigns.modeles
       |> Enum.filter(&(&1.brand == supplier))
+      |> then(fn models ->
+        if tv_id do
+          tv = Enum.find(socket.assigns.types_vehicule, &(&1.id == tv_id))
+          tv_slug = tv && tv.slug
+
+          if tv_slug do
+            Enum.filter(models, fn m ->
+              m.types_vehicule && Enum.any?(m.types_vehicule, &(&1.slug == tv_slug))
+            end)
+          else
+            models
+          end
+        else
+          models
+        end
+      end)
       |> Enum.sort_by(& &1.nom)
 
     {:noreply,
      socket
      |> assign(:selected_supplier, supplier)
      |> assign(:available_models, available)
+     |> assign(:selected_model_id, nil)
+     |> assign(:selected_model, nil)
+     |> assign(:selected_features, MapSet.new())
+     |> assign(:validation_result, nil)}
+  end
+
+  def handle_event("select_organisation", %{"organisation_id" => org_id}, socket) do
+    org_id = if org_id not in [nil, "", "0"], do: org_id, else: nil
+
+    {:noreply, assign(socket, :selected_organisation_id, org_id)}
+  end
+
+  def handle_event("select_alimentation", %{"alimentation_id" => alim_id}, socket) do
+    alim_id = if alim_id not in [nil, "", "0"], do: alim_id, else: nil
+    alim = alim_id && Enum.find(socket.assigns.alimentations, &(&1.id == alim_id))
+
+    {voltage_min, voltage_max} =
+      if alim && alim.category == "voltage" do
+        parse_alim_voltage(alim.slug)
+      else
+        {socket.assigns.voltage_min, socket.assigns.voltage_max}
+      end
+
+    {:noreply,
+     socket
+     |> assign(:selected_alimentation_id, alim_id)
+     |> assign(:voltage_min, voltage_min)
+     |> assign(:voltage_max, voltage_max)}
+  end
+
+  def handle_event("select_type_vehicule", %{"type_vehicule_id" => tv_id}, socket) do
+    tv =
+      if tv_id not in [nil, ""] do
+        Enum.find(socket.assigns.types_vehicule, &(&1.id == tv_id))
+      end
+
+    {:noreply,
+     socket
+     |> assign(:selected_type_vehicule_id, tv && tv.id)
+     |> assign(:selected_type_vehicule, tv)
+     |> assign(:object_type, tv && tv.slug)
+     |> assign(:voltage_min, tv && tv.voltage_min)
+     |> assign(:voltage_max, tv && tv.voltage_max)
+     |> assign(:inputs_requis, tv && tv.inputs_requis)
+     |> assign(:outputs_requis, tv && tv.outputs_requis)
+     |> assign(:selected_supplier, nil)
+     |> assign(:available_models, [])
      |> assign(:selected_model_id, nil)
      |> assign(:selected_model, nil)
      |> assign(:selected_features, MapSet.new())
@@ -108,22 +195,6 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
       end
 
     {:noreply, assign(socket, :selected_features, updated)}
-  end
-
-  def handle_event("next_step", params, socket) do
-    name = params["profile_name"]
-    description = params["profile_description"]
-
-    socket =
-      socket
-      |> assign(:profile_name, name || "")
-      |> assign(:profile_description, description || "")
-
-    if name == "" || is_nil(name) do
-      {:noreply, put_flash(socket, :error, "Veuillez saisir un nom de profil.")}
-    else
-      {:noreply, assign(socket, :step, 2)}
-    end
   end
 
   def handle_event("next-step", params, socket) do
@@ -163,7 +234,31 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     name = socket.assigns.profile_name
     description = socket.assigns.profile_description
     modele_id = socket.assigns.selected_model_id
-    profile_params = build_profile_params(name, description, features, modele_id)
+    type_vehicule_id = socket.assigns.selected_type_vehicule_id
+    object_type = socket.assigns.object_type
+    voltage_min = socket.assigns.voltage_min
+    voltage_max = socket.assigns.voltage_max
+    inputs_requis = socket.assigns.inputs_requis
+    outputs_requis = socket.assigns.outputs_requis
+
+    organisation_id = socket.assigns.selected_organisation_id
+    alimentation_id = socket.assigns.selected_alimentation_id
+
+    profile_params =
+      build_profile_params(
+        name,
+        description,
+        features,
+        modele_id,
+        type_vehicule_id,
+        object_type,
+        voltage_min,
+        voltage_max,
+        inputs_requis,
+        outputs_requis,
+        organisation_id,
+        alimentation_id
+      )
 
     result =
       case socket.assigns.profil do
@@ -172,6 +267,7 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
             {:ok, profil} ->
               capteur_ids = resolve_required_capteur_ids(features)
               sync_capteurs(profil.id, capteur_ids)
+              ProfilMontage.compute_compatibilities(profil.id)
               {:ok, profil, "créé"}
 
             {:error, reason} ->
@@ -183,6 +279,7 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
             {:ok, profil} ->
               capteur_ids = resolve_required_capteur_ids(features)
               sync_capteurs(profil.id, capteur_ids)
+              ProfilMontage.compute_compatibilities(profil.id)
               {:ok, profil, "modifié"}
 
             {:error, reason} ->
@@ -225,12 +322,27 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
 
   defp apply_action(socket, :new, %{"duplicate_from" => source_id}) do
     source = Ash.get!(ProfilMontage, source_id, domain: TagIp.TagIp)
+    source = Ash.load!(source, [:capteurs])
+
+    tv =
+      if source.type_vehicule_id do
+        Ash.get!(TypeVehicule, source.type_vehicule_id)
+      end
 
     socket
     |> assign(:page_title, "Dupliquer le profil #{source.name}")
     |> assign(:profil, nil)
     |> assign(:profile_name, source.name)
     |> assign(:profile_description, source.description || "")
+    |> assign(:selected_type_vehicule_id, source.type_vehicule_id)
+    |> assign(:selected_type_vehicule, tv)
+    |> assign(:selected_organisation_id, source.organisation_id)
+    |> assign(:selected_alimentation_id, source.alimentation_id)
+    |> assign(:object_type, source.object_type)
+    |> assign(:voltage_min, source.voltage_min)
+    |> assign(:voltage_max, source.voltage_max)
+    |> assign(:inputs_requis, source.inputs_requis)
+    |> assign(:outputs_requis, source.outputs_requis)
     |> assign(:selected_supplier, nil)
     |> assign(:available_models, [])
     |> assign(:selected_model_id, nil)
@@ -240,14 +352,38 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     |> assign(:profile_saved, false)
   end
 
-  defp apply_action(socket, :new, _params) do
+  defp apply_action(socket, :new, params) do
+    supplier = params["supplier"]
+    type_vehicule_id = params["type_vehicule_id"]
+
+    tv =
+      if type_vehicule_id && type_vehicule_id != "" do
+        Ash.get!(TypeVehicule, type_vehicule_id)
+      end
+
+    available =
+      if supplier do
+        socket.assigns.modeles
+        |> Enum.filter(&(&1.brand == supplier))
+        |> Enum.sort_by(& &1.nom)
+      else
+        []
+      end
+
     socket
     |> assign(:page_title, "Nouveau profil de montage")
     |> assign(:profil, nil)
     |> assign(:profile_name, "")
     |> assign(:profile_description, "")
-    |> assign(:selected_supplier, nil)
-    |> assign(:available_models, [])
+    |> assign(:selected_type_vehicule_id, tv && tv.id)
+    |> assign(:selected_type_vehicule, tv)
+    |> assign(:object_type, tv && tv.slug)
+    |> assign(:voltage_min, tv && tv.voltage_min)
+    |> assign(:voltage_max, tv && tv.voltage_max)
+    |> assign(:inputs_requis, tv && tv.inputs_requis)
+    |> assign(:outputs_requis, tv && tv.outputs_requis)
+    |> assign(:selected_supplier, supplier)
+    |> assign(:available_models, available)
     |> assign(:selected_model_id, nil)
     |> assign(:selected_model, nil)
     |> assign(:selected_features, MapSet.new())
@@ -264,11 +400,28 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     modele = modele && Ash.load!(modele, [:features, :capteurs])
 
     supplier = modele && modele.brand
+    tv_id = profil.type_vehicule_id
 
     available =
       if supplier do
         socket.assigns.modeles
         |> Enum.filter(&(&1.brand == supplier))
+        |> then(fn models ->
+          if tv_id do
+            tv = Enum.find(socket.assigns.types_vehicule, &(&1.id == tv_id))
+            tv_slug = tv && tv.slug
+
+            if tv_slug do
+              Enum.filter(models, fn m ->
+                m.types_vehicule && Enum.any?(m.types_vehicule, &(&1.slug == tv_slug))
+              end)
+            else
+              models
+            end
+          else
+            models
+          end
+        end)
         |> Enum.sort_by(& &1.nom)
       else
         []
@@ -276,11 +429,25 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
 
     features = MapSet.new(profil.feature_slugs || [])
 
+    tv =
+      if tv_id do
+        Ash.get!(TypeVehicule, tv_id)
+      end
+
     socket
     |> assign(:page_title, "Modifier le profil #{profil.name}")
     |> assign(:profil, profil)
     |> assign(:profile_name, profil.name)
     |> assign(:profile_description, profil.description || "")
+    |> assign(:selected_type_vehicule_id, tv_id)
+    |> assign(:selected_type_vehicule, tv)
+    |> assign(:selected_organisation_id, profil.organisation_id)
+    |> assign(:selected_alimentation_id, profil.alimentation_id)
+    |> assign(:object_type, profil.object_type)
+    |> assign(:voltage_min, profil.voltage_min)
+    |> assign(:voltage_max, profil.voltage_max)
+    |> assign(:inputs_requis, profil.inputs_requis)
+    |> assign(:outputs_requis, profil.outputs_requis)
     |> assign(:selected_supplier, supplier)
     |> assign(:available_models, available)
     |> assign(:selected_model_id, modele && modele.id)
@@ -291,12 +458,38 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   end
 
   defp sync_form_data(socket, params) do
+    socket =
+      socket
+      |> assign(:profile_name, params["profile_name"] || socket.assigns.profile_name || "")
+      |> assign(
+        :profile_description,
+        params["profile_description"] || socket.assigns.profile_description || ""
+      )
+
     supplier = params["supplier"]
 
     if supplier && supplier != "" do
+      tv_id = socket.assigns.selected_type_vehicule_id
+
       available =
         socket.assigns.modeles
         |> Enum.filter(&(&1.brand == supplier))
+        |> then(fn models ->
+          if tv_id do
+            tv = Enum.find(socket.assigns.types_vehicule, &(&1.id == tv_id))
+            tv_slug = tv && tv.slug
+
+            if tv_slug do
+              Enum.filter(models, fn m ->
+                m.types_vehicule && Enum.any?(m.types_vehicule, &(&1.slug == tv_slug))
+              end)
+            else
+              models
+            end
+          else
+            models
+          end
+        end)
         |> Enum.sort_by(& &1.nom)
 
       socket =
@@ -322,10 +515,15 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   end
 
   defp validate_step(socket, 1) do
-    if socket.assigns.profile_name == "" do
-      {put_flash(socket, :error, "Veuillez saisir un nom de profil."), false}
-    else
-      {socket, true}
+    cond do
+      socket.assigns.profile_name == "" ->
+        {put_flash(socket, :error, "Veuillez saisir un nom de profil."), false}
+
+      is_nil(socket.assigns.selected_type_vehicule_id) ->
+        {put_flash(socket, :error, "Veuillez sélectionner un type de véhicule."), false}
+
+      true ->
+        {socket, true}
     end
   end
 
@@ -353,7 +551,20 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     assign(socket, :validation_result, result)
   end
 
-  defp build_profile_params(name, description, feature_slugs, modele_traceur_id) do
+  defp build_profile_params(
+         name,
+         description,
+         feature_slugs,
+         modele_traceur_id,
+         type_vehicule_id,
+         object_type,
+         voltage_min,
+         voltage_max,
+         inputs_requis,
+         outputs_requis,
+         organisation_id,
+         alimentation_id
+       ) do
     feature_map = MapSet.new(feature_slugs)
     fuel_type = resolve_fuel_type(feature_map)
 
@@ -362,6 +573,14 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
       description: description,
       feature_slugs: feature_slugs,
       modele_traceur_id: modele_traceur_id,
+      organisation_id: organisation_id,
+      alimentation_id: alimentation_id,
+      type_vehicule_id: type_vehicule_id,
+      object_type: object_type,
+      voltage_min: voltage_min,
+      voltage_max: voltage_max,
+      inputs_requis: inputs_requis,
+      outputs_requis: outputs_requis,
       reporting_interval: "interval_30s",
       buzzer: MapSet.member?(feature_map, "buzzer_feature"),
       driver_id_type: if(MapSet.member?(feature_map, "driver_id"), do: "rfid", else: nil),
@@ -373,9 +592,7 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
       rs232_requis: fuel_type == "rs232",
       rs485_requis: false,
       bluetooth_ble_requis: fuel_type == "ble",
-      inputs_requis: if(MapSet.member?(feature_map, "alert_button"), do: 1, else: nil),
       analog_inputs_requis: if(fuel_type == "analog", do: 1, else: nil),
-      outputs_requis: nil,
       montage_exterieur: false,
       antenne_deportee: false,
       ultra_low_power_requis: false
@@ -427,38 +644,35 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     end)
   end
 
+  defp parse_alim_voltage(slug) do
+    slug = String.upcase(slug)
+
+    cond do
+      slug == "12V" ->
+        {12, 15}
+
+      slug == "24V" ->
+        {24, 32}
+
+      String.contains?(slug, "-") ->
+        parts = String.split(slug, "-")
+        min = parts |> List.first() |> String.replace(~r/[^0-9]/, "") |> String.to_integer()
+        max = parts |> List.last() |> String.replace(~r/[^0-9]/, "") |> String.to_integer()
+        {min, max}
+
+      true ->
+        volts = slug |> String.replace(~r/[^0-9]/, "") |> String.to_integer()
+        {volts, volts}
+    end
+  rescue
+    _ -> {nil, nil}
+  end
+
   def supported_for_model(modele_id, matrix_features) do
     supported_slugs = CapabilityMatrix.supported_feature_slugs(modele_id) |> MapSet.new()
 
     matrix_features
     |> Enum.map(& &1.slug)
     |> Enum.filter(&MapSet.member?(supported_slugs, &1))
-  end
-
-  def supplier_label(supplier) do
-    case supplier do
-      "Wondeproud" -> "WonderProud"
-      other -> other
-    end
-  end
-
-  def feature_label(slug) do
-    features = [
-      {"alert_button", "Alerte bouton (SOS)"},
-      {"buzzer_feature", "Buzzer"},
-      {"driver_id", "ID chauffeur"},
-      {"green_driving", "Green Driving"},
-      {"fuel_cap", "Bouchon réservoir"},
-      {"fuel_analog", "Carburant (Analogique)"},
-      {"fuel_rs232", "Carburant (RS232)"},
-      {"fuel_ble", "Carburant (BLE)"},
-      {"fuel_can", "Carburant (CAN)"},
-      {"crash_detection", "Crash Detection"}
-    ]
-
-    case Enum.find(features, fn {s, _} -> s == slug end) do
-      {_, label} -> {label, ""}
-      nil -> {slug, ""}
-    end
   end
 end

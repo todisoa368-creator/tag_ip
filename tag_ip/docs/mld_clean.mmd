@@ -1,0 +1,49 @@
+erDiagram
+    mounting_profiles {
+        uuid id PK
+        text name
+        text description
+        float voltage_min
+        float voltage_max
+    }
+
+    modeles_traceur {
+        uuid id PK
+        varchar(100) nom
+        varchar(50) reference
+        text brand
+    }
+
+    compatibilites {
+        uuid id PK
+        uuid profil_montage_id FK
+        uuid modele_traceur_id FK
+        int score_compatibilite
+    }
+
+    types_vehicule {
+        uuid id PK
+        varchar(50) slug
+        varchar(100) label
+    }
+
+    alimentations {
+        uuid id PK
+        varchar(50) slug
+        varchar(100) label
+    }
+
+    capteurs {
+        uuid id PK
+        varchar(50) slug
+        varchar(100) label
+    }
+
+    modeles_traceur ||--o{ compatibilites : "1,N — modele_traceur_id FK"
+    mounting_profiles ||--o{ compatibilites : "1,N — profil_montage_id FK"
+    modeles_traceur ||--o{ modeles_traceur_types_vehicule : "1,N"
+    types_vehicule ||--o{ modeles_traceur_types_vehicule : "1,N"
+    modeles_traceur ||--o{ modeles_traceur_alimentations : "1,N"
+    alimentations ||--o{ modeles_traceur_alimentations : "1,N"
+    modeles_traceur ||--o{ modeles_traceur_capteurs : "1,N"
+    capteurs ||--o{ modeles_traceur_capteurs : "1,N"

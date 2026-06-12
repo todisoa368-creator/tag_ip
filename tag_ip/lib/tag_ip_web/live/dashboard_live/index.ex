@@ -3,7 +3,6 @@ defmodule TagIpWeb.DashboardLive.Index do
 
   alias TagIp.Resources.ProfilMontage
   alias TagIp.Resources.ModeleTraceur
-  alias TagIp.Resources.ProfileComparaison
 
   @impl true
   def mount(_params, _session, socket) do
@@ -13,7 +12,6 @@ defmodule TagIpWeb.DashboardLive.Index do
      socket
      |> assign(page_title: "Dashboard · profile de montage ")
      |> assign(:stats, fetch_stats())
-     |> assign(:show_comparaison_modal, false)
      |> stream(:notifications, [], reset: true)}
   end
 
@@ -81,32 +79,11 @@ defmodule TagIpWeb.DashboardLive.Index do
 
       <%!-- Toolbar actions --%>
       <div class="flex items-center justify-between mt-4 mb-2">
-        <div class="flex items-center gap-3">
-          <!-- Toolbar buttons removed: refresh and new comparaison -->
-        </div>
+        <div class="flex items-center gap-3"></div>
         <div class="text-sm text-gray-200 hidden sm:block">
           Dernière mise à jour : {Date.utc_today() |> Date.to_string()}
         </div>
       </div>
-
-      <%= if @show_comparaison_modal do %>
-        <div class="fixed inset-0 z-50 flex items-start justify-center pt-16">
-          <div class="absolute inset-0 bg-black/50" phx-click="close_comparaison_modal" />
-          <div class="relative w-full max-w-5xl mx-4">
-            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-              <div class="flex items-center justify-between p-4 border-b">
-                <h3 class="text-lg font-semibold">Assistant de comparaison</h3>
-                <button phx-click="close_comparaison_modal" class="text-gray-500 hover:text-gray-800">
-                  <.icon name="hero-x-mark" class="size-5" />
-                </button>
-              </div>
-              <div class="p-0">
-                {live_render(@socket, TagIpWeb.ComparaisonLive.Index, id: :comparaison_modal)}
-              </div>
-            </div>
-          </div>
-        </div>
-      <% end %>
 
       <%!-- Cartes de statistiques --%>
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
@@ -174,24 +151,6 @@ defmodule TagIpWeb.DashboardLive.Index do
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <.link
-            navigate={~p"/comparaison"}
-            class="group relative overflow-hidden bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
-          >
-            <div class="absolute inset-0 bg-linear-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div class="relative p-5 flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl bg-linear-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shrink-0 shadow-lg shadow-cyan-200 group-hover:shadow-cyan-300 group-hover:scale-110 transition-all duration-300">
-                <.icon name="hero-scale" class="size-6 text-white" />
-              </div>
-              <div>
-                <p class="font-semibold text-gray-900 group-hover:text-cyan-600 transition-colors">
-                  Comparaison technique
-                </p>
-                <p class="text-sm text-gray-500">Traceurs GPS &#x2197;</p>
-              </div>
-            </div>
-          </.link>
-
-          <.link
             navigate={~p"/profils"}
             class="group relative overflow-hidden bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
           >
@@ -241,24 +200,6 @@ defmodule TagIpWeb.DashboardLive.Index do
                   Compatibilités
                 </p>
                 <p class="text-sm text-gray-500">Calculer &#x2197;</p>
-              </div>
-            </div>
-          </.link>
-
-          <.link
-            navigate={~p"/comparaisons/enregistrees"}
-            class="group relative overflow-hidden bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
-          >
-            <div class="absolute inset-0 bg-linear-to-br from-rose-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div class="relative p-5 flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl bg-linear-to-br from-rose-500 to-rose-600 flex items-center justify-center shrink-0 shadow-lg shadow-rose-200 group-hover:shadow-rose-300 group-hover:scale-110 transition-all duration-300">
-                <.icon name="hero-document-text" class="size-6 text-white" />
-              </div>
-              <div>
-                <p class="font-semibold text-gray-900 group-hover:text-rose-600 transition-colors">
-                  Comparaisons enreg.
-                </p>
-                <p class="text-sm text-gray-500">{@stats.comparaisons} enregistrées &#x2197;</p>
               </div>
             </div>
           </.link>
@@ -331,22 +272,11 @@ defmodule TagIpWeb.DashboardLive.Index do
      |> put_flash(:info, "Statistiques rafraîchies")}
   end
 
-  @impl true
-  def handle_event("open_comparaison_modal", _params, socket) do
-    {:noreply, assign(socket, :show_comparaison_modal, true)}
-  end
-
-  @impl true
-  def handle_event("close_comparaison_modal", _params, socket) do
-    {:noreply, assign(socket, :show_comparaison_modal, false)}
-  end
-
   defp fetch_stats do
     %{
       profils: Ash.count!(ProfilMontage, domain: TagIp.TagIp),
       modeles: Ash.count!(ModeleTraceur, domain: TagIp.TagIp),
-      alertes: Ash.count!(TagIp.Resources.Compatibilite, domain: TagIp.TagIp),
-      comparaisons: Ash.count!(ProfileComparaison, domain: TagIp.TagIp)
+      alertes: Ash.count!(TagIp.Resources.Compatibilite, domain: TagIp.TagIp)
     }
   end
 end

@@ -164,6 +164,18 @@ defmodule TagIp.Resources.CapabilityMatrix do
         errors
       end
 
+    errors =
+      if (MapSet.member?(feature_set, "green_driving") or
+            MapSet.member?(feature_set, "crash_detection")) and
+           not modele.accelerometer do
+        [
+          "Le modèle nécessite un accéléromètre pour Green Driving et/ou Crash Detection"
+          | errors
+        ]
+      else
+        errors
+      end
+
     errors
   end
 
@@ -176,13 +188,13 @@ defmodule TagIp.Resources.CapabilityMatrix do
         "alert_button" -> ~w(alert_button_monitor)
         "buzzer_feature" -> ~w(buzzer)
         "driver_id" -> ~w(driver_identification_monitor)
-        "green_driving" -> ~w(accelerometer)
+        "green_driving" -> ~w()
         "fuel_cap" -> ~w(fuel_cap_monitor)
         "fuel_analog" -> ~w(fuel_probe_analog)
         "fuel_rs232" -> ~w(fuel_probe_digital)
         "fuel_ble" -> ~w(fuel_probe_digital)
         "fuel_can" -> ~w(fuel_probe_can_bus)
-        "crash_detection" -> ~w(accelerometer)
+        "crash_detection" -> ~w()
         _ -> []
       end
     end)

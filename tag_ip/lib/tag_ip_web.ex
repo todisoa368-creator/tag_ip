@@ -97,6 +97,9 @@ defmodule TagIpWeb do
 
       # Datetime helpers
       import TagIpWeb.Helpers.DatetimeHelper
+
+      # Label helpers (feature_label, supplier_label)
+      import TagIpWeb.Helpers.LabelHelper
     end
   end
 

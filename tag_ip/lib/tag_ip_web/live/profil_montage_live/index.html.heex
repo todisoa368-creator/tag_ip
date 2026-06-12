@@ -41,6 +41,9 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              Organisation
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
               Spécifications
             </th>
             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
@@ -53,6 +56,9 @@
             <td class="px-6 py-4 text-sm font-medium text-gray-900">{profil.name}</td>
             <td class="px-6 py-4 text-sm text-gray-500 italic">
               {Map.get(@type_labels, profil.object_type, profil.object_type)}
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-500">
+              {profil.organisation && profil.organisation.name}
             </td>
 
             <td class="px-6 py-4 text-sm text-gray-500">

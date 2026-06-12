@@ -29,12 +29,9 @@ defmodule TagIpWeb.Router do
       live "/", DashboardLive.Index, :index
       live "/dashboard", DashboardLive.Index, :index
 
-      # Comparaison technique
-      live "/comparaison", ComparaisonLive.Index, :index
-      live "/comparaisons/enregistrees", ComparaisonLive.Admin, :index
-
       # Settings
       live "/users/settings", UserLive.Settings, :edit
+
       live "/users/settings/confirm-email/:token",
            UserLive.Settings,
            :confirm_email

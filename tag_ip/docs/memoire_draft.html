@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>memoire_draft</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<h1 id="mémoire-projet-tag-ip">Mémoire — Projet TAG-IP</h1>
+<p>Auteur: [Votre nom] Université: USVPA</p>
+<hr />
+<h2 id="introduction">INTRODUCTION</h2>
+<p>Contexte et genèse</p>
+<p>Le projet TAG-IP est une application web développée en Elixir/Phoenix
+visant à gérer des modèles de traceurs, profils de montage,
+compatibilités et ressources associées pour faciliter le travail des
+techniciens et des équipes produit. Le dépôt contient une application
+Phoenix 1.8, utilisant LiveView pour l’interface, Ecto/Postgres pour la
+persistance et des composants Tailwind pour le front-end.</p>
+<p>Titre</p>
+<p>“Conception et réalisation d’un système de gestion de compatibilités
+de traceurs — TAG-IP”</p>
+<p>Problématique</p>
+<p>La gestion des modèles de traceurs et de leurs compatibilités avec
+divers capteurs et périphériques est souvent dispersée, inconsistante et
+difficilement exploitable par les équipes. Il est nécessaire de
+centraliser ces informations et d’offrir des outils de recherche,
+filtrage et export pour améliorer la productivité.</p>
+<p>Hypothèse</p>
+<p>Une application web centrée sur un modèle de données bien conçu et
+des interfaces réactives permettra de réduire le temps de configuration
+et d’améliorer la qualité des correspondances entre traceurs et
+périphériques.</p>
+<p>Objectifs</p>
+<ul>
+<li>Concevoir un modèle de données robuste pour représenter traceurs,
+capteurs, alimentations, profils de montage et compatibilités.</li>
+<li>Réaliser une application web avec interfaces CRUD et recherche
+avancée.</li>
+<li>Garantir sécurité, tests et bonnes performances.</li>
+</ul>
+<p>Méthodologie</p>
+<p>Analyse des besoins, étude des solutions existantes, modélisation
+(MCD/MLD), implémentation (Phoenix + LiveView), tests unitaires et
+fonctionnels, évaluation par mesures et retours d’utilisation.</p>
+<p>Annonce du plan</p>
+<p>Le mémoire est organisé en trois parties: contexte et analyse,
+conception technique, réalisation et évaluation.</p>
+<hr />
+<h1 id="partie-i-contexte-et-analyse">PARTIE I – CONTEXTE ET
+ANALYSE</h1>
+<h2 id="chapitre-1-cadre-et-contexte-du-projet">Chapitre 1 : Cadre et
+contexte du projet</h2>
+<h3 id="présentation-de-lenvironnement">1.1 Présentation de
+l’environnement</h3>
+<p>Université USVPA</p>
+<p>Brève présentation de l’université et du cursus lié aux systèmes
+d’information et génie logiciel.</p>
+<p>Organisme d’accueil</p>
+<p>Présentation de l’équipe/projet réel où l’application TAG-IP est
+destinée : besoins métier, utilisateurs (techniciens, produits,
+support).</p>
+<h3 id="environnement-technique">1.2 Environnement technique</h3>
+<p>Infrastructure</p>
+<p>L’application est conçue pour être exécutée sur une infrastructure
+standard avec PostgreSQL comme base de données, serveur Phoenix
+(BEAM/Elixir) et assets compilés via esbuild/tailwind. Les fichiers de
+migration se trouvent dans <code>priv/repo/migrations</code> et la
+structure SQL dans <code>priv/repo/structure.sql</code>.</p>
+<p>Outils et systèmes existants</p>
+<ul>
+<li>Langage : Elixir</li>
+<li>Framework : Phoenix 1.8 + LiveView</li>
+<li>Persistance : Ecto + Postgrex (Postgres)</li>
+<li>Bundling : esbuild / tailwind via les assets</li>
+<li>Déploiement : Dockerfile / docker-compose présents</li>
+</ul>
+<h3 id="contexte-et-problématique">1.3 Contexte et problématique</h3>
+<p>Situation initiale</p>
+<p>Avant TAG-IP, la gestion se faisait probablement via feuilles de
+calcul et documents PDF, entraînant des erreurs et des pertes de
+temps.</p>
+<p>Problèmes identifiés</p>
+<ul>
+<li>Incohérences dans les correspondances modèles/capteurs</li>
+<li>Difficulté à rechercher et filtrer selon critères (ports,
+alimentation, features)</li>
+</ul>
+<p>Expression du besoin</p>
+<p>Un système centralisé, consultable et éditable, avec fonctions
+d’export (CSV/JSON), contrôle d’accès et historique des
+modifications.</p>
+<hr />
+<h2 id="chapitre-2-analyse-des-besoins-et-positionnement">Chapitre 2 :
+Analyse des besoins et positionnement</h2>
+<h3 id="étude-des-solutions-existantes">2.1 Étude des solutions
+existantes</h3>
+<p>Outils similaires</p>
+<ul>
+<li>Gestionnaires de catalogues produits</li>
+<li>Systèmes PLM/ERP (partiels) pour la compatibilité matérielle</li>
+</ul>
+<p>Limites observées</p>
+<p>Solutions existantes trop générales, lourdes ou non adaptées aux
+spécificités des traceurs et capteurs — nécessité d’une solution
+spécialisée.</p>
+<h3 id="besoins-et-contraintes">2.2 Besoins et contraintes</h3>
+<p>Fonctionnalités principales</p>
+<ul>
+<li>CRUD pour modèles, capteurs, alimentations, profils de montage,
+périphériques</li>
+<li>Recherche et filtrage avancés</li>
+<li>Import/export (CSV)</li>
+<li>Authentification et gestion des rôles</li>
+</ul>
+<p>Acteurs et cas d’utilisation</p>
+<ul>
+<li>Administrateurs : gestion complète</li>
+<li>Techniciens : consultation et suggestions</li>
+<li>Produits : validation des compatibilités</li>
+</ul>
+<p>Contraintes techniques et organisationnelles</p>
+<ul>
+<li>Contraintes de sécurité (auth, CSRF)</li>
+<li>Contraintes de performance pour recherches sur grands ensembles</li>
+<li>Contrainte de compatibilité avec systèmes d’import/export
+existants</li>
+</ul>
+<h3 id="spécifications-générales">2.3 Spécifications générales</h3>
+<p>Modules principaux</p>
+<ul>
+<li>Module <code>resources</code> (implémenté dans
+<code>lib/tag_ip/resources</code>) pour les entités métier</li>
+<li>Module web <code>lib/tag_ip_web</code> regroupant LiveViews,
+contrôleurs et composants</li>
+</ul>
+<p>Vue globale du système</p>
+<p>API REST/LiveView pour l’UI, persistance via Ecto, tâches batch
+possibles (priv/repo/scripts).</p>
+<hr />
+<h1 id="partie-ii-conception-technique">PARTIE II – CONCEPTION
+TECHNIQUE</h1>
+<h2 id="chapitre-3-modélisation-des-données">Chapitre 3 : Modélisation
+des données</h2>
+<h3 id="modèle-conceptuel-mcd">3.1 Modèle conceptuel (MCD)</h3>
+<p>Entités</p>
+<ul>
+<li><code>ModeleTraceur</code> (modèles de traceur)</li>
+<li><code>Capteur</code> (capteurs)</li>
+<li><code>Alimentation</code> (types d’alimentation)</li>
+<li><code>ProfilMontage</code> (profils de montage)</li>
+<li><code>Peripheral</code> (périphériques)</li>
+<li><code>Compatibilite</code> (relation entre profils et
+modèles/capteurs)</li>
+</ul>
+<p>Relations</p>
+<ul>
+<li>Un <code>ModeleTraceur</code> peut avoir plusieurs
+<code>Compatibilite</code></li>
+<li>Un <code>ProfilMontage</code> regroupe des <code>Peripherals</code>
+et des <code>Capteurs</code></li>
+</ul>
+<p>Règles de gestion</p>
+<ul>
+<li>Un profil ne peut accepter que des capteurs avec voltage
+compatible</li>
+<li>Un modèle peut être marqué bluetooth/BLE (migrations ajoutées)</li>
+</ul>
+<blockquote>
+<p>Référence diagrammes : <code>docs/mcd_diagramme.mmd</code> et
+<code>docs/mld_diagramme.mmd</code>.</p>
+</blockquote>
+<h3 id="modèle-logique-mld">3.2 Modèle logique (MLD)</h3>
+<p>Tables</p>
+<ul>
+<li><code>modeles_traceur</code>, <code>capteurs</code>,
+<code>alimentations</code>, <code>profils_montage</code>,
+<code>peripherals</code>, <code>compatibilites</code>.</li>
+</ul>
+<p>Clés et contraintes</p>
+<ul>
+<li>Clés primaires <code>id</code> auto-incrémentées</li>
+<li>Index sur <code>slug</code>/<code>name</code> pour recherches
+rapides (migrations ajoutent indexes uniques)</li>
+</ul>
+<h3 id="dictionnaire-des-données">3.3 Dictionnaire des données</h3>
+<p>Description des champs</p>
+<ul>
+<li>Exemples : <code>modele_traceur.name</code>,
+<code>capteur.voltage</code>, <code>profil_montage.ip_rating</code>,
+<code>peripheral.type</code>.</li>
+</ul>
+<p>Règles et validations</p>
+<ul>
+<li>Validations Ecto via changesets (ex. <code>validate_required</code>,
+<code>unique_constraint</code>).</li>
+</ul>
+<hr />
+<h2 id="chapitre-4-architecture-et-choix-techniques">Chapitre 4 :
+Architecture et choix techniques</h2>
+<h3 id="architecture-globale-du-système">4.1 Architecture globale du
+système</h3>
+<p>Le projet suit une architecture MVC/LiveView : Phoenix gère le
+routage et la logique serveur, LiveView fournit des UI réactives sans
+SPA complète. L’API est principalement internalisée via LiveView et
+contrôleurs pour les exportations.</p>
+<p>Organisation générale</p>
+<ul>
+<li><code>lib/tag_ip</code> : logique métier</li>
+<li><code>lib/tag_ip_web</code> : interface web, routes, composants</li>
+<li><code>assets/</code> : JS/CSS</li>
+<li><code>priv/repo/migrations</code> : DB</li>
+</ul>
+<h3 id="choix-technologiques">4.2 Choix technologiques</h3>
+<p>Backend / DB / serveur</p>
+<ul>
+<li>Backend : Elixir + Phoenix pour concurrence, tolérance et
+productivité</li>
+<li>DB : PostgreSQL pour transactions et robustesse</li>
+<li>Serveur : Gigalixir/Docker/K8s possible via Dockerfile</li>
+</ul>
+<p>Justifications + alternatives</p>
+<ul>
+<li>Alternatives : Node.js/Express pour un stack JS, mais BEAM offre
+meilleure concurrence pour charge simultanée.</li>
+</ul>
+<h3 id="architecture-back-end-et-sécurité">4.3 Architecture back-end et
+sécurité</h3>
+<p>Organisation en couches</p>
+<ul>
+<li>Couche web (controllers / liveviews), couche service (domain logic),
+couche persistence (Ecto)</li>
+</ul>
+<p>Patterns utilisés</p>
+<ul>
+<li>Contexts Phoenix (ex. <code>TagIp.Resources</code>), Changesets,
+Streams pour listes volumineuses</li>
+</ul>
+<p>Sécurité</p>
+<ul>
+<li>Auth via <code>lib/tag_ip_web/user_auth.ex</code>
+(phx.gen.auth)</li>
+<li>Protections CSRF, gestion des rôles, validation input côté
+serveur</li>
+</ul>
+<hr />
+<h1 id="partie-iii-réalisation-et-évaluation">PARTIE III – RÉALISATION
+ET ÉVALUATION</h1>
+<h2 id="chapitre-5-réalisation-technique">Chapitre 5 : Réalisation
+technique</h2>
+<h3 id="mise-en-place-technique">5.1 Mise en place technique</h3>
+<p>Environnement</p>
+<ul>
+<li>Instructions de développement : <code>mix deps.get</code>,
+<code>mix ecto.setup</code>,
+<code>cd assets &amp;&amp; npm install &amp;&amp; npm run deploy</code>
+(ou esbuild)</li>
+</ul>
+<p>Structure du projet</p>
+<ul>
+<li>Présentation arborescente (voir <code>lib/</code>,
+<code>priv/</code>, <code>assets/</code>)</li>
+</ul>
+<p>Base de données</p>
+<ul>
+<li>Migrations présentes dans <code>priv/repo/migrations</code>, seed
+dans <code>priv/repo/seeds.exs</code>.</li>
+</ul>
+<h3 id="implémentation-du-back-end">5.2 Implémentation du back-end</h3>
+<p>Authentification / utilisateurs</p>
+<ul>
+<li>Implémentée via <code>phx.gen.auth</code> dans
+<code>lib/tag_ip_web/live/user_live</code> et
+<code>lib/tag_ip_web/user_auth.ex</code>.</li>
+</ul>
+<p>Logique métier</p>
+<ul>
+<li>Contexts et modules dans <code>lib/tag_ip/resources</code> gèrent la
+logique CRUD et règles métiers.</li>
+</ul>
+<p>API</p>
+<ul>
+<li>Endpoints pour export et import (controller
+<code>export_controller.ex</code>), possibilité d’ajouter endpoints JSON
+pour intégration.</li>
+</ul>
+<h3 id="fonctionnalités-avancées">5.3 Fonctionnalités avancées</h3>
+<p>Recherche avancée</p>
+<ul>
+<li>Indexation simple via DB, filtres combinés dans les contextes.
+Possibilité d’ajouter Elasticsearch si nécessaire.</li>
+</ul>
+<p>Reporting</p>
+<ul>
+<li>Export CSV/JSON via <code>lib/tag_ip/export.ex</code> et scripts
+dans <code>priv/repo/scripts</code>.</li>
+</ul>
+<p>Interface (aperçu)</p>
+<ul>
+<li>LiveView pages présentes (<code>lib/tag_ip_web/live/*_live</code>)
+fournissent UI réactives pour listings et formulaires.</li>
+</ul>
+<hr />
+<h2 id="chapitre-6-évaluation-et-discussion">Chapitre 6 : Évaluation et
+discussion</h2>
+<h3 id="tests-et-validation">6.1 Tests et validation</h3>
+<p>Tests fonctionnels</p>
+<ul>
+<li>Tests LiveView et controllers présents dans
+<code>test/tag_ip_web</code> et <code>test/tag_ip</code>.</li>
+</ul>
+<p>Tests techniques (unitaires/intégration)</p>
+<ul>
+<li>Tests de contextes et fixtures
+(<code>test/support/fixtures</code>).</li>
+</ul>
+<p>Sécurité + résultats</p>
+<ul>
+<li>Contrôles d’accès via plugs; recommandations: audit des endpoints
+d’API exposés.</li>
+</ul>
+<h3 id="analyse-des-performances">6.2 Analyse des performances</h3>
+<p>Temps de réponse</p>
+<ul>
+<li>Mesures à collecter en staging; BEAM/Genuinely concurrent handling
+should scale well.</li>
+</ul>
+<p>Optimisations</p>
+<ul>
+<li>Index DB, preload associations, pagination/streaming, cache
+résultats fréquents.</li>
+</ul>
+<p>Résultats</p>
+<ul>
+<li>À compléter après bench et collecte métriques.</li>
+</ul>
+<h3 id="discussion-critique">6.3 Discussion critique</h3>
+<p>Évaluation objectifs/hypothèse</p>
+<ul>
+<li>Le système implémenté répond aux besoins de centralisation et aux
+fonctionnalités principales.</li>
+</ul>
+<p>Limites et difficultés</p>
+<ul>
+<li>Manque d’interface d’import avancée</li>
+<li>Tests de charge incomplets</li>
+</ul>
+<p>Perspectives</p>
+<ul>
+<li>Ajout d’un moteur de recherche full-text, imports automatisés,
+interface d’administration avancée.</li>
+</ul>
+<hr />
+<h2 id="conclusion">CONCLUSION</h2>
+<p>Synthèse</p>
+<p>Le projet TAG-IP fournit une base solide pour la gestion des
+compatibilités de traceurs. Le choix d’Elixir/Phoenix permet d’assurer
+réactivité et robustesse.</p>
+<p>Validation hypothèse</p>
+<p>Les premiers livrables confirment que la centralisation et l’UI
+réactive améliorent la productivité.</p>
+<p>Apports</p>
+<ul>
+<li>Modèle de données structuré</li>
+<li>Interface CRUD + recherche</li>
+<li>Scripts d’import/export</li>
+</ul>
+<p>Perspectives</p>
+<ul>
+<li>Améliorer la recherche, compléter les tests de performances,
+préparer un déploiement en production.</li>
+</ul>
+<hr />
+<h3 id="annexes-et-ressources">Annexes et ressources</h3>
+<ul>
+<li>Migrations : <code>priv/repo/migrations</code></li>
+<li>Scripts : <code>priv/repo/scripts</code></li>
+</ul>
+<h4 id="annexe-a-mcd-modèle-conceptuel">Annexe A — MCD (Modèle
+conceptuel)</h4>
+<pre class="mermaid"><code>erDiagram
+    ProfilMontage {
+        uuid id PK
+        string name
+        string description
+        string object_type
+        float voltage_min
+        float voltage_max
+    }
+
+    ModeleTraceur {
+        uuid id PK
+        string nom
+        string brand
+        string reference
+        string description
+    }
+
+    Compatibilite {
+        uuid id PK
+        int score_compatibilite
+        string details
+    }
+
+    TypeVehicule {
+        uuid id PK
+        string slug
+        string label
+    }
+
+    Alimentation {
+        uuid id PK
+        string slug
+        string label
+    }
+
+    Capteur {
+        uuid id PK
+        string slug
+        string label
+    }
+
+    ProfilMontage ||--o{ Compatibilite : &quot;est évalué par&quot;
+    ModeleTraceur ||--o{ Compatibilite : &quot;est évalué par&quot;
+    ModeleTraceur ||--o{ TypeVehicule : &quot;compatible avec&quot;
+    ModeleTraceur ||--o{ Alimentation : &quot;supporté par&quot;
+    ModeleTraceur ||--o{ Capteur : &quot;embarque&quot;</code></pre>
+<figure>
+<img src="docs/mcd_diagramme.svg" alt="MCD — Modèle conceptuel" />
+<figcaption aria-hidden="true">MCD — Modèle conceptuel</figcaption>
+</figure>
+<h4 id="annexe-b-mld-modèle-logique-physique">Annexe B — MLD (Modèle
+logique / Physique)</h4>
+<figure>
+<img src="docs/mld_diagramme.svg" alt="MLD — Modèle logique" />
+<figcaption aria-hidden="true">MLD — Modèle logique</figcaption>
+</figure>
+<p><em>Diagrammes générés et insérés à partir des sources
+Mermaid.</em></p>
+</body>
+</html>

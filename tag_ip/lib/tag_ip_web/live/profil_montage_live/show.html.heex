@@ -112,6 +112,20 @@
 
           <dl class="mt-8 grid gap-5 sm:grid-cols-2">
             <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60 sm:col-span-2">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Type de véhicule</dt>
+              <dd class="mt-2 text-sm font-semibold text-slate-900">
+                <%= if @profil.type_vehicule do %>
+                  {@profil.type_vehicule.label}
+                  <span class="text-slate-500">({@profil.type_vehicule.slug})</span>
+                <% else %>
+                  <span class="text-slate-500">
+                    {Map.get(@type_labels, @profil.object_type, @profil.object_type) ||
+                      "Non défini"}
+                  </span>
+                <% end %>
+              </dd>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60 sm:col-span-2">
               <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Modèle traceur</dt>
               <dd class="mt-2 text-sm font-semibold text-slate-900">
                 <%= if @profil.modele_traceur do %>
@@ -119,6 +133,33 @@
                   <span class="text-slate-500">({@profil.modele_traceur.reference})</span>
                 <% else %>
                   <span class="text-slate-500">Non spécifié</span>
+                <% end %>
+              </dd>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">
+                Organisation cliente
+              </dt>
+              <dd class="mt-2 text-sm font-semibold text-slate-900">
+                <%= if @profil.organisation do %>
+                  {@profil.organisation.name}
+                <% else %>
+                  <span class="text-slate-500">Non spécifiée</span>
+                <% end %>
+              </dd>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/60">
+              <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Alimentation</dt>
+              <dd class="mt-2 text-sm font-semibold text-slate-900">
+                <%= if @profil.alimentation do %>
+                  {@profil.alimentation.label}
+                  <span class="text-slate-500">({@profil.alimentation.slug})</span>
+                <% else %>
+                  <span class="text-slate-500">
+                    {if @profil.voltage_min, do: "#{@profil.voltage_min}V", else: "—"} — {if @profil.voltage_max,
+                      do: "#{@profil.voltage_max}V",
+                      else: "—"}
+                  </span>
                 <% end %>
               </dd>
             </div>
@@ -237,9 +278,26 @@
                 Résultats triés par score de compatibilité.
               </p>
             </div>
-            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700">
-              {Enum.count(@compatibilites)} résultats
-            </span>
+            <div class="flex items-center gap-4">
+              <button
+                phx-click="calculate_compatibility"
+                disabled={@calculating}
+                class={[
+                  "inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition",
+                  @calculating && "cursor-not-allowed bg-slate-400",
+                  !@calculating && "bg-slate-900 hover:bg-slate-700"
+                ]}
+              >
+                <.icon
+                  name={if @calculating, do: "hero-arrow-path", else: "hero-calculator"}
+                  class={["size-4", @calculating && "animate-spin"]}
+                />
+                {(@calculating && "Calcul en cours…") || "Calculer"}
+              </button>
+              <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700">
+                {Enum.count(@compatibilites)} résultats
+              </span>
+            </div>
           </div>
 
           <div class="mt-6 space-y-4">
@@ -247,7 +305,7 @@
               :if={Enum.empty?(@compatibilites)}
               class="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500"
             >
-              Aucune compatibilité calculée pour ce profil. Utilisez la page d'index pour calculer la compatibilité.
+              Aucune compatibilité calculée. Cliquez sur « Calculer » pour lancer la compatibilité avec tous les modèles de traceurs.
             </div>
 
             <ul class="space-y-4">

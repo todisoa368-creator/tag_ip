@@ -36,8 +36,6 @@ defmodule TagIpWeb.Layouts do
       {TagIpWeb.ProfilMontageLive.Index, :profils} -> true
       {TagIpWeb.ProfilMontageLive.Show, :profils} -> true
       {TagIpWeb.ProfilMontageLive.Form, :profils} -> true
-      {TagIpWeb.ComparaisonLive.Index, :comparaison} -> true
-      {TagIpWeb.ComparaisonLive.Admin, :comparaison} -> true
       {TagIpWeb.ModeleTraceurLive.Index, :modeles} -> true
       {TagIpWeb.ModeleTraceurLive.Show, :modeles} -> true
       {TagIpWeb.ModeleTraceurLive.Form, :modeles} -> true

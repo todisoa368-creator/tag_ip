@@ -64,6 +64,7 @@ alias TagIp.Resources.Capteur
 alias TagIp.Resources.ModeleTraceurAlimentation
 alias TagIp.Resources.ModeleTraceurTypeVehicule
 alias TagIp.Resources.ModeleTraceurCapteur
+alias TagIp.Resources.Organisation
 alias TagIp.Accounts.User
 alias TagIp.Repo
 
@@ -112,7 +113,30 @@ case Repo.get_by(User, email: admin_email) do
 end
 
 # =========================================================
-# 2. Profils de montage
+# 2. Organisations clientes
+# =========================================================
+IO.puts("Insertion des organisations...")
+
+organisations_data = [
+  %{slug: "tag-ip", name: "Tag-IP", description: "Organisation par défaut"},
+  %{
+    slug: "transports-mada",
+    name: "Transports Madagascar",
+    description: "Société de transport nationale"
+  },
+  %{slug: "logitech-mg", name: "Logitech Madagascar", description: "Logistique et entreposage"},
+  %{slug: "flotte-express", name: "Flotte Express", description: "Gestion de flotte automobile"}
+]
+
+org_by_slug =
+  Enum.map(organisations_data, fn attrs ->
+    {:ok, org} = Organisation.create(attrs, action: :create)
+    {org.slug, org.id}
+  end)
+  |> Map.new()
+
+# =========================================================
+# 3. Profils de montage
 # =========================================================
 profils = [
   %{
@@ -242,18 +266,19 @@ profils = [
   }
 ]
 
+default_org_id = org_by_slug["tag-ip"]
 IO.puts("Insertion des profils...")
 
 Enum.each(profils, fn attrs ->
   try do
-    ProfilMontage.create!(attrs, action: :create)
+    ProfilMontage.create!(Map.put(attrs, :organisation_id, default_org_id), action: :create)
   rescue
     _ -> :ok
   end
 end)
 
 # =========================================================
-# 3. Types de véhicules, Alimentations, Capteurs (données de référence)
+# 4. Types de véhicules, Alimentations, Capteurs (données de référence)
 # =========================================================
 IO.puts("Insertion des types de véhicules...")
 
@@ -572,7 +597,7 @@ cap_by_slug =
   |> Map.new()
 
 # =========================================================
-# 4. Import CSV
+# 5. Import CSV
 # =========================================================
 to_nil = fn
   "" -> nil
@@ -623,7 +648,7 @@ TrackableType.read!()
 end)
 
 # =========================================================
-# 5. Port Types
+# 6. Port Types
 # =========================================================
 IO.puts("Insertion des types de ports...")
 
@@ -679,7 +704,7 @@ port_type_ids =
   |> Map.new()
 
 # =========================================================
-# 6. Features
+# 7. Features
 # =========================================================
 IO.puts("Insertion des fonctionnalités...")
 
@@ -780,7 +805,7 @@ feature_ids =
   |> Map.new()
 
 # =========================================================
-# 7. Modèles de traceurs pour la comparaison technique
+# 8. Modèles de traceurs pour la comparaison technique
 # =========================================================
 IO.puts("Insertion des modèles de traceurs pour la comparaison technique...")
 
@@ -1566,7 +1591,7 @@ new_model_ids =
       {:ok, modele} ->
         Enum.each(feature_slugs, fn slug ->
           if fid = feature_ids[slug] do
-            ModelFeature.create(%{
+            ModelFeature.create!(%{
               modele_traceur_id: modele.id,
               feature_id: fid
             })
@@ -1575,7 +1600,7 @@ new_model_ids =
 
         Enum.each(alim_slugs, fn slug ->
           if aid = alim_by_slug[slug] do
-            ModeleTraceurAlimentation.create(%{
+            ModeleTraceurAlimentation.create!(%{
               modele_traceur_id: modele.id,
               alimentation_id: aid
             })
@@ -1584,7 +1609,7 @@ new_model_ids =
 
         Enum.each(cap_slugs, fn slug ->
           if cid = cap_by_slug[slug] do
-            ModeleTraceurCapteur.create(%{
+            ModeleTraceurCapteur.create!(%{
               modele_traceur_id: modele.id,
               capteur_id: cid
             })
@@ -1593,7 +1618,7 @@ new_model_ids =
 
         Enum.each(tv_slugs, fn slug ->
           if tvid = tv_by_slug[slug] do
-            ModeleTraceurTypeVehicule.create(%{
+            ModeleTraceurTypeVehicule.create!(%{
               modele_traceur_id: modele.id,
               type_vehicule_id: tvid
             })
@@ -1611,7 +1636,7 @@ new_model_ids =
 IO.puts("Modèles de référence insérés: #{length(new_model_ids)}")
 
 # =========================================================
-# 8. Model Ports (Broches Physiques)
+# 9. Model Ports (Broches Physiques)
 # =========================================================
 IO.puts("Insertion des ports physiques...")
 
@@ -1666,7 +1691,7 @@ end)
 IO.puts("Ports physiques insérés: #{length(pin_defs)}")
 
 # =========================================================
-# 9. Peripherals
+# 10. Peripherals
 # =========================================================
 IO.puts("Insertion des périphériques...")
 
