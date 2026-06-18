@@ -5,42 +5,12 @@ defmodule TagIpWeb.UserSessionController do
   alias TagIpWeb.UserAuth
 
   # =========================================================
-  # LOGIN SUCCESS MESSAGE
+  # LOGIN (EMAIL + PASSWORD)
   # =========================================================
-
-  def create(conn, %{"_action" => "confirmed"} = params) do
-    create(conn, params, fn -> "Compte confirmé avec succès." end)
-  end
 
   def create(conn, params) do
     create(conn, params, fn -> "Bienvenue sur TAG-Monitor !" end)
   end
-
-  # =========================================================
-  # MAGIC LINK LOGIN
-  # =========================================================
-
-  defp create(conn, %{"user" => %{"token" => token} = user_params}, info_fun) do
-    case Accounts.login_user_by_magic_link(token) do
-      {:ok, {user, tokens_to_disconnect}} ->
-        UserAuth.disconnect_sessions(tokens_to_disconnect)
-
-        session_days = TagIp.Accounts.UserToken.session_validity_days()
-
-        conn
-        |> put_flash(:info, info_fun.() <> " Session: #{session_days} jours.")
-        |> UserAuth.log_in_user(user, user_params)
-
-      _ ->
-        conn
-        |> put_flash(:error, "Le lien est invalide ou a expiré.")
-        |> redirect(to: ~p"/users/log-in")
-    end
-  end
-
-  # =========================================================
-  # EMAIL + PASSWORD LOGIN
-  # =========================================================
 
   defp create(conn, %{"user" => user_params}, info_fun) do
     %{"email" => email, "password" => password} = user_params
@@ -58,14 +28,6 @@ defmodule TagIpWeb.UserSessionController do
         |> put_flash(:info, info_fun.() <> " Session: #{session_days} jours.")
         |> UserAuth.log_in_user(user, user_params)
     end
-  end
-
-  # =========================================================
-  # MAGIC LINK ROUTE
-  # =========================================================
-
-  def magic_link(conn, %{"token" => token}) do
-    create(conn, %{"user" => %{"token" => token}}, fn -> "Connexion réussie !" end)
   end
 
   # =========================================================

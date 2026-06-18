@@ -55,38 +55,36 @@
               >
                 Profils de montage
               </.link>
-              <%= if @current_scope.user.role == "admin" do %>
-                <.link
-                  href={~p"/modeles"}
-                  class={[
-                    "hover:text-blue-600 transition pb-1 border-b-2",
-                    active_nav?(assigns, :modeles) && "text-blue-600 border-blue-600",
-                    !active_nav?(assigns, :modeles) && "border-transparent"
-                  ]}
-                >
-                  Modèles
-                </.link>
-                <.link
-                  href={~p"/compatibilites"}
-                  class={[
-                    "hover:text-blue-600 transition pb-1 border-b-2",
-                    active_nav?(assigns, :compatibilites) && "text-blue-600 border-blue-600",
-                    !active_nav?(assigns, :compatibilites) && "border-transparent"
-                  ]}
-                >
-                  Compatibilités
-                </.link>
-                <.link
-                  href={~p"/referentiels"}
-                  class={[
-                    "hover:text-blue-600 transition pb-1 border-b-2",
-                    active_nav?(assigns, :referentiels) && "text-blue-600 border-blue-600",
-                    !active_nav?(assigns, :referentiels) && "border-transparent"
-                  ]}
-                >
-                  Référentiels
-                </.link>
-              <% end %>
+              <.link
+                href={~p"/modeles"}
+                class={[
+                  "hover:text-blue-600 transition pb-1 border-b-2",
+                  active_nav?(assigns, :modeles) && "text-blue-600 border-blue-600",
+                  !active_nav?(assigns, :modeles) && "border-transparent"
+                ]}
+              >
+                Modèles
+              </.link>
+              <.link
+                href={~p"/compatibilites"}
+                class={[
+                  "hover:text-blue-600 transition pb-1 border-b-2",
+                  active_nav?(assigns, :compatibilites) && "text-blue-600 border-blue-600",
+                  !active_nav?(assigns, :compatibilites) && "border-transparent"
+                ]}
+              >
+                Compatibilités
+              </.link>
+              <.link
+                href={~p"/referentiels"}
+                class={[
+                  "hover:text-blue-600 transition pb-1 border-b-2",
+                  active_nav?(assigns, :referentiels) && "text-blue-600 border-blue-600",
+                  !active_nav?(assigns, :referentiels) && "border-transparent"
+                ]}
+              >
+                Référentiels
+              </.link>
             </div>
           </nav>
         <% end %>
@@ -105,15 +103,9 @@
           <% else %>
             <.link
               href={~p"/users/log-in"}
-              class="text-sm font-semibold leading-6 text-zinc-900 hover:text-blue-600"
-            >
-              Log in
-            </.link>
-            <.link
-              href={~p"/users/register"}
               class="rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700 transition"
             >
-              Register
+              Connexion
             </.link>
           <% end %>
         </div>

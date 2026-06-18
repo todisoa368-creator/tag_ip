@@ -41,25 +41,7 @@ defmodule TagIpWeb.Router do
       live "/profils/new", ProfilMontageLive.Form, :new
       live "/profils/:id", ProfilMontageLive.Show, :show
       live "/profils/:id/edit", ProfilMontageLive.Form, :edit
-    end
 
-    get "/export/profils.csv", ExportController, :profils
-    post "/users/update-password", UserSessionController, :update_password
-  end
-
-  # =========================================================
-  # ZONE ADMIN — RÉSERVÉ AUX ADMINISTRATEURS
-  # =========================================================
-
-  scope "/", TagIpWeb do
-    pipe_through [:browser, :require_authenticated_user]
-
-    live_session :require_admin_user,
-      on_mount: [
-        {TagIpWeb.UserAuth, :mount_current_scope},
-        {TagIpWeb.UserAuth, :require_authenticated},
-        {TagIpWeb.UserAuth, :require_admin}
-      ] do
       # Modèles de traceurs
       live "/modeles", ModeleTraceurLive.Index, :index
       live "/modeles/new", ModeleTraceurLive.Form, :new
@@ -75,7 +57,9 @@ defmodule TagIpWeb.Router do
       live "/referentiels", ReferenceLive.Index, :index
     end
 
+    get "/export/profils.csv", ExportController, :profils
     get "/export/modeles.csv", ExportController, :modeles
+    post "/users/update-password", UserSessionController, :update_password
   end
 
   # =========================================================
@@ -91,17 +75,12 @@ defmodule TagIpWeb.Router do
         {TagIpWeb.UserAuth, :redirect_if_user_is_authenticated}
       ] do
       live "/users/log-in", UserLive.Login, :new
-      live "/users/register", UserLive.Registration, :new
       live "/users/reset_password", UserLive.ForgotPassword, :new
 
       live "/users/reset_password/:token",
            UserLive.ResetPassword,
            :edit
     end
-
-    get "/users/log-in/:token",
-        UserSessionController,
-        :magic_link
 
     post "/users/log-in",
          UserSessionController,

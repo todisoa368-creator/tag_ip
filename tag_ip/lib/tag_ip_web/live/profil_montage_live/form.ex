@@ -39,7 +39,9 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
       ModeleTraceur.read!()
       |> Enum.map(&Ash.load!(&1, [:types_vehicule]))
 
-    brands = modeles |> Enum.map(& &1.brand) |> Enum.uniq() |> Enum.sort()
+    brands =
+      modeles |> Enum.map(& &1.brand) |> Enum.uniq() |> Enum.reject(&is_nil/1) |> Enum.sort()
+
     matrix_features = CapabilityMatrix.matrix_features()
     types_vehicule = TypeVehicule.read!() |> Enum.sort_by(& &1.label)
 
@@ -518,6 +520,9 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     cond do
       socket.assigns.profile_name == "" ->
         {put_flash(socket, :error, "Veuillez saisir un nom de profil."), false}
+
+      is_nil(socket.assigns.selected_organisation_id) ->
+        {put_flash(socket, :error, "Veuillez sélectionner une organisation cliente."), false}
 
       is_nil(socket.assigns.selected_type_vehicule_id) ->
         {put_flash(socket, :error, "Veuillez sélectionner un type de véhicule."), false}

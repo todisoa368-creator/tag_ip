@@ -2,10 +2,9 @@ defmodule TagIpWeb.UserSessionControllerTest do
   use TagIpWeb.ConnCase, async: true
 
   import TagIp.AccountsFixtures
-  alias TagIp.Accounts
 
   setup do
-    %{unconfirmed_user: unconfirmed_user_fixture(), user: user_fixture()}
+    %{user: user_fixture()}
   end
 
   describe "POST /users/log-in - email and password" do
@@ -66,59 +65,6 @@ defmodule TagIpWeb.UserSessionControllerTest do
         })
 
       assert Phoenix.Flash.get(conn.assigns.flash, :error) == "Email ou mot de passe invalide"
-      assert redirected_to(conn) == ~p"/users/log-in"
-    end
-  end
-
-  describe "POST /users/log-in - magic link" do
-    test "logs the user in", %{conn: conn, user: user} do
-      {token, _hashed_token} = generate_user_magic_link_token(user)
-
-      conn =
-        post(conn, ~p"/users/log-in", %{
-          "user" => %{"token" => token}
-        })
-
-      assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/dashboard"
-
-      # Now do a logged in request and assert on the menu
-      conn = get(conn, ~p"/dashboard")
-      response = html_response(conn, 200)
-      assert response =~ user.email
-    end
-
-    test "confirms unconfirmed user", %{conn: conn, unconfirmed_user: user} do
-      {token, _hashed_token} = generate_user_magic_link_token(user)
-      refute user.confirmed_at
-
-      conn =
-        post(conn, ~p"/users/log-in", %{
-          "user" => %{"token" => token},
-          "_action" => "confirmed"
-        })
-
-      assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/dashboard"
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "confirmé"
-
-      assert Accounts.get_user!(user.id).confirmed_at
-
-      # Now do a logged in request and assert on the menu
-      conn = get(conn, ~p"/dashboard")
-      response = html_response(conn, 200)
-      assert response =~ user.email
-    end
-
-    test "redirects to login page when magic link is invalid", %{conn: conn} do
-      conn =
-        post(conn, ~p"/users/log-in", %{
-          "user" => %{"token" => "invalid"}
-        })
-
-      assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
-               "Le lien est invalide ou a expiré."
-
       assert redirected_to(conn) == ~p"/users/log-in"
     end
   end
