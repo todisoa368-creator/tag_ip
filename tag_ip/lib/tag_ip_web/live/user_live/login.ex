@@ -72,6 +72,13 @@ defmodule TagIpWeb.UserLive.Login do
               </.button>
             </:actions>
           </.simple_form>
+
+          <div class="mt-6 text-center text-sm text-slate-500">
+            Pas encore de compte ?
+            <.link href={~p"/users/register"} class="font-semibold text-blue-600 hover:underline">
+              Créer un compte
+            </.link>
+          </div>
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   alias TagIp.Resources.ProfilMontageCapteur
   alias TagIp.Resources.TypeVehicule
   alias TagIp.Resources.Organisation
+  alias TagIp.Resources.Organisation
   alias TagIp.Resources.Alimentation
 
   @steps [
@@ -67,6 +68,11 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
      |> assign(:selected_type_vehicule_id, nil)
      |> assign(:selected_type_vehicule, nil)
      |> assign(:selected_organisation_id, nil)
+     |> assign(:show_new_org_modal, false)
+     |> assign(
+       :new_org_form,
+       to_form(%{"name" => "", "slug" => "", "description" => ""}, as: :organisation)
+     )
      |> assign(:selected_alimentation_id, nil)
      |> assign(:profile_name, "")
      |> assign(:profile_description, "")
@@ -124,10 +130,56 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
      |> assign(:validation_result, nil)}
   end
 
+  def handle_event("update_name", %{"profile_name" => name}, socket) do
+    {:noreply, assign(socket, :profile_name, name || "")}
+  end
+
+  def handle_event("update_description", %{"profile_description" => desc}, socket) do
+    {:noreply, assign(socket, :profile_description, desc || "")}
+  end
+
   def handle_event("select_organisation", %{"organisation_id" => org_id}, socket) do
     org_id = if org_id not in [nil, "", "0"], do: org_id, else: nil
 
     {:noreply, assign(socket, :selected_organisation_id, org_id)}
+  end
+
+  def handle_event("open_new_org_modal", _, socket) do
+    {:noreply,
+     assign(socket,
+       show_new_org_modal: true,
+       new_org_form:
+         to_form(%{"name" => "", "slug" => "", "description" => ""}, as: :organisation)
+     )}
+  end
+
+  def handle_event("close_new_org_modal", _, socket) do
+    {:noreply, assign(socket, :show_new_org_modal, false)}
+  end
+
+  def handle_event("save_new_org", %{"organisation" => org_params}, socket) do
+    name = org_params["name"]
+    slug = org_params["slug"]
+    description = org_params["description"]
+
+    if name == "" || slug == "" do
+      {:noreply, put_flash(socket, :error, "Le nom et le slug sont requis.")}
+    else
+      case Organisation.create(%{name: name, slug: slug, description: description}) do
+        {:ok, org} ->
+          organisations = Organisation.read!() |> Enum.sort_by(& &1.name)
+
+          {:noreply,
+           socket
+           |> assign(:organisations, organisations)
+           |> assign(:selected_organisation_id, org.id)
+           |> assign(:show_new_org_modal, false)
+           |> put_flash(:info, "Organisation « #{org.name} » ajoutée.")}
+
+        {:error, reason} ->
+          {:noreply, put_flash(socket, :error, "Erreur : #{inspect(reason)}")}
+      end
+    end
   end
 
   def handle_event("select_alimentation", %{"alimentation_id" => alim_id}, socket) do

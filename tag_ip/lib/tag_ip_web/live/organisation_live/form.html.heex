@@ -1,0 +1,56 @@
+<TagIpWeb.Layouts.app flash={@flash} current_scope={@current_scope}>
+  <div class="max-w-2xl mx-auto">
+    <.link
+      navigate={~p"/organisations"}
+      class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors mb-6"
+    >
+      <.icon name="hero-arrow-left" class="size-4" /> Retour aux organisations
+    </.link>
+
+    <h1 class="text-2xl font-bold text-gray-900 mb-8">{@page_title}</h1>
+
+    <.form for={@form} id="organisation-form" phx-change="validate" phx-submit="save">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
+        <div class="grid grid-cols-1 gap-6">
+          <.input
+            field={@form[:name]}
+            type="text"
+            label="Nom"
+            placeholder="Nom de l'organisation"
+            required
+          />
+
+          <.input
+            field={@form[:slug]}
+            type="text"
+            label="Slug"
+            placeholder="nom-de-l-organisation"
+            required
+          />
+
+          <.input
+            field={@form[:description]}
+            type="textarea"
+            label="Description"
+            placeholder="Description optionnelle"
+          />
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 mt-6">
+        <.link
+          navigate={~p"/organisations"}
+          class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+        >
+          Annuler
+        </.link>
+        <button
+          type="submit"
+          class="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+        >
+          {if @organisation, do: "Enregistrer", else: "Créer l'organisation"}
+        </button>
+      </div>
+    </.form>
+  </div>
+</TagIpWeb.Layouts.app>

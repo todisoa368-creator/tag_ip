@@ -76,6 +76,16 @@
                 Compatibilités
               </.link>
               <.link
+                href={~p"/organisations"}
+                class={[
+                  "hover:text-blue-600 transition pb-1 border-b-2",
+                  active_nav?(assigns, :organisations) && "text-blue-600 border-blue-600",
+                  !active_nav?(assigns, :organisations) && "border-transparent"
+                ]}
+              >
+                Organisations
+              </.link>
+              <.link
                 href={~p"/referentiels"}
                 class={[
                   "hover:text-blue-600 transition pb-1 border-b-2",

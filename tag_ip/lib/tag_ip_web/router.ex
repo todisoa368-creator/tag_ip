@@ -53,6 +53,11 @@ defmodule TagIpWeb.Router do
       live "/compatibilites/new", CompatibiliteLive.Index, :new
       live "/compatibilites/:id", CompatibiliteLive.Show, :show
 
+      # Organisations
+      live "/organisations", OrganisationLive.Index, :index
+      live "/organisations/new", OrganisationLive.Form, :new
+      live "/organisations/:id/edit", OrganisationLive.Form, :edit
+
       # Référentiels
       live "/referentiels", ReferenceLive.Index, :index
     end
@@ -74,6 +79,7 @@ defmodule TagIpWeb.Router do
         {TagIpWeb.UserAuth, :mount_current_scope},
         {TagIpWeb.UserAuth, :redirect_if_user_is_authenticated}
       ] do
+      live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
       live "/users/reset_password", UserLive.ForgotPassword, :new
 

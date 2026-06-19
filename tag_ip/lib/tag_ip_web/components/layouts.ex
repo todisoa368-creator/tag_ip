@@ -39,6 +39,8 @@ defmodule TagIpWeb.Layouts do
       {TagIpWeb.ModeleTraceurLive.Index, :modeles} -> true
       {TagIpWeb.ModeleTraceurLive.Show, :modeles} -> true
       {TagIpWeb.ModeleTraceurLive.Form, :modeles} -> true
+      {TagIpWeb.OrganisationLive.Index, :organisations} -> true
+      {TagIpWeb.OrganisationLive.Form, :organisations} -> true
       {TagIpWeb.ReferenceLive.Index, :referentiels} -> true
       {TagIpWeb.CompatibiliteLive.Index, :compatibilites} -> true
       {TagIpWeb.CompatibiliteLive.Show, :compatibilites} -> true
