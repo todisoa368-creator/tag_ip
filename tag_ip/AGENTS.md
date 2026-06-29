@@ -508,3 +508,32 @@ And **never** do this:
 <!-- phoenix:liveview-end -->
 
 <!-- usage-rules-end -->
+
+<!-- session-history -->
+## Session: Numérotation romaine pages préliminaires
+
+### Goal
+Ajouter la numérotation en chiffres romains (i, ii, iii...) aux pages préliminaires du DOCX et convertir en PDF.
+
+### Context
+- DOCX : `/Users/fitahiana/Desktop/FITAHIANJANAHARY TODISOA CHRISTINE FINAL (1).docx`
+- PDF final : `/Users/fitahiana/Desktop/FITAHIANJANAHARY TODISOA CHRISTINE FINAL (1).pdf`
+
+### Structure du document
+4 sections identifiées via sectPr dans pPr des paragraphes :
+- **Section 0** (indices 0-166) : AVANT-PROPOS → Listes (préliminaires) → `lowerRoman`
+- **Section 1** (indices 166-1144) : INTRODUCTION → CONCLUSION (corps) → `decimal` start=1
+- **Section 2** (indices 1144-1147) : section vide entre CONCLUSION et BIBLIOGRAPHIE → `decimal`
+- **Section 3** (indices 1147-1238) : BIBLIOGRAPHIE → Keywords → `decimal`
+
+### Changements effectués
+1. Section 0 : `pgNumType` → `lowerRoman`, ajout champ PAGE dans le footer
+2. Section 1 : `pgNumType` → `decimal` start=1 (PAGE existait déjà)
+3. Section 2 : `pgNumType` → `decimal`, ajout champ PAGE
+4. Section 3 : `pgNumType` → `decimal`, ajout champ PAGE
+
+### Résultat
+- Pages 1-7 PDF : i, ii, iii, iv, v, vi, vii (préliminaires)
+- Pages 8-94 PDF : 1, 2, 3... (corps)
+- Mise en page intacte (aucune modification du contenu ni des styles)
+<!-- session-history-end -->

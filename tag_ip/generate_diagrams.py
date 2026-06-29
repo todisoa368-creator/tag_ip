@@ -1,321 +1,510 @@
-"""Generate MCD and MLD diagrams for the thesis using Graphviz."""
-import graphviz
+#!/usr/bin/env python3
+"""Generate professional diagrams for the FTC thesis using Graphviz.
+
+Outputs PNG files to ~/Desktop/fitahiana/
+"""
+
 import os
+import graphviz
 
-OUTPUT_DIR = os.path.expanduser("~/Desktop/fitahiana")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+OUT = "/Users/fitahiana/Desktop/fitahiana"
+os.makedirs(OUT, exist_ok=True)
 
-def generate_mcd():
-    """Generate Conceptual Data Model (MCD) diagram."""
+COMMON = {
+    "fontname": "Helvetica",
+    "fontsize": "11",
+    "labelfontname": "Helvetica",
+    "labelfontsize": "12",
+}
+
+
+def organigramme():
     dot = graphviz.Digraph(
-        name="MCD_TAG_Monitor",
+        "Organigramme",
         format="png",
         graph_attr={
+            **COMMON,
             "rankdir": "TB",
-            "dpi": "200",
-            "fontname": "Helvetica",
-            "fontsize": "12",
-            "bgcolor": "white",
-            "pad": "0.5",
             "splines": "ortho",
+            "nodesep": "0.3",
+            "ranksep": "0.5",
         },
-        node_attr={
-            "fontname": "Helvetica",
-            "fontsize": "10",
-            "shape": "plaintext",
-            "style": "rounded",
-        },
-        edge_attr={"fontname": "Helvetica", "fontsize": "9"},
     )
+    dot.attr("node", shape="box", style="filled,rounded", fillcolor="#E8F0FE",
+             fontname="Helvetica", fontsize="10")
 
-    entities = {
-        "ProfilMontage": {
-            "label": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#E8F0FE">
-<TR><TD BGCOLOR="#1A73E8" COLSPAN="2"><FONT COLOR="white"><B>ProfilMontage</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">name</TD><TD ALIGN="LEFT">string</TD></TR>
-<TR><TD ALIGN="LEFT">voltage_min</TD><TD ALIGN="LEFT">decimal</TD></TR>
-<TR><TD ALIGN="LEFT">voltage_max</TD><TD ALIGN="LEFT">decimal</TD></TR>
-<TR><TD ALIGN="LEFT">can_bus_requis</TD><TD ALIGN="LEFT">boolean</TD></TR>
-<TR><TD ALIGN="LEFT">nb_digital_inputs</TD><TD ALIGN="LEFT">integer</TD></TR>
-<TR><TD ALIGN="LEFT">nb_analog_inputs</TD><TD ALIGN="LEFT">integer</TD></TR>
-<TR><TD ALIGN="LEFT">nb_outputs</TD><TD ALIGN="LEFT">integer</TD></TR>
-<TR><TD ALIGN="LEFT">ip_rating</TD><TD ALIGN="LEFT">string</TD></TR>
-<TR><TD ALIGN="LEFT">montage_exterieur</TD><TD ALIGN="LEFT">boolean</TD></TR>
-</TABLE>>""",
-        },
-        "ModeleTraceur": {
-            "label": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#E6F4EA">
-<TR><TD BGCOLOR="#34A853" COLSPAN="2"><FONT COLOR="white"><B>ModeleTraceur</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">nom</TD><TD ALIGN="LEFT">string</TD></TR>
-<TR><TD ALIGN="LEFT">reference</TD><TD ALIGN="LEFT">string (UQ)</TD></TR>
-<TR><TD ALIGN="LEFT">voltage_min</TD><TD ALIGN="LEFT">decimal</TD></TR>
-<TR><TD ALIGN="LEFT">voltage_max</TD><TD ALIGN="LEFT">decimal</TD></TR>
-<TR><TD ALIGN="LEFT">can_bus</TD><TD ALIGN="LEFT">boolean</TD></TR>
-<TR><TD ALIGN="LEFT">nb_digital_inputs</TD><TD ALIGN="LEFT">integer</TD></TR>
-<TR><TD ALIGN="LEFT">ip_rating</TD><TD ALIGN="LEFT">string</TD></TR>
-<TR><TD ALIGN="LEFT">accelerometer</TD><TD ALIGN="LEFT">boolean</TD></TR>
-<TR><TD ALIGN="LEFT">ultra_low_power</TD><TD ALIGN="LEFT">boolean</TD></TR>
-</TABLE>>""",
-        },
-        "Compatibilite": {
-            "label": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#FCE8E6">
-<TR><TD BGCOLOR="#EA4335" COLSPAN="2"><FONT COLOR="white"><B>Compatibilite</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">profil_montage_id</TD><TD ALIGN="LEFT">UUID FK</TD></TR>
-<TR><TD ALIGN="LEFT">modele_traceur_id</TD><TD ALIGN="LEFT">UUID FK</TD></TR>
-<TR><TD ALIGN="LEFT">score_compatibilite</TD><TD ALIGN="LEFT">integer</TD></TR>
-<TR><TD ALIGN="LEFT">details</TD><TD ALIGN="LEFT">string</TD></TR>
-</TABLE>>""",
-        },
-        "TypeVehicule": {
-            "label": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#FFF3E0">
-<TR><TD BGCOLOR="#FBBC04" COLSPAN="2"><FONT COLOR="white"><B>TypeVehicule</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">slug</TD><TD ALIGN="LEFT">string</TD></TR>
-<TR><TD ALIGN="LEFT">label</TD><TD ALIGN="LEFT">string</TD></TR>
-</TABLE>>""",
-        },
-        "Alimentation": {
-            "label": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#F3E8FF">
-<TR><TD BGCOLOR="#9334E6" COLSPAN="2"><FONT COLOR="white"><B>Alimentation</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">slug</TD><TD ALIGN="LEFT">string</TD></TR>
-<TR><TD ALIGN="LEFT">label</TD><TD ALIGN="LEFT">string</TD></TR>
-</TABLE>>""",
-        },
-        "Capteur": {
-            "label": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#E0F7FA">
-<TR><TD BGCOLOR="#00ACC1" COLSPAN="2"><FONT COLOR="white"><B>Capteur</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">slug</TD><TD ALIGN="LEFT">string</TD></TR>
-<TR><TD ALIGN="LEFT">label</TD><TD ALIGN="LEFT">string</TD></TR>
-</TABLE>>""",
-        },
-        "Feature": {
-            "label": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#FCE4EC">
-<TR><TD BGCOLOR="#E91E63" COLSPAN="2"><FONT COLOR="white"><B>Feature</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">slug</TD><TD ALIGN="LEFT">string</TD></TR>
-<TR><TD ALIGN="LEFT">label</TD><TD ALIGN="LEFT">string</TD></TR>
-</TABLE>>""",
-        },
-        "PortType": {
-            "label": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#EFEBE9">
-<TR><TD BGCOLOR="#795548" COLSPAN="2"><FONT COLOR="white"><B>PortType</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">slug</TD><TD ALIGN="LEFT">string</TD></TR>
-<TR><TD ALIGN="LEFT">label</TD><TD ALIGN="LEFT">string</TD></TR>
-</TABLE>>""",
-        },
-        "Peripheral": {
-            "label": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#FFFDE7">
-<TR><TD BGCOLOR="#F9A825" COLSPAN="2"><FONT COLOR="white"><B>Peripheral</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">name</TD><TD ALIGN="LEFT">string</TD></TR>
-</TABLE>>""",
-        },
-    }
+    # Root
+    dot.node("DG", "Directeur Général\nMarc Rivera", fillcolor="#1A73E8",
+             fontcolor="white", fontsize="11", shape="box", style="filled,rounded")
 
-    for name, attrs in entities.items():
-        dot.node(name, attrs["label"])
+    # Level 2
+    dot.node("RH", "Direction RH\n& Exploitation", fillcolor="#E8F0FE")
+    dot.node("MKT", "Direction Marketing\n& Commercial", fillcolor="#E8F0FE")
+    dot.node("DSI", "Direction des\nSystèmes d'Information\nGilles Chapoton",
+             fillcolor="#E8F0FE")
 
-    edges = [
-        ("ProfilMontage", "Compatibilite", "1,N"),
-        ("ModeleTraceur", "Compatibilite", "1,N"),
-        ("ModeleTraceur", "TypeVehicule", "N,N via MT_TV"),
-        ("ModeleTraceur", "Alimentation", "N,N via MT_Alim"),
-        ("ModeleTraceur", "Capteur", "N,N via MT_Capt"),
-        ("ModeleTraceur", "Feature", "N,N via ModelFeature"),
-        ("ModeleTraceur", "PortType", "N,N via ModelPort"),
-        ("PortType", "Peripheral", "1,N"),
-    ]
+    dot.edge("DG", "RH")
+    dot.edge("DG", "MKT")
+    dot.edge("DG", "DSI")
 
-    for src, dst, label in edges:
-        dot.edge(src, dst, label=label)
+    # Level 3 - DSI sub-teams
+    dot.node("INFRA", "Infrastructure\nRéseau & Serveurs", fillcolor="#FFF3E0")
+    dot.node("DEV", "Pôle Ingénierie\nLogicielle", fillcolor="#FFF3E0",
+             style="filled,rounded,bold", color="#FB8C00")
+    dot.node("OPS", "Support & \nExploitation", fillcolor="#FFF3E0")
 
-    output_path = os.path.join(OUTPUT_DIR, "mcd_tag_monitor")
-    dot.render(output_path, cleanup=True)
-    print(f"MCD generated: {output_path}.png")
+    dot.edge("DSI", "INFRA")
+    dot.edge("DSI", "DEV")
+    dot.edge("DSI", "OPS")
+
+    # Highlight the stage position
+    dot.node("STAGE", "👤 Stagiaire\nDTS ESTIA\nTAG-Monitor",
+             fillcolor="#FF6D00", fontcolor="white", fontsize="10",
+             style="filled,rounded", shape="box")
+    dot.edge("DEV", "STAGE", style="dashed", color="#FF6D00", penwidth="2")
+
+    dot.render(os.path.join(OUT, "organigramme_tagip"), cleanup=True)
+    print("✅ organigramme_tagip.png")
 
 
-def generate_mld():
-    """Generate Logical Data Model (MLD) diagram."""
+def architecture_reseau():
     dot = graphviz.Digraph(
-        name="MLD_TAG_Monitor",
+        "ArchitectureReseau",
         format="png",
         graph_attr={
+            **COMMON,
             "rankdir": "TB",
-            "dpi": "200",
-            "fontname": "Helvetica",
-            "fontsize": "11",
-            "bgcolor": "white",
-            "pad": "0.5",
             "splines": "ortho",
-            "ranksep": "1.5",
-            "nodesep": "0.8",
+            "nodesep": "0.3",
+            "ranksep": "0.4",
+            "dpi": "200",
         },
-        node_attr={
-            "fontname": "Helvetica",
-            "fontsize": "9",
-            "shape": "plaintext",
-        },
-        edge_attr={"fontname": "Helvetica", "fontsize": "8", "color": "#555555"},
     )
 
-    tables = {
-        "mounting_profiles": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-<TR><TD BGCOLOR="#1A73E8" COLSPAN="2"><FONT COLOR="white"><B>mounting_profiles</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">name</TD><TD ALIGN="LEFT">VARCHAR(255)</TD></TR>
-<TR><TD ALIGN="LEFT">description</TD><TD ALIGN="LEFT">TEXT</TD></TR>
-<TR><TD ALIGN="LEFT">voltage_min</TD><TD ALIGN="LEFT">DECIMAL(5,2)</TD></TR>
-<TR><TD ALIGN="LEFT">voltage_max</TD><TD ALIGN="LEFT">DECIMAL(5,2)</TD></TR>
-<TR><TD ALIGN="LEFT">can_bus_required</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
-<TR><TD ALIGN="LEFT">nb_digital_inputs</TD><TD ALIGN="LEFT">INTEGER</TD></TR>
-<TR><TD ALIGN="LEFT">nb_analog_inputs</TD><TD ALIGN="LEFT">INTEGER</TD></TR>
-<TR><TD ALIGN="LEFT">nb_outputs</TD><TD ALIGN="LEFT">INTEGER</TD></TR>
-<TR><TD ALIGN="LEFT">ip_rating</TD><TD ALIGN="LEFT">VARCHAR(10)</TD></TR>
-<TR><TD ALIGN="LEFT">montage_exterieur</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
-<TR><TD ALIGN="LEFT">accelerometre_requis</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
-<TR><TD ALIGN="LEFT">type_vehicule_id</TD><TD ALIGN="LEFT">UUID FK</TD></TR>
-<TR><TD ALIGN="LEFT">alimentation_id</TD><TD ALIGN="LEFT">UUID FK</TD></TR>
-<TR><TD ALIGN="LEFT">organisation_id</TD><TD ALIGN="LEFT">UUID FK</TD></TR>
-</TABLE>>""",
-        "modeles_traceur": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-<TR><TD BGCOLOR="#34A853" COLSPAN="2"><FONT COLOR="white"><B>modeles_traceur</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">nom</TD><TD ALIGN="LEFT">VARCHAR(255)</TD></TR>
-<TR><TD ALIGN="LEFT">brand</TD><TD ALIGN="LEFT">VARCHAR(100)</TD></TR>
-<TR><TD ALIGN="LEFT"><I>reference</I></TD><TD ALIGN="LEFT">VARCHAR(100) UQ</TD></TR>
-<TR><TD ALIGN="LEFT">voltage_min</TD><TD ALIGN="LEFT">DECIMAL(5,2)</TD></TR>
-<TR><TD ALIGN="LEFT">voltage_max</TD><TD ALIGN="LEFT">DECIMAL(5,2)</TD></TR>
-<TR><TD ALIGN="LEFT">can_bus</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
-<TR><TD ALIGN="LEFT">one_wire</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
-<TR><TD ALIGN="LEFT">rs232</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
-<TR><TD ALIGN="LEFT">rs485</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
-<TR><TD ALIGN="LEFT">nb_digital_inputs</TD><TD ALIGN="LEFT">INTEGER</TD></TR>
-<TR><TD ALIGN="LEFT">nb_analog_inputs</TD><TD ALIGN="LEFT">INTEGER</TD></TR>
-<TR><TD ALIGN="LEFT">nb_outputs</TD><TD ALIGN="LEFT">INTEGER</TD></TR>
-<TR><TD ALIGN="LEFT">ip_rating</TD><TD ALIGN="LEFT">VARCHAR(10)</TD></TR>
-<TR><TD ALIGN="LEFT">accelerometer</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
-<TR><TD ALIGN="LEFT">buffer_memory</TD><TD ALIGN="LEFT">INTEGER</TD></TR>
-<TR><TD ALIGN="LEFT">ultra_low_power</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
-</TABLE>>""",
-        "compatibilites": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-<TR><TD BGCOLOR="#EA4335" COLSPAN="2"><FONT COLOR="white"><B>compatibilites</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">profil_montage_id</TD><TD ALIGN="LEFT">UUID FK</TD></TR>
-<TR><TD ALIGN="LEFT">modele_traceur_id</TD><TD ALIGN="LEFT">UUID FK</TD></TR>
-<TR><TD ALIGN="LEFT">score_compatibilite</TD><TD ALIGN="LEFT">INTEGER</TD></TR>
-<TR><TD ALIGN="LEFT">details</TD><TD ALIGN="LEFT">TEXT</TD></TR>
-<TR><TD BGCOLOR="#F5F5F5" COLSPAN="2"><FONT POINT-SIZE="8"><I>UQ(profil_montage_id, modele_traceur_id)</I></FONT></TD></TR>
-</TABLE>>""",
-        "types_vehicule": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-<TR><TD BGCOLOR="#FBBC04" COLSPAN="2"><FONT COLOR="white"><B>types_vehicule</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">slug</TD><TD ALIGN="LEFT">VARCHAR(50) UQ</TD></TR>
-<TR><TD ALIGN="LEFT">label</TD><TD ALIGN="LEFT">VARCHAR(100)</TD></TR>
-</TABLE>>""",
-        "alimentations": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-<TR><TD BGCOLOR="#9334E6" COLSPAN="2"><FONT COLOR="white"><B>alimentations</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">slug</TD><TD ALIGN="LEFT">VARCHAR(50) UQ</TD></TR>
-<TR><TD ALIGN="LEFT">label</TD><TD ALIGN="LEFT">VARCHAR(100)</TD></TR>
-</TABLE>>""",
-        "capteurs": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-<TR><TD BGCOLOR="#00ACC1" COLSPAN="2"><FONT COLOR="white"><B>capteurs</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">slug</TD><TD ALIGN="LEFT">VARCHAR(50) UQ</TD></TR>
-<TR><TD ALIGN="LEFT">label</TD><TD ALIGN="LEFT">VARCHAR(100)</TD></TR>
-</TABLE>>""",
-        "features": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-<TR><TD BGCOLOR="#E91E63" COLSPAN="2"><FONT COLOR="white"><B>features</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">slug</TD><TD ALIGN="LEFT">VARCHAR(50) UQ</TD></TR>
-<TR><TD ALIGN="LEFT">label</TD><TD ALIGN="LEFT">VARCHAR(100)</TD></TR>
-</TABLE>>""",
-        "port_types": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-<TR><TD BGCOLOR="#795548" COLSPAN="2"><FONT COLOR="white"><B>port_types</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">slug</TD><TD ALIGN="LEFT">VARCHAR(50) UQ</TD></TR>
-<TR><TD ALIGN="LEFT">label</TD><TD ALIGN="LEFT">VARCHAR(100)</TD></TR>
-</TABLE>>""",
-        "peripherals": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-<TR><TD BGCOLOR="#F9A825" COLSPAN="2"><FONT COLOR="white"><B>peripherals</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">name</TD><TD ALIGN="LEFT">VARCHAR(255)</TD></TR>
-</TABLE>>""",
-        "modeles_traceur_types_vehicule": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-<TR><TD BGCOLOR="#666666" COLSPAN="2"><FONT COLOR="white"><B>mt_tv (N:N)</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">modele_traceur_id</TD><TD ALIGN="LEFT">UUID FK</TD></TR>
-<TR><TD ALIGN="LEFT">type_vehicule_id</TD><TD ALIGN="LEFT">UUID FK</TD></TR>
-<TR><TD BGCOLOR="#F5F5F5" COLSPAN="2"><FONT POINT-SIZE="8"><I>UQ(modele, type)</I></FONT></TD></TR>
-</TABLE>>""",
-        "model_features": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-<TR><TD BGCOLOR="#666666" COLSPAN="2"><FONT COLOR="white"><B>model_features (N:N)</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">modele_traceur_id</TD><TD ALIGN="LEFT">UUID FK</TD></TR>
-<TR><TD ALIGN="LEFT">feature_id</TD><TD ALIGN="LEFT">UUID FK</TD></TR>
-<TR><TD BGCOLOR="#F5F5F5" COLSPAN="2"><FONT POINT-SIZE="8"><I>UQ(modele, feature)</I></FONT></TD></TR>
-</TABLE>>""",
-        "model_ports": """<
-<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">
-<TR><TD BGCOLOR="#666666" COLSPAN="2"><FONT COLOR="white"><B>model_ports (N:N)</B></FONT></TD></TR>
-<TR><TD ALIGN="LEFT"><I>id</I></TD><TD ALIGN="LEFT">UUID PK</TD></TR>
-<TR><TD ALIGN="LEFT">modele_traceur_id</TD><TD ALIGN="LEFT">UUID FK</TD></TR>
-<TR><TD ALIGN="LEFT">port_type_id</TD><TD ALIGN="LEFT">UUID FK</TD></TR>
-<TR><TD ALIGN="LEFT">pin_label</TD><TD ALIGN="LEFT">VARCHAR(50)</TD></TR>
-</TABLE>>""",
-    }
+    # External
+    dot.node("EXTERNAL", "Internet &\nRéseau Mobile (3G/GPRS)",
+             shape="box", style="filled,rounded", fillcolor="#E3F2FD")
 
-    for name, label in tables.items():
-        dot.node(name, label)
+    dot.node("FW", "Pare-feu\nIDS/IPS",
+             shape="box", style="filled,rounded", fillcolor="#FFCDD2")
 
-    edges = [
-        ("mounting_profiles", "types_vehicule", "FK"),
-        ("mounting_profiles", "alimentations", "FK"),
-        ("compatibilites", "mounting_profiles", "FK"),
-        ("compatibilites", "modeles_traceur", "FK"),
-        ("modeles_traceur_types_vehicule", "modeles_traceur", "FK"),
-        ("modeles_traceur_types_vehicule", "types_vehicule", "FK"),
-        ("model_features", "modeles_traceur", "FK"),
-        ("model_features", "features", "FK"),
-        ("model_ports", "modeles_traceur", "FK"),
-        ("model_ports", "port_types", "FK"),
-        ("peripherals", "port_types", "FK"),
-    ]
+    dot.edge("EXTERNAL", "FW", label="Trafic entrant")
 
-    for src, dst, label in edges:
-        dot.edge(src, dst, label=label, dir="both", arrowtail="diamond")
+    # VLANs
+    with dot.subgraph(name="cluster_vlans") as s:
+        s.attr(label="VLANs (segmentation)", style="filled,rounded,dashed",
+               fillcolor="#F3E5F5", fontname="Helvetica", fontsize="11")
+        s.node("VLAN_ADMIN", "VLAN Administration\n(VLAN 20)\nOutils métier & postes",
+               shape="box", style="filled,rounded", fillcolor="#CE93D8")
+        s.node("VLAN_GPS", "VLAN GPS / Tracking\n(VLAN 10)\nFlux données traceurs",
+               shape="box", style="filled,rounded", fillcolor="#CE93D8")
+        s.node("VLAN_DEV", "VLAN Développement\n(VLAN 30)\nTest & intégration",
+               shape="box", style="filled,rounded", fillcolor="#CE93D8")
 
-    output_path = os.path.join(OUTPUT_DIR, "mld_tag_monitor")
-    dot.render(output_path, cleanup=True)
-    print(f"MLD generated: {output_path}.png")
+    dot.edge("FW", "VLAN_ADMIN", style="dashed")
+    dot.edge("FW", "VLAN_GPS", style="dashed")
+    dot.edge("FW", "VLAN_DEV", style="dashed")
+
+    # Infrastructure
+    dot.node("SERV", "Cluster serveurs\n(HA - Haute disponibilité)",
+             shape="box", style="filled,rounded", fillcolor="#C8E6C9")
+    dot.node("RAID", "Stockage RAID\n(Réplication temps réel)",
+             shape="box", style="filled,rounded", fillcolor="#C8E6C9")
+    dot.node("DB", "PostgreSQL 16\n+ PostGIS",
+             shape="cylinder", style="filled", fillcolor="#BBDEFB")
+
+    dot.edge("VLAN_ADMIN", "SERV")
+    dot.edge("VLAN_GPS", "SERV")
+    dot.edge("SERV", "RAID", style="dashed")
+    dot.edge("SERV", "DB", label="Données")
+
+    # Data flow annotation
+    dot.node("FLOW", "Cycle de traitement :\n① Réception trame → ② Parsing\n③ Calcul compatibilité → ④ Notification",
+             shape="box", style="filled,rounded", fillcolor="#FFF9C4",
+             fontsize="9")
+
+    dot.edge("VLAN_GPS", "FLOW", style="dotted", constraint="false")
+
+    dot.render(os.path.join(OUT, "architecture_reseau"), cleanup=True)
+    print("✅ architecture_reseau.png")
+
+
+def architecture_globale():
+    dot = graphviz.Digraph(
+        "ArchitectureGlobale",
+        format="png",
+        graph_attr={
+            **COMMON,
+            "rankdir": "TB",
+            "splines": "ortho",
+            "nodesep": "0.2",
+            "ranksep": "0.4",
+            "dpi": "200",
+        },
+    )
+
+    # Presentation layer
+    with dot.subgraph(name="cluster_presentation") as s:
+        s.attr(label="Couche Présentation (Phoenix LiveView)", style="filled,rounded",
+               fillcolor="#E3F2FD", fontname="Helvetica", fontsize="11",
+               fontcolor="#1565C0")
+        s.node("LV", "LiveViews\n(Wizard, Dashboard,\nCatalogue, etc.)",
+               shape="box", style="filled,rounded", fillcolor="#90CAF9")
+        s.node("HEEx", "Composants HEEx\n(Cartes, formulaires,\ntableaux, graphiques)",
+               shape="box", style="filled,rounded", fillcolor="#90CAF9")
+        s.node("WS", "WebSocket\n(PubSub temps réel)",
+               shape="box", style="filled,rounded", fillcolor="#90CAF9")
+
+    # Business / Ash layer
+    with dot.subgraph(name="cluster_ash") as s:
+        s.attr(label="Couche Métier (Ash Framework)", style="filled,rounded",
+               fillcolor="#E8F5E9", fontname="Helvetica", fontsize="11",
+               fontcolor="#2E7D32")
+        s.node("RESS", "Ressources Ash\n(ProfilMontage,\nModeleTraceur,\nCompatibilité,\netc.)",
+               shape="box", style="filled,rounded", fillcolor="#81C784")
+        s.node("POL", "Politiques\n(Ash Policies)\nSécurité & ACL",
+               shape="box", style="filled,rounded", fillcolor="#81C784")
+        s.node("MOTEUR", "Moteur compatibilité\n(20 critères,\npatron Strategy)",
+               shape="box", style="filled,rounded", fillcolor="#A5D6A7",
+               fontcolor="#1B5E20")
+
+    # Data layer
+    with dot.subgraph(name="cluster_data") as s:
+        s.attr(label="Couche Persistance (PostgreSQL)", style="filled,rounded",
+               fillcolor="#FFF3E0", fontname="Helvetica", fontsize="11",
+               fontcolor="#E65100")
+        s.node("PG", "PostgreSQL 16\n+ AshPostgres\n(22 migrations, requêtes\noptimisées)",
+               shape="cylinder", style="filled", fillcolor="#FFCC80")
+
+    # Edges
+    dot.edge("LV", "RESS", label="Requêtes Ash")
+    dot.edge("HEEx", "LV")
+    dot.edge("WS", "LV")
+    dot.edge("RESS", "MOTEUR", label="Calcul scoring")
+    dot.edge("RESS", "PG", label="CRUD / Queries")
+    dot.edge("POL", "RESS", style="dashed", label="Contrôle")
+    dot.edge("MOTEUR", "RESS", style="dotted", label="Résultat")
+
+    dot.render(os.path.join(OUT, "architecture_globale"), cleanup=True)
+    print("✅ architecture_globale.png")
+
+
+def mcd():
+    """Modèle Conceptuel de Données (Merise) – comme le MLD avec relations."""
+    dot = graphviz.Digraph(
+        "MCD",
+        format="png",
+        graph_attr={
+            **COMMON,
+            "rankdir": "TB",
+            "nodesep": "0.15",
+            "ranksep": "0.25",
+            "dpi": "200",
+        },
+    )
+
+    def entity(name, columns, color="#E3F2FD"):
+        rows = ""
+        for col in columns:
+            rows += f'<TR><TD ALIGN="LEFT" BGCOLOR="white">{col}</TD></TR>\n'
+        label = f"""<
+<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+<TR><TD BGCOLOR="{color}" COLSPAN="1"><B>{name}</B></TD></TR>
+{rows}
+</TABLE>>"""
+        dot.node(name, label, shape="plaintext", fontname="Helvetica", fontsize="9")
+
+    # Entities with their conceptual attributes (no FK, pure business concepts)
+    entity("ProfilMontage",
+           ["Identifiant (UUID)",
+            "Nom du profil",
+            "Description technique",
+            "Type de véhicule",
+            "Alimentation",
+            "Tension min (V)",
+            "Tension max (V)",
+            "Capteurs requis",
+            "Fonctionnalités souhaitées",
+            "Date de création"],
+           "#1A73E8")
+
+    entity("ModeleTraceur",
+           ["Identifiant (UUID)",
+            "Nom du modèle",
+            "Marque (constructeur)",
+            "Type de bus",
+            "Tension min (V)",
+            "Tension max (V)",
+            "Alimentation supportée",
+            "Types de véhicule supportés",
+            "Capteurs compatibles",
+            "Périphériques intégrables",
+            "Fonctionnalités disponibles"],
+           "#2E7D32")
+
+    entity("Compatibilité",
+           ["Identifiant (UUID)",
+            "Profil de montage concerné",
+            "Modèle de traceur évalué",
+            "Score (0-100)",
+            "Détails du calcul (JSON)",
+            "Date d'évaluation"],
+           "#E65100")
+
+    entity("TypeVehicule",
+           ["Identifiant (UUID)",
+            "Nom du type",
+            "Description"],
+           "#6A1B9A")
+
+    entity("Alimentation",
+           ["Identifiant (UUID)",
+            "Type (12V filaire, 24V, OBD, etc.)",
+            "Tension min (V)",
+            "Tension max (V)"],
+           "#F57F17")
+
+    entity("Capteur",
+           ["Identifiant (UUID)",
+            "Nom du capteur",
+            "Catégorie (énergie, environnement, etc.)"],
+           "#C62828")
+
+    entity("Feature",
+           ["Identifiant (UUID)",
+            "Nom de la fonctionnalité",
+            "Description"],
+           "#558B2F")
+
+    entity("Peripheral",
+           ["Identifiant (UUID)",
+            "Nom du périphérique",
+            "Type de port"],
+           "#00838F")
+
+    # ── Relationships with cardinalities ──
+    dot.attr("edge", fontname="Helvetica", fontsize="8", color="#555555")
+
+    dot.edge("ProfilMontage", "TypeVehicule",
+             label="concerne\n1,1 → 1,N", style="dashed")
+    dot.edge("ProfilMontage", "Alimentation",
+             label="définit\n1,1 → 1,N", style="dashed")
+    dot.edge("ProfilMontage", "Capteur",
+             label="nécessite\n1,1 → 0,N")
+    dot.edge("ProfilMontage", "Feature",
+             label="supporte\n1,1 → 0,N")
+    dot.edge("ProfilMontage", "Compatibilité",
+             label="évalué par\n1,1 → 0,N", style="dotted",
+             color="#E65100")
+    dot.edge("ModeleTraceur", "Compatibilité",
+             label="évalue\n1,1 → 0,N", style="dotted",
+             color="#E65100")
+    dot.edge("ModeleTraceur", "TypeVehicule",
+             label="supporté par\n1,N → 1,1")
+    dot.edge("ModeleTraceur", "Alimentation",
+             label="alimenté par\n1,1 → 1,N")
+    dot.edge("ModeleTraceur", "Feature",
+             label="propose\n1,1 → 0,N")
+    dot.edge("ModeleTraceur", "Peripheral",
+             label="équipé de\n1,1 → 0,N")
+    dot.edge("ModeleTraceur", "Capteur",
+             label="compatible\n1,N → 0,N")
+
+    dot.render(os.path.join(OUT, "mcd_tag_monitor"), cleanup=True)
+    print("✅ mcd_tag_monitor.png")
+
+
+def mld():
+    """Modèle Logique de Données – Tables relationnelles."""
+    dot = graphviz.Digraph(
+        "MLD",
+        format="png",
+        graph_attr={
+            **COMMON,
+            "rankdir": "TB",
+            "nodesep": "0.15",
+            "ranksep": "0.25",
+            "dpi": "200",
+        },
+    )
+
+    def table(name, columns, color="#E3F2FD"):
+        """Create a table node with proper HTML-like label."""
+        rows = ""
+        for col in columns:
+            rows += f'<TR><TD ALIGN="LEFT" BGCOLOR="white">{col}</TD></TR>\n'
+        label = f"""<
+<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+<TR><TD BGCOLOR="{color}" COLSPAN="1"><B>{name}</B></TD></TR>
+{rows}
+</TABLE>>"""
+        dot.node(name, label, shape="plaintext", fontname="Helvetica", fontsize="9")
+
+    # Tables
+    table("mounting_profiles", [
+        "PK id (UUID)",
+        "name VARCHAR(255)",
+        "description TEXT",
+        "type_vehicule_id (FK)",
+        "alimentation_id (FK)",
+        "voltage_min INT",
+        "voltage_max INT",
+        "created_at TIMESTAMP",
+        "updated_at TIMESTAMP",
+    ], "#1A73E8")
+
+    table("modele_traceurs", [
+        "PK id (UUID)",
+        "nom VARCHAR(255)",
+        "marque VARCHAR(100)",
+        "type_bus VARCHAR(50)",
+        "voltage_min INT",
+        "voltage_max INT",
+        "alimentation_id (FK)",
+        "created_at TIMESTAMP",
+    ], "#2E7D32")
+
+    table("compatibilities", [
+        "PK id (UUID)",
+        "profil_montage_id (FK)",
+        "modele_traceur_id (FK)",
+        "score INT",
+        "details JSONB",
+        "UNIQUE(profil, modèle)",
+    ], "#E65100")
+
+    table("type_vehicules", [
+        "PK id (UUID)",
+        "nom VARCHAR(100)",
+        "description TEXT",
+    ], "#6A1B9A")
+
+    table("alimentations", [
+        "PK id (UUID)",
+        "type VARCHAR(50)",
+        "voltage_min INT",
+        "voltage_max INT",
+    ], "#F57F17")
+
+    table("capteurs", [
+        "PK id (UUID)",
+        "nom VARCHAR(100)",
+        "categorie VARCHAR(50)",
+    ], "#C62828")
+
+    table("features", [
+        "PK id (UUID)",
+        "nom VARCHAR(100)",
+        "description TEXT",
+    ], "#558B2F")
+
+    table("peripherals", [
+        "PK id (UUID)",
+        "nom VARCHAR(100)",
+        "type_port VARCHAR(50)",
+    ], "#00838F")
+
+    # Junction tables
+    table("profil_montage_capteurs", [
+        "profil_montage_id (FK)",
+        "capteur_id (FK)",
+        "UNIQUE(profil, capteur)",
+    ], "#78909C")
+
+    table("modele_traceur_features", [
+        "modele_traceur_id (FK)",
+        "feature_id (FK)",
+        "UNIQUE(modèle, feature)",
+    ], "#78909C")
+
+    table("modele_traceur_peripherals", [
+        "modele_traceur_id (FK)",
+        "peripheral_id (FK)",
+        "UNIQUE(modèle, périphérique)",
+    ], "#78909C")
+
+    # Relationships
+    dot.edge("mounting_profiles", "type_vehicules", style="dashed", arrowhead="normal")
+    dot.edge("mounting_profiles", "alimentations", style="dashed", arrowhead="normal")
+    dot.edge("modele_traceurs", "alimentations", style="dashed", arrowhead="normal")
+    dot.edge("modele_traceurs", "type_vehicules", style="dashed")
+    dot.edge("compatibilities", "mounting_profiles", style="dashed", color="#E65100")
+    dot.edge("compatibilities", "modele_traceurs", style="dashed", color="#E65100")
+    dot.edge("profil_montage_capteurs", "mounting_profiles", style="dotted")
+    dot.edge("profil_montage_capteurs", "capteurs", style="dotted")
+    dot.edge("modele_traceur_features", "modele_traceurs", style="dotted")
+    dot.edge("modele_traceur_features", "features", style="dotted")
+    dot.edge("modele_traceur_peripherals", "modele_traceurs", style="dotted")
+    dot.edge("modele_traceur_peripherals", "peripherals", style="dotted")
+
+    dot.render(os.path.join(OUT, "mld_tag_monitor"), cleanup=True)
+    print("✅ mld_tag_monitor.png")
+
+
+def architecture_couches():
+    """Layered architecture diagram (3-tier)."""
+    dot = graphviz.Digraph(
+        "Couches",
+        format="png",
+        graph_attr={
+            **COMMON,
+            "rankdir": "TB",
+            "splines": "ortho",
+            "nodesep": "0.1",
+            "ranksep": "0.15",
+            "dpi": "200",
+        },
+    )
+
+    dot.attr("node", shape="box", style="filled,rounded", fontname="Helvetica")
+
+    # Layer 1 - Presentation
+    with dot.subgraph(name="cluster_pres") as s:
+        s.attr(label="Couche Présentation (Frontend)", style="filled,rounded",
+               fillcolor="#E3F2FD", fontname="Helvetica", fontsize="12",
+               fontcolor="#1565C0")
+        s.node("LV", "LiveView (HTML/HEEx)\nRendu côté serveur", fillcolor="#90CAF9")
+        s.node("WS2", "WebSocket / PubSub\nTemps réel", fillcolor="#90CAF9")
+        s.node("CSS", "Tailwind CSS\nDesign system responsive", fillcolor="#90CAF9")
+
+    # Layer 2 - Business
+    with dot.subgraph(name="cluster_biz") as s:
+        s.attr(label="Couche Métier (Backend)", style="filled,rounded",
+               fillcolor="#E8F5E9", fontname="Helvetica", fontsize="12",
+               fontcolor="#2E7D32")
+        s.node("ASH", "Ash Framework\nRessources, Actions,\nPolitiques, Validations",
+               fillcolor="#81C784")
+        s.node("COMPAT", "Moteur Compatibilité\n20 critères, Strategy Pattern,\nscoring 0-100",
+               fillcolor="#A5D6A7")
+        s.node("AUTH", "Authentification\nphx.gen.auth,\n3 profils utilisateurs",
+               fillcolor="#81C784")
+
+    # Layer 3 - Persistence
+    with dot.subgraph(name="cluster_pers") as s:
+        s.attr(label="Couche Persistance (Données)", style="filled,rounded",
+               fillcolor="#FFF3E0", fontname="Helvetica", fontsize="12",
+               fontcolor="#E65100")
+        s.node("PG2", "PostgreSQL 16\n+ PostGIS (géospatial)",
+               shape="cylinder", style="filled", fillcolor="#FFCC80")
+        s.node("ASHPG", "AshPostgres\nMigrations, requêtes\noptimisées, contraintes",
+               fillcolor="#FFCC80")
+
+    dot.edge("LV", "ASH")
+    dot.edge("WS2", "ASH")
+    dot.edge("ASH", "COMPAT", style="dashed")
+    dot.edge("ASH", "AUTH", style="dashed")
+    dot.edge("ASH", "ASHPG")
+    dot.edge("ASHPG", "PG2")
+
+    dot.render(os.path.join(OUT, "architecture_couches"), cleanup=True)
+    print("✅ architecture_couches.png")
 
 
 if __name__ == "__main__":
-    generate_mcd()
-    generate_mld()
+    organigramme()
+    architecture_reseau()
+    architecture_globale()
+    mcd()
+    mld()
+    architecture_couches()
+    print("\n✅ Tous les diagrammes générés dans", OUT)
