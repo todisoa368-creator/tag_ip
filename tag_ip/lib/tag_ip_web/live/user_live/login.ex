@@ -4,6 +4,7 @@ defmodule TagIpWeb.UserLive.Login do
   @impl true
   def render(assigns) do
     ~H"""
+    <TagIpWeb.Layouts.app flash={@flash} current_scope={@current_scope}>
     <div class="min-h-[80vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div class="sm:mx-auto sm:w-full sm:max-w-md">
         <div class="bg-white py-8 px-4 shadow-2xl border border-slate-100 sm:rounded-2xl sm:px-10">
@@ -82,6 +83,7 @@ defmodule TagIpWeb.UserLive.Login do
         </div>
       </div>
     </div>
+    </TagIpWeb.Layouts.app>
     """
   end
 

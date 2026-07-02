@@ -71,7 +71,7 @@ defmodule TagIpWeb.UserLive.Registration do
       {:ok, _user} ->
         socket =
           socket
-          |> put_flash(:info, "Compte créé avec succès ! Bienvenue sur TAG-Monitor.")
+          |> put_flash(:info, "Compte créé avec succès ! Bienvenue sur l'application de gestion des profils de montage.")
           |> redirect(to: ~p"/users/log-in")
 
         {:noreply, socket}

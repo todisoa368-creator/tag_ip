@@ -18,6 +18,7 @@ defmodule TagIpWeb.DashboardLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
+    <TagIpWeb.Layouts.app flash={@flash} current_scope={@current_scope}>
     <div class="space-y-8">
       <%!-- Notifications toast --%>
       <div id="notifications" class="fixed top-20 right-4 z-50 space-y-2" phx-update="stream">
@@ -59,7 +60,7 @@ defmodule TagIpWeb.DashboardLive.Index do
             </span>
           </div>
           <h1 class="text-3xl sm:text-4xl font-bold text-white">
-            Bienvenue sur la plateforme de gestion des profils de montage
+            Bienvenue sur l'application de gestion des profils de montage
           </h1>
           <p class="mt-3 text-blue-100 text-lg max-w-2xl">
             Gérez les profils de montage et consultez les compatibilités
@@ -235,11 +236,12 @@ defmodule TagIpWeb.DashboardLive.Index do
           </div>
 
           <p class="mt-2 text-sm text-gray-600 leading-relaxed">
-            Cette plateforme permet de gérer les profils de montage, consulter le catalogue des modèles de traceurs GPS et visualiser les compatibilités calculées automatiquement entre les profils et les équipements.
+            Cette application permet de gérer les profils de montage, consulter le catalogue des modèles de traceurs GPS et visualiser les compatibilités calculées automatiquement entre les profils et les équipements.
           </p>
         </div>
       </div>
     </div>
+    </TagIpWeb.Layouts.app>
     """
   end
 

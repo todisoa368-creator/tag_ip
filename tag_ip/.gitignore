@@ -36,6 +36,11 @@ npm-debug.log
 *.log
 /assets/node_modules/
 
+# Generated scripts for thesis document (root only)
+/*.py
+/*.html
+/*.mmd
+
 # OS files
 .DS_Store
 

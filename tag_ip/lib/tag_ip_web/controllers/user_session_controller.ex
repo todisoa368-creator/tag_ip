@@ -9,7 +9,7 @@ defmodule TagIpWeb.UserSessionController do
   # =========================================================
 
   def create(conn, params) do
-    create(conn, params, fn -> "Bienvenue sur TAG-Monitor !" end)
+    create(conn, params, fn -> "Bienvenue sur l'application de gestion des profils de montage" end)
   end
 
   defp create(conn, %{"user" => user_params}, info_fun) do
