@@ -1,10 +1,7 @@
 defmodule TagIpWeb.UserLive.ForgotPassword do
   use TagIpWeb, :live_view
 
-  # Correction CRITIQUE : Ajout de l'alias pour accéder aux fonctions de TagIp.Accounts
   alias TagIp.Accounts
-
-  import TagIpWeb.CoreComponents
 
   def render(assigns) do
     ~H"""

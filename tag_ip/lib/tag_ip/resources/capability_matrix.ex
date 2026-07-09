@@ -9,7 +9,7 @@ defmodule TagIp.Resources.CapabilityMatrix do
   alias TagIp.Resources.ModeleTraceur
   alias TagIp.Resources.Feature
 
-  @matrix_slugs ~w(alert_button buzzer_feature driver_id green_driving fuel_cap fuel_analog fuel_rs232 fuel_ble fuel_can crash_detection)
+  @matrix_slugs ~w(alert_button buzzer_feature driver_id green_driving fuel_cap fuel_analog fuel_rs232 fuel_ble fuel_can crash_detection real_time_tracking geofencing fuel_monitoring)
 
   @doc """
   Liste des slugs de fonctionnalités de la matrice de capacités.
@@ -35,18 +35,6 @@ defmodule TagIp.Resources.CapabilityMatrix do
       |> Ash.load!([:features])
 
     Enum.map(modele.features, & &1.slug)
-  end
-
-  @doc """
-  Filtre les features de la matrice pour ne garder que celles supportées par le modèle.
-
-  Retourne une liste de `%Feature{}`.
-  """
-  def filter_matrix_features_for_model(modele_id, all_matrix_features \\ nil) do
-    supported = supported_feature_slugs(modele_id) |> MapSet.new()
-    features = all_matrix_features || matrix_features()
-
-    Enum.filter(features, &MapSet.member?(supported, &1.slug))
   end
 
   @doc """

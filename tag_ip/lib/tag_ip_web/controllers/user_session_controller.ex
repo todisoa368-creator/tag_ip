@@ -57,14 +57,4 @@ defmodule TagIpWeb.UserSessionController do
     |> put_flash(:info, "Déconnexion réussie.")
     |> UserAuth.logout_user()
   end
-
-  # =========================================================
-  # REDIRECT LOGIN
-  # =========================================================
-
-  def redirect_to_login(conn, _params) do
-    conn
-    |> redirect(to: ~p"/users/log-in")
-    |> halt()
-  end
 end

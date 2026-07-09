@@ -8,7 +8,6 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   alias TagIp.Resources.ProfilMontageCapteur
   alias TagIp.Resources.TypeVehicule
   alias TagIp.Resources.Organisation
-  alias TagIp.Resources.Organisation
   alias TagIp.Resources.Alimentation
 
   @steps [
@@ -321,7 +320,6 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
             {:ok, profil} ->
               capteur_ids = resolve_required_capteur_ids(features)
               sync_capteurs(profil.id, capteur_ids)
-              ProfilMontage.compute_compatibilities(profil.id)
               {:ok, profil, "créé"}
 
             {:error, reason} ->
@@ -333,7 +331,6 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
             {:ok, profil} ->
               capteur_ids = resolve_required_capteur_ids(features)
               sync_capteurs(profil.id, capteur_ids)
-              ProfilMontage.compute_compatibilities(profil.id)
               {:ok, profil, "modifié"}
 
             {:error, reason} ->
@@ -625,6 +622,18 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
     feature_map = MapSet.new(feature_slugs)
     fuel_type = resolve_fuel_type(feature_map)
 
+    modele =
+      if modele_traceur_id do
+        ModeleTraceur
+        |> Ash.get!(modele_traceur_id)
+      end
+
+    has_rs232 = modele && modele.rs232
+    has_rs485 = modele && modele.rs485
+
+    outdoor_types = ~w(construction_machine boat person)
+    low_power_types = ~w(person asset object smart_lock padlock)
+
     %{
       name: name,
       description: description,
@@ -645,14 +654,15 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
       accelerometre_requis: needs_accelerometer?(feature_map),
       geofence_enabled: true,
       can_bus_requis: fuel_type == "can",
-      one_wire_requis: false,
-      rs232_requis: fuel_type == "rs232",
-      rs485_requis: false,
+      one_wire_requis:
+        MapSet.member?(feature_map, "driver_id") or MapSet.member?(feature_map, "fuel_cap"),
+      rs232_requis: fuel_type == "rs232" or has_rs232,
+      rs485_requis: has_rs485,
       bluetooth_ble_requis: fuel_type == "ble",
       analog_inputs_requis: if(fuel_type == "analog", do: 1, else: nil),
-      montage_exterieur: false,
+      montage_exterieur: object_type in outdoor_types,
       antenne_deportee: false,
-      ultra_low_power_requis: false
+      ultra_low_power_requis: object_type in low_power_types
     }
   end
 

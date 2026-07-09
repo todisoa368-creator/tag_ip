@@ -810,7 +810,7 @@ feature_ids =
 IO.puts("Insertion des modèles de traceurs pour la comparaison technique...")
 
 teltonika_vehicle_features =
-  ~w(alert_button driver_id green_driving buzzer_feature fuel_cap fuel_analog fuel_rs232 fuel_ble fuel_can crash_detection)
+  ~w(alert_button driver_id green_driving buzzer_feature fuel_cap fuel_analog fuel_rs232 fuel_ble fuel_can crash_detection real_time_tracking geofencing fuel_monitoring)
 
 teltonika_body_features = ~w(alert_button)
 systech_features = ~w(alert_button driver_id buzzer_feature fuel_analog)

@@ -132,8 +132,6 @@ defmodule TagIpWeb.ProfilMontageLive.Index do
   def handle_event("duplicate", %{"id" => id}, socket) do
     case ProfilMontage.duplicate(id) do
       {:ok, profil} ->
-        ProfilMontage.compute_compatibilities(profil.id)
-
         TagIp.Notification.broadcast(
           {:notification, :info, "Profil « #{profil.name} » dupliqué."}
         )

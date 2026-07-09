@@ -86,21 +86,6 @@ defmodule TagIpWeb.UserAuth do
 
   def log_out_user(conn), do: logout_user(conn)
 
-  # =========================================================
-  # FETCH CURRENT USER
-  # =========================================================
-
-  def fetch_current_user(conn, _opts) do
-    {user_token, conn} = ensure_user_token(conn)
-
-    user =
-      if user_token do
-        Accounts.get_user_by_session_token(user_token)
-      end
-
-    assign(conn, :current_user, user)
-  end
-
   # Fetches the "scope" used throughout the app (wraps the user)
   def fetch_current_scope_for_user(conn, _opts) do
     conn = fetch_cookies(conn, signed: [@remember_me_cookie])
