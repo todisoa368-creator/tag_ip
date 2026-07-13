@@ -137,11 +137,14 @@ defmodule TagIp.Resources.Compatibilite do
     ]
 
     results =
-      Enum.map(checks, fn check ->
-        case check do
-          f when is_function(f, 2) -> f.(profil, modele)
-          f when is_function(f, 3) -> f.(profil, modele, captured_capteur_slugs)
-        end
+      Enum.map(checks, fn
+        f when is_function(f, 2) ->
+          f.(profil, modele)
+
+        f when is_function(f, 3) ->
+          if f == (&check_peripheral_ports/3),
+            do: f.(profil, modele, captured_peripheral_ids),
+            else: f.(profil, modele, captured_capteur_slugs)
       end)
 
     reasons =
