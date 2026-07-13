@@ -10,6 +10,8 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
   alias TagIp.Resources.Organisation
   alias TagIp.Resources.Alimentation
 
+  @fuel_probe_slugs ~w(fuel_analog fuel_rs232 fuel_ble fuel_can)
+
   @steps [
     %{
       num: 1,
@@ -244,7 +246,12 @@ defmodule TagIpWeb.ProfilMontageLive.Form do
       if MapSet.member?(current, slug) do
         MapSet.delete(current, slug)
       else
-        MapSet.put(current, slug)
+        if slug in @fuel_probe_slugs do
+          Enum.reduce(@fuel_probe_slugs, current, fn s, acc -> MapSet.delete(acc, s) end)
+          |> MapSet.put(slug)
+        else
+          MapSet.put(current, slug)
+        end
       end
 
     {:noreply, assign(socket, :selected_features, updated)}

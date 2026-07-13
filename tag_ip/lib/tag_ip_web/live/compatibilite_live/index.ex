@@ -29,7 +29,7 @@ defmodule TagIpWeb.CompatibiliteLive.Index do
   defp list_compatibilites(search, page) do
     query =
       Compatibilite
-      |> Ash.Query.sort(inserted_at: :desc)
+      |> Ash.Query.sort(score_compatibilite: :desc)
       |> Ash.Query.load([:profil_montage, :modele_traceur])
 
     query =
