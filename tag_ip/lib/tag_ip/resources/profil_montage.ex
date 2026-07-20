@@ -84,7 +84,39 @@ defmodule TagIp.Resources.ProfilMontage do
 
   actions do
     default_accept(:*)
-    defaults([:read, :destroy, :update])
+    defaults([:read, :destroy])
+
+    update :update do
+      accept([
+        :name,
+        :description,
+        :reporting_interval,
+        :object_type,
+        :voltage_min,
+        :voltage_max,
+        :buzzer,
+        :fuel_probe_type,
+        :geofence_enabled,
+        :driver_id_type,
+        :organisation_id,
+        :alimentation_id,
+        :inputs_requis,
+        :analog_inputs_requis,
+        :outputs_requis,
+        :can_bus_requis,
+        :one_wire_requis,
+        :rs232_requis,
+        :rs485_requis,
+        :bluetooth_ble_requis,
+        :accelerometre_requis,
+        :montage_exterieur,
+        :antenne_deportee,
+        :ultra_low_power_requis,
+        :feature_slugs,
+        :modele_traceur_id,
+        :type_vehicule_id
+      ])
+    end
 
     create :create do
       primary?(true)
