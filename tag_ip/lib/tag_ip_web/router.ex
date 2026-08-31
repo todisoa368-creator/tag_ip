@@ -75,6 +75,8 @@ defmodule TagIpWeb.Router do
   scope "/", TagIpWeb do
     pipe_through [:browser]
 
+    get "/health", HealthController, :index
+
     live_session :redirect_if_authenticated,
       on_mount: [
         {TagIpWeb.UserAuth, :mount_current_scope},

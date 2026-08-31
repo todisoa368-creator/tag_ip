@@ -11,7 +11,7 @@ services:
     plan: free
     rootDir: tag_ip
     dockerContext: ./tag_ip
-    healthCheckPath: /
+    healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
         fromDatabase:
