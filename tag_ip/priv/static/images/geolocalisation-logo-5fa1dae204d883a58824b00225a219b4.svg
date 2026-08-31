@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400px" height="280px" viewBox="0 0 275 193" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e40af" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+  </defs>
+  <rect width="275" height="193" fill="url(#bgGrad)" rx="12" />
+    <g id="TAGIP" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round">
+        <g id="Accueil" transform="translate(-1198.000000, -1753.000000)" stroke="#FFFFFF" stroke-width="3">
+            <g id="geolocalisationlogo" transform="translate(1199.000000, 1755.000000)">
+                <g id="LogoTrack" transform="translate(219.000000, 0.000000)">
+                    <g id="Group21">
+                        <polygon id="Fill17" transform="translate(27.341440, 28.704739) rotate(4.000000) translate(-27.341440, -28.704739) " points="52.5315639 32.5384126 28.0952999 43.5511474 18.6643834 47.7959805 2.151317 55.2396977 6.16819369 40.2244237 8.5803537 31.1979567 16.3427252 2.16978034"></polygon>
+                    </g>
+                </g>
+                <line x1="1.16860465" y1="65.1582278" x2="133.22093" y2="185.227848" id="Line3"></line>
+                <line x1="184.764706" y1="87.2352941" x2="209.235294" y2="62.7647059" id="Line"></line>
+                <path d="M225,189 C225,128.800962 175.97518,80 115.5,80 C55.0248199,80 6,128.800962 6,189" id="Oval"></path>
+            </g>
+        </g>
+    </g>
+</svg>

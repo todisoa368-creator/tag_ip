@@ -51,6 +51,7 @@ defmodule TagIpWeb.Router do
       # Compatibilités
       live "/compatibilites", CompatibiliteLive.Index, :index
       live "/compatibilites/new", CompatibiliteLive.Index, :new
+      live "/compatibilites/assistant", CompatibiliteLive.Assistant, :index
       live "/compatibilites/:id", CompatibiliteLive.Show, :show
 
       # Organisations

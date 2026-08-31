@@ -52,8 +52,8 @@ defmodule TagIpWeb.ProfilMontageLive.FormTest do
       {:ok, lv, _html} = live(conn, ~p"/profils/new")
 
       lv
-      |> element("#step1-form")
-      |> render_submit(%{"profile_name" => ""})
+      |> element("form", "Suivant")
+      |> render_submit()
 
       assert lv |> render() =~ "Veuillez saisir un nom de profil"
     end

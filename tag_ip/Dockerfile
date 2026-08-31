@@ -1,5 +1,5 @@
 ## Multi-stage Dockerfile for building and running a Phoenix (Elixir) release
-FROM hexpm/elixir:1.14.4-erlang-26.2.4-alpine AS build
+FROM hexpm/elixir:1.18.3-erlang-27.2.4-alpine AS build
 WORKDIR /app
 
 # install build tools
@@ -24,11 +24,13 @@ RUN if [ -f assets/package.json ]; then \
 
 RUN MIX_ENV=prod mix release --overwrite
 
-FROM alpine:3.18
-RUN apk add --no-cache libstdc++ openssl ncurses-libs musl tzdata ca-certificates postgresql-client
+FROM alpine:3.21
+RUN apk add --no-cache libstdc++ openssl ncurses-libs musl tzdata ca-certificates postgresql-client bash
 WORKDIR /app
-ENV MIX_ENV=prod
+ENV MIX_ENV=prod RELEASE_COOKIE=tag_ip_cookie
 
 COPY --from=build /app/_build/prod/rel/tag_ip .
 EXPOSE 4000
-CMD ["/app/bin/tag_ip", "start"]
+
+# Run DB migrations against the configured DATABASE_URL, then start the server
+CMD ["/bin/sh", "-c", "/app/bin/tag_ip eval \"TagIp.Release.migrate()\" && /app/bin/tag_ip start"]

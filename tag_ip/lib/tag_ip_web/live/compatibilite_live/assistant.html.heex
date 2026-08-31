@@ -1,0 +1,569 @@
+<TagIpWeb.Layouts.app flash={@flash} current_scope={@current_scope}>
+  <div class="min-h-screen bg-gray-50 py-10">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <%!-- Header --%>
+      <div class="text-center mb-10">
+        <h1 class="text-3xl font-extrabold text-gray-900">Assistant de Compatibilité</h1>
+        <p class="mt-2 text-sm text-gray-500">
+          Définissez les exigences du client et découvrez les modèles de traceurs compatibles.
+        </p>
+      </div>
+
+      <%!-- Step Indicator --%>
+      <div class="mb-10">
+        <div class="flex items-center justify-center gap-2">
+          <.step_indicator step={1} current={@step} label="Véhicule & Puissance" />
+          <.step_arrow />
+          <.step_indicator step={2} current={@step} label="Interfaces" />
+          <.step_arrow />
+          <.step_indicator step={3} current={@step} label="Capteurs & Périph." />
+          <.step_arrow />
+          <.step_indicator step={4} current={@step} label="Résultats" />
+        </div>
+      </div>
+
+      <%!-- Step 1: Véhicule & Alimentation --%>
+      <%= if @step == 1 do %>
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div class="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-4">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <.icon name="hero-truck" class="size-5" /> Étape 1 : Type de véhicule & Alimentation
+            </h3>
+          </div>
+
+          <form phx-submit="next_step_1" class="p-8 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <%!-- Type de véhicule --%>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Type de véhicule / Objet
+                </label>
+                <select
+                  name="step1[object_type]"
+                  class="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 h-11"
+                >
+                  <option value="">Aucune restriction</option>
+                  <option
+                    :for={t <- @types_vehicule}
+                    value={t.slug}
+                    selected={@profil_params["object_type"] == t.slug}
+                  >
+                    {t.label}
+                  </option>
+                </select>
+                <p class="mt-1 text-xs text-gray-400">
+                  Laisser vide si le type de véhicule n'est pas imposé.
+                </p>
+              </div>
+
+              <%!-- Montage extérieur --%>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Montage extérieur
+                </label>
+                <select
+                  name="step1[montage_exterieur]"
+                  class="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 h-11"
+                >
+                  <option
+                    value="false"
+                    selected={@profil_params["montage_exterieur"] == "false"}
+                  >
+                    Non
+                  </option>
+                  <option value="true" selected={@profil_params["montage_exterieur"] == "true"}>
+                    Oui (nécessite IP67+)
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <%!-- Plage de tension --%>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Plage de tension requise
+              </label>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <div class="relative">
+                    <input
+                      type="number"
+                      step="0.1"
+                      name="step1[voltage_min]"
+                      value={@profil_params["voltage_min"]}
+                      placeholder="Min"
+                      class="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 h-11 pr-10"
+                    />
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                      V
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <div class="relative">
+                    <input
+                      type="number"
+                      step="0.1"
+                      name="step1[voltage_max]"
+                      value={@profil_params["voltage_max"]}
+                      placeholder="Max"
+                      class="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 h-11 pr-10"
+                    />
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                      V
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <p class="mt-1 text-xs text-gray-400">
+                Ex: 9V à 36V pour un véhicule 12V/24V.
+              </p>
+            </div>
+
+            <%!-- Antenne déportée --%>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Antenne déportée requise
+              </label>
+              <select
+                name="step1[antenne_deportee]"
+                class="block w-full md:w-1/2 rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 h-11"
+              >
+                <option
+                  value="false"
+                  selected={@profil_params["antenne_deportee"] == "false"}
+                >
+                  Non
+                </option>
+                <option
+                  value="true"
+                  selected={@profil_params["antenne_deportee"] == "true"}
+                >
+                  Oui
+                </option>
+              </select>
+            </div>
+
+            <div class="pt-4 flex justify-end">
+              <button
+                type="submit"
+                class="inline-flex items-center gap-2 px-8 py-3 text-base font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-700 shadow-lg transition-all"
+              >
+                Suivant <.icon name="hero-arrow-right" class="size-4" />
+              </button>
+            </div>
+          </form>
+        </div>
+      <% end %>
+
+      <%!-- Step 2: Interfaces --%>
+      <%= if @step == 2 do %>
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div class="bg-linear-to-r from-indigo-600 to-indigo-700 px-6 py-4">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <.icon name="hero-connection-hash" class="size-5" />
+              Étape 2 : Interfaces de communication
+            </h3>
+          </div>
+
+          <form phx-submit="next_step_2" class="p-8 space-y-8">
+            <%!-- Bus & Protocoles --%>
+            <div>
+              <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">
+                Bus & Protocoles
+              </h4>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <.toggle_field
+                  name="step2[can_bus_requis]"
+                  label="CAN-Bus"
+                  checked={@profil_params["can_bus_requis"] == "true"}
+                />
+                <.toggle_field
+                  name="step2[one_wire_requis]"
+                  label="1-Wire"
+                  checked={@profil_params["one_wire_requis"] == "true"}
+                />
+                <.toggle_field
+                  name="step2[rs232_requis]"
+                  label="RS232"
+                  checked={@profil_params["rs232_requis"] == "true"}
+                />
+                <.toggle_field
+                  name="step2[rs485_requis]"
+                  label="RS485"
+                  checked={@profil_params["rs485_requis"] == "true"}
+                />
+                <.toggle_field
+                  name="step2[bluetooth_ble_requis]"
+                  label="Bluetooth BLE"
+                  checked={@profil_params["bluetooth_ble_requis"] == "true"}
+                />
+              </div>
+            </div>
+
+            <%!-- Entrées / Sorties --%>
+            <div>
+              <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">
+                Entrées / Sorties (I/O)
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Entrées numériques
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    name="step2[inputs_requis]"
+                    value={@profil_params["inputs_requis"]}
+                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 h-11"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Entrées analogiques
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    name="step2[analog_inputs_requis]"
+                    value={@profil_params["analog_inputs_requis"]}
+                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 h-11"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Sorties numériques
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    name="step2[outputs_requis]"
+                    value={@profil_params["outputs_requis"]}
+                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 h-11"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 flex justify-between">
+              <button
+                type="button"
+                phx-click="prev_step"
+                class="inline-flex items-center gap-2 px-6 py-3 text-base font-semibold rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all"
+              >
+                <.icon name="hero-arrow-left" class="size-4" /> Précédent
+              </button>
+              <button
+                type="submit"
+                class="inline-flex items-center gap-2 px-8 py-3 text-base font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg transition-all"
+              >
+                Suivant <.icon name="hero-arrow-right" class="size-4" />
+              </button>
+            </div>
+          </form>
+        </div>
+      <% end %>
+
+      <%!-- Step 3: Capteurs & Périphériques --%>
+      <%= if @step == 3 do %>
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div class="bg-linear-to-r from-violet-600 to-violet-700 px-6 py-4">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <.icon name="hero-cog-6-tooth" class="size-5" /> Étape 3 : Capteurs & Périphériques
+            </h3>
+          </div>
+
+          <form phx-submit="next_step_3" class="p-8 space-y-8">
+            <%!-- Fonctionnalités embarquées --%>
+            <div>
+              <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">
+                Fonctionnalités embarquées
+              </h4>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <.toggle_field
+                  name="step3[accelerometre_requis]"
+                  label="Accéléromètre"
+                  checked={@profil_params["accelerometre_requis"] == "true"}
+                />
+                <.toggle_field
+                  name="step3[ultra_low_power_requis]"
+                  label="Ultra Low Power"
+                  checked={@profil_params["ultra_low_power_requis"] == "true"}
+                />
+                <.toggle_field
+                  name="step3[buzzer]"
+                  label="Buzzer"
+                  checked={@profil_params["buzzer"] == "true"}
+                />
+                <.toggle_field
+                  name="step3[geofence_enabled]"
+                  label="Géofence"
+                  checked={@profil_params["geofence_enabled"] == "true"}
+                />
+              </div>
+            </div>
+
+            <%!-- Sonde carburant --%>
+            <div>
+              <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">
+                Sonde carburant
+              </h4>
+              <select
+                name="step3[fuel_probe_type]"
+                class="block w-full md:w-1/2 rounded-lg border-gray-300 shadow-sm focus:ring-violet-500 focus:border-violet-500 h-11"
+              >
+                <option value="" selected={@profil_params["fuel_probe_type"] in [nil, "", "none"]}>
+                  Aucune
+                </option>
+                <option
+                  value="analog"
+                  selected={@profil_params["fuel_probe_type"] == "analog"}
+                >
+                  Sonde analogique
+                </option>
+                <option
+                  value="digital"
+                  selected={@profil_params["fuel_probe_type"] == "digital"}
+                >
+                  Sonde digitale
+                </option>
+                <option value="can_bus" selected={@profil_params["fuel_probe_type"] == "can_bus"}>
+                  Sonde CAN-Bus
+                </option>
+              </select>
+            </div>
+
+            <%!-- Capteurs --%>
+            <%= if @capteurs != [] do %>
+              <div>
+                <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">
+                  Capteurs requis
+                </h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <label
+                    :for={capteur <- @capteurs}
+                    class="flex items-center gap-2 p-3 rounded-lg border border-gray-200 hover:bg-violet-50 hover:border-violet-300 cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      name="step3[capteur_slugs][]"
+                      value={capteur.slug}
+                      class="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                    />
+                    <span class="text-sm text-gray-700">{capteur.label}</span>
+                  </label>
+                </div>
+              </div>
+            <% end %>
+
+            <%!-- Périphériques --%>
+            <%= if @peripherals != [] do %>
+              <div>
+                <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">
+                  Périphériques requis
+                </h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <label
+                    :for={periph <- @peripherals}
+                    class="flex items-center gap-2 p-3 rounded-lg border border-gray-200 hover:bg-violet-50 hover:border-violet-300 cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      name="step3[peripheral_ids][]"
+                      value={periph.id}
+                      class="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                    />
+                    <span class="text-sm text-gray-700">{periph.name}</span>
+                  </label>
+                </div>
+              </div>
+            <% end %>
+
+            <div class="pt-4 flex justify-between">
+              <button
+                type="button"
+                phx-click="prev_step"
+                class="inline-flex items-center gap-2 px-6 py-3 text-base font-semibold rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all"
+              >
+                <.icon name="hero-arrow-left" class="size-4" /> Précédent
+              </button>
+              <button
+                type="submit"
+                class="inline-flex items-center gap-2 px-8 py-3 text-base font-bold rounded-xl text-white bg-violet-600 hover:bg-violet-700 shadow-lg transition-all"
+              >
+                <.icon name="hero-magnifying-glass" class="size-4" /> Calculer les compatibilités
+              </button>
+            </div>
+          </form>
+        </div>
+      <% end %>
+
+      <%!-- Step 4: Résultats --%>
+      <%= if @step == 4 do %>
+        <%!-- Résumé des critères --%>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+          <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">
+            Critères recherchés
+          </h3>
+          <div class="flex flex-wrap gap-2">
+            <.criteria_badge :if={@profil_params["object_type"] != ""}>
+              {@profil_params["object_type"]}
+            </.criteria_badge>
+            <.criteria_badge :if={
+              @profil_params["voltage_min"] != "" and @profil_params["voltage_max"] != ""
+            }>
+              {@profil_params["voltage_min"]}V – {@profil_params["voltage_max"]}V
+            </.criteria_badge>
+            <.criteria_badge :if={@profil_params["montage_exterieur"] == "true"}>
+              Montage extérieur
+            </.criteria_badge>
+            <.criteria_badge :if={@profil_params["antenne_deportee"] == "true"}>
+              Antenne déportée
+            </.criteria_badge>
+            <.criteria_badge :if={@profil_params["can_bus_requis"] == "true"}>
+              CAN-Bus
+            </.criteria_badge>
+            <.criteria_badge :if={@profil_params["one_wire_requis"] == "true"}>
+              1-Wire
+            </.criteria_badge>
+            <.criteria_badge :if={@profil_params["rs232_requis"] == "true"}>
+              RS232
+            </.criteria_badge>
+            <.criteria_badge :if={@profil_params["rs485_requis"] == "true"}>
+              RS485
+            </.criteria_badge>
+            <.criteria_badge :if={@profil_params["bluetooth_ble_requis"] == "true"}>
+              Bluetooth BLE
+            </.criteria_badge>
+            <.criteria_badge :if={String.to_integer(@profil_params["inputs_requis"] || "0") > 0}>
+              {@profil_params["inputs_requis"]} entrées num.
+            </.criteria_badge>
+            <.criteria_badge :if={
+              String.to_integer(@profil_params["analog_inputs_requis"] || "0") > 0
+            }>
+              {@profil_params["analog_inputs_requis"]} entrées ana.
+            </.criteria_badge>
+            <.criteria_badge :if={String.to_integer(@profil_params["outputs_requis"] || "0") > 0}>
+              {@profil_params["outputs_requis"]} sorties
+            </.criteria_badge>
+            <.criteria_badge :if={@profil_params["accelerometre_requis"] == "true"}>
+              Accéléromètre
+            </.criteria_badge>
+            <.criteria_badge :if={@profil_params["ultra_low_power_requis"] == "true"}>
+              Ultra Low Power
+            </.criteria_badge>
+            <.criteria_badge :if={@profil_params["buzzer"] == "true"}>Buzzer</.criteria_badge>
+            <.criteria_badge :if={@profil_params["geofence_enabled"] == "true"}>
+              Géofence
+            </.criteria_badge>
+            <.criteria_badge :if={@profil_params["fuel_probe_type"] not in [nil, "", "none"]}>
+              Sonde carburant
+            </.criteria_badge>
+          </div>
+        </div>
+
+        <%!-- Résultats --%>
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div class="bg-linear-to-r from-emerald-600 to-emerald-700 px-6 py-4 flex items-center justify-between">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <.icon name="hero-chart-bar" class="size-5" /> Résultats
+            </h3>
+            <span class="text-emerald-100 text-sm font-medium">
+              {count_compatible(@results)} compatible(s) sur {@results |> length()} modèle(s)
+            </span>
+          </div>
+
+          <%= if @results == [] do %>
+            <div class="p-12 text-center">
+              <p class="text-gray-500">Aucun modèle trouvé dans la base de données.</p>
+            </div>
+          <% else %>
+            <div class="divide-y divide-gray-100">
+              <div
+                :for={{result, idx} <- Enum.with_index(@results)}
+                id={"result-#{result.modele.id}"}
+                class="px-6 py-5 hover:bg-gray-50 transition-colors"
+              >
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-3 mb-1">
+                      <span class="text-xs font-bold text-gray-400">
+                        #{idx + 1}
+                      </span>
+                      <h4 class="text-base font-bold text-gray-900 truncate">
+                        {result.modele.nom}
+                      </h4>
+                      <span
+                        :if={result.modele.brand}
+                        class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"
+                      >
+                        {result.modele.brand}
+                      </span>
+                    </div>
+                    <p
+                      :if={result.modele.description}
+                      class="text-sm text-gray-500 mb-2 line-clamp-1"
+                    >
+                      {result.modele.description}
+                    </p>
+
+                    <%!-- Score bar --%>
+                    <div class="flex items-center gap-3">
+                      <div class="flex-1 max-w-xs bg-gray-200 rounded-full h-2.5">
+                        <div
+                          class={[
+                            "h-2.5 rounded-full transition-all duration-500",
+                            result.score >= 70 && "bg-green-500",
+                            result.score >= 40 && result.score < 70 && "bg-yellow-500",
+                            result.score < 40 && "bg-red-500"
+                          ]}
+                          style={score_bar_width(result.score)}
+                        >
+                        </div>
+                      </div>
+                      <span class={[
+                        "inline-flex items-center px-2.5 py-0.5 text-xs font-bold rounded-full border",
+                        score_color(result.score)
+                      ]}>
+                        {result.score}%
+                      </span>
+                      <span class={[
+                        "text-xs font-semibold px-2 py-0.5 rounded-full",
+                        result.compatible && "bg-green-100 text-green-700",
+                        !result.compatible && "bg-gray-100 text-gray-500"
+                      ]}>
+                        {if result.compatible, do: "Compatible", else: "Non compatible"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <%!-- Détails --%>
+                <%= if result.details != "" do %>
+                  <details class="mt-3 group">
+                    <summary class="text-xs font-medium text-gray-400 cursor-pointer hover:text-gray-600 transition-colors select-none">
+                      Voir les détails
+                    </summary>
+                    <div class="mt-2 text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 whitespace-pre-wrap font-mono leading-relaxed">
+                      {result.details}
+                    </div>
+                  </details>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="mt-8 flex justify-center">
+          <button
+            phx-click="restart"
+            class="inline-flex items-center gap-2 px-8 py-3 text-base font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-700 shadow-lg transition-all"
+          >
+            <.icon name="hero-arrow-path" class="size-4" /> Nouvelle recherche
+          </button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</TagIpWeb.Layouts.app>

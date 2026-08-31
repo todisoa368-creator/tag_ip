@@ -188,6 +188,39 @@ defmodule TagIp.Resources.CapabilityMatrix do
     end)
   end
 
+  @doc """
+  Trouve tous les modèles compatibles avec les critères donnés, triés par score décroissant.
+
+  Accepte un map de critères (même format que l'assistant de compatibilité) et
+  retourne une liste de `%{modele: struct, score: integer, compatible: boolean, details: String.t()}`.
+  """
+  def find_compatible_models(criteria_params, capteur_slugs \\ [], peripheral_ids \\ []) do
+    alias TagIp.Resources.Compatibilite
+
+    modeles =
+      ModeleTraceur
+      |> Ash.read!(load: [:types_vehicule, :alimentations, :capteurs, :model_ports])
+
+    modeles
+    |> Enum.map(fn modele ->
+      result =
+        Compatibilite.calculer_depuis_params(
+          criteria_params,
+          modele,
+          capteur_slugs,
+          peripheral_ids
+        )
+
+      %{
+        modele: modele,
+        score: result.score,
+        compatible: result.compatible,
+        details: result.details
+      }
+    end)
+    |> Enum.sort_by(& &1.score, :desc)
+  end
+
   defp describe_feature_slugs(slugs) do
     features = Feature.read!()
     slug_to_label = Enum.into(features, %{}, &{&1.slug, &1.label})
