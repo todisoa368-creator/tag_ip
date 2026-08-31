@@ -23,5 +23,7 @@ services:
         value: tag-ip.onrender.com
       - key: PORT
         value: 10000
+      - key: PHX_SERVER
+        value: "true"
       - key: MIX_ENV
         value: prod
