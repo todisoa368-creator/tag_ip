@@ -1,0 +1,27 @@
+databases:
+  - name: tag_ip_db
+    databaseName: tag_ip
+    user: tag_ip
+    plan: free
+
+services:
+  - type: web
+    name: tag-ip
+    runtime: docker
+    plan: free
+    rootDir: tag_ip
+    dockerContext: ./tag_ip
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tag_ip_db
+          property: connectionString
+      - key: SECRET_KEY_BASE
+        generateValue: true
+      - key: PHX_HOST
+        value: tag-ip.onrender.com
+      - key: PORT
+        value: 10000
+      - key: MIX_ENV
+        value: prod

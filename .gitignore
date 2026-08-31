@@ -1,0 +1,10 @@
+# Sensitive / local files at the repo root
+todisoa368@gmail.com
+todisoa368@gmail.com.pub
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+*.gpg
+.env
+.env.*
