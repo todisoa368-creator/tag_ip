@@ -16,11 +16,8 @@ COPY . .
 RUN MIX_ENV=prod mix deps.compile
 RUN MIX_ENV=prod mix compile
 
-# assets (if any) - keep simple: build assets if package.json present
-RUN if [ -f assets/package.json ]; then \
-  cd assets && npm ci && npm run deploy; \
-  mix phx.digest; \
-  fi
+# build assets (tailwind + esbuild via mix tasks)
+RUN MIX_ENV=prod mix assets.deploy
 
 RUN MIX_ENV=prod mix release --overwrite
 
@@ -33,4 +30,4 @@ COPY --from=build /app/_build/prod/rel/tag_ip .
 EXPOSE 4000
 
 # Run DB migrations against the configured DATABASE_URL, then start the server
-CMD ["/bin/sh", "-c", "/app/bin/tag_ip eval \"TagIp.Release.migrate()\" && /app/bin/tag_ip start"]
+CMD ["/bin/sh", "-c", "/app/bin/tag_ip eval \"TagIp.Release.migrate()\" && PHX_SERVER=true /app/bin/tag_ip start"]
